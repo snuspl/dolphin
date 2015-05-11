@@ -49,7 +49,7 @@ public final class ALSCmpTask extends UserComputeTask
 
   @Override
   public void run(int iteration) {
-    indexToVectorMap = (userItem == ALSSummary.UserItem.USER) ?
+    indexToVectorMap = userItem == ALSSummary.UserItem.USER ?
                        computeItemVector() :
                        computeUserVector();
   }
@@ -108,10 +108,14 @@ public final class ALSCmpTask extends UserComputeTask
   public void receiveBroadcastData(int iteration, ALSSummary alsSummary) {
     userItem = alsSummary.getUserItem();
     givenMatrix = alsSummary.getMatrix();
+
+//    System.out.println("Iteration " + iteration);
+//    System.out.println(alsSummary);
   }
 
   @Override
   public Map<Integer, Vector> sendReduceData(int iteration) {
+//    System.out.println(indexToVectorMap);
     return indexToVectorMap;
   }
 }

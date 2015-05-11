@@ -5,6 +5,8 @@ import edu.snu.reef.dolphin.core.StageInfo;
 import edu.snu.reef.dolphin.core.UserJobInfo;
 import edu.snu.reef.dolphin.examples.ml.data.RecommendationDataParser;
 import edu.snu.reef.dolphin.examples.ml.sub.ALSSummaryCodec;
+import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVecCodec;
+import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVecReduceFunction;
 import edu.snu.reef.dolphin.examples.ml.sub.RatingListCodec;
 
 import javax.inject.Inject;
@@ -47,6 +49,7 @@ public final class ALSJobInfo implements UserJobInfo {
                              ALSCtrlTask.class,
                              ALSCommGroup.class)
             .setBroadcast(ALSSummaryCodec.class)
+            .setReduce(MapOfIntVecCodec.class, MapOfIntVecReduceFunction.class)
             .build());
 
     return stageInfoList;
