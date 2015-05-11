@@ -3,7 +3,9 @@ package edu.snu.reef.dolphin.examples.ml.algorithms.recommendation;
 import edu.snu.reef.dolphin.core.KeyValueStore;
 import edu.snu.reef.dolphin.core.UserControllerTask;
 import edu.snu.reef.dolphin.examples.ml.data.ALSSummary;
+import edu.snu.reef.dolphin.examples.ml.data.Rating;
 import edu.snu.reef.dolphin.examples.ml.key.ItemNum;
+import edu.snu.reef.dolphin.examples.ml.key.Ratings;
 import edu.snu.reef.dolphin.examples.ml.key.UserNum;
 import edu.snu.reef.dolphin.examples.ml.parameters.FeatureNum;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
@@ -15,7 +17,10 @@ import org.apache.mahout.math.Vector;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 public final class ALSCtrlTask extends UserControllerTask
@@ -27,6 +32,8 @@ public final class ALSCtrlTask extends UserControllerTask
   private final int maxIter;
   private final int userNum;
   private final int itemNum;
+  private final KeyValueStore keyValueStore;
+  private final Random random;
   private Matrix broadcastMatrix;
   private Matrix prevMatrix;
   private ALSSummary.UserItem userItem;
@@ -39,12 +46,34 @@ public final class ALSCtrlTask extends UserControllerTask
     this.maxIter = maxIter;
     this.userNum = keyValueStore.get(UserNum.class);
     this.itemNum = keyValueStore.get(ItemNum.class);
+    this.keyValueStore = keyValueStore;
+    this.random = new Random();
   }
 
   @Override
   public void initialize() {
-    broadcastMatrix = new DenseMatrix(featureNum, userNum).assign(0.1);
-    userItem = ALSSummary.UserItem.USER;
+    final List<Rating> ratings = keyValueStore.get(Ratings.class);
+    final Map<Integer, Double> indexToSumMap = new HashMap<>();
+    for (final Rating rating : ratings) {
+      if (!indexToSumMap.containsKey(rating.getItemIndex())) {
+        indexToSumMap.put(rating.getItemIndex(), 0D);
+      }
+
+      indexToSumMap.put(rating.getItemIndex(),
+                        indexToSumMap.get(rating.getItemIndex()) + rating.getRatingScore());
+    }
+
+    broadcastMatrix = new DenseMatrix(featureNum, itemNum);
+    for (int itemIndex = 0; itemIndex < itemNum; itemIndex++) {
+      for (int featureIndex = 0; featureIndex < featureNum; featureIndex++) {
+        if (indexToSumMap.containsKey(itemIndex)) {
+          broadcastMatrix.set(featureIndex, itemIndex, indexToSumMap.get(itemIndex) + random.nextDouble());
+        } else {
+          broadcastMatrix.set(featureIndex, itemIndex, random.nextDouble());
+        }
+      }
+    }
+    userItem = ALSSummary.UserItem.ITEM;
   }
 
   @Override
@@ -83,6 +112,8 @@ public final class ALSCtrlTask extends UserControllerTask
 
   @Override
   public void cleanup() {
+    System.out.println(broadcastMatrix);
+    System.out.println(prevMatrix);
     System.out.println(prevMatrix.transpose().times(broadcastMatrix));
   }
 }

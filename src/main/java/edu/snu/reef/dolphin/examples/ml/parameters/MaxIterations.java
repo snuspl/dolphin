@@ -20,6 +20,6 @@ import org.apache.reef.tang.annotations.NamedParameter;
 
 @NamedParameter(doc = "Maximum number of iterations allowed before algorithm stops",
                 short_name = "maxIter",
-                default_value = "20")
+                default_value = "50")
 public final class MaxIterations implements Name<Integer> {
 }
