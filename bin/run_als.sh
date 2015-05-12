@@ -18,9 +18,6 @@
 # under the License.
 #
 
-# EXAMPLE USAGE 
-# ./run.sh -local true -split 4 -input sample_recommendation
-
 # RUNTIME
 SELF_JAR=../target/dolphin-0.1-SNAPSHOT-shaded.jar
 
