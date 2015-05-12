@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ALSCtrlTask extends UserControllerTask
@@ -127,8 +128,12 @@ public final class ALSCtrlTask extends UserControllerTask
 
   @Override
   public void cleanup() {
-    System.out.println(broadcastMatrix);
-    System.out.println(prevMatrix);
-    System.out.println(prevMatrix.transpose().times(broadcastMatrix));
+    if (userItem == ALSSummary.UserItem.USER) {
+      LOG.log(Level.INFO, "Final User Matrix: {0}", broadcastMatrix);
+      LOG.log(Level.INFO, "Final Item Matrix: {0}", prevMatrix);
+    } else {
+      LOG.log(Level.INFO, "Final User Matrix: {0}", prevMatrix);
+      LOG.log(Level.INFO, "Final Item Matrix: {0}", broadcastMatrix);
+    }
   }
 }

@@ -123,14 +123,10 @@ public final class ALSCmpTask extends UserComputeTask
   public void receiveBroadcastData(int iteration, ALSSummary alsSummary) {
     userItem = alsSummary.getUserItem();
     givenMatrix = alsSummary.getMatrix();
-
-//    System.out.println("Iteration " + iteration);
-//    System.out.println(alsSummary);
   }
 
   @Override
   public Map<Integer, Vector> sendReduceData(int iteration) {
-//    System.out.println(indexToVectorMap);
     return indexToVectorMap;
   }
 }
