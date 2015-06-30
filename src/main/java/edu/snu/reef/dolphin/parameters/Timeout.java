@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,9 @@ package edu.snu.reef.dolphin.parameters;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
+/**
+ * Time allowed until job ends.
+ */
 @NamedParameter(doc = "Time allowed until job ends",
                 short_name = "timeout",
                 default_value = "100000")

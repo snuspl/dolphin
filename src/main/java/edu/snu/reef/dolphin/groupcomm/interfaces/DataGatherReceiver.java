@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,16 @@ package edu.snu.reef.dolphin.groupcomm.interfaces;
 
 import java.util.List;
 
+/**
+ * Interface implemented by tasks receiving data through Gather.
+ * @param <T> Type of data sent trough Gather.
+ */
 public interface DataGatherReceiver<T> {
-  public void receiveGatherData(int iteration, List<T> data);
+
+  /**
+   * Receive data sent through Gather.
+   * @param iteration the current number of iteration
+   * @param data data sent through Gather
+   */
+  void receiveGatherData(int iteration, List<T> data);
 }

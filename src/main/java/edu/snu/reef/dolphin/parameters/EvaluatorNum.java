@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,9 @@ package edu.snu.reef.dolphin.parameters;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
+/**
+ * Number of evaluators to run job with.
+ */
 @NamedParameter(doc = "Number of evaluators to run job with",
                 short_name = "split")
 public final class EvaluatorNum implements Name<Integer> {

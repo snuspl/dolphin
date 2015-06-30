@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,9 @@ package edu.snu.reef.dolphin.parameters;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
+/**
+ * File or directory to read input data from.
+ */
 @NamedParameter(doc = "File or directory to read input data from",
                 short_name = "input")
 public final class InputDir implements Name<String> {
