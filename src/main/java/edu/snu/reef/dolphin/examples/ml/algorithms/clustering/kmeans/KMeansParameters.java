@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +27,33 @@ import org.apache.reef.tang.formats.CommandLine;
 
 import javax.inject.Inject;
 
+/**
+ * A class for providing configurations for the k-means algorithm.
+ */
 public final class KMeansParameters implements UserParameters {
+
+  /**
+   * Threshold for deciding whether the algorithm is converged or not.
+   */
   private final double convThreshold;
+
+  /**
+   * Maximum number of iterations.
+   */
   private final int maxIterations;
+
+  /**
+   * Number of clusters learned by the K-means algorithm.
+   */
   private final int numberOfClusters;
 
+  /**
+   * This class is instantiated by TANG.
+   *
+   * @param convThreshold Threshold for deciding whether the algorithm is converged or not
+   * @param maxIterations Maximum number of iterations
+   * @param numberOfClusters Number of clusters learned by the K-means algorithm
+   */
   @Inject
   private KMeansParameters(@Parameter(ConvergenceThreshold.class) final double convThreshold,
                            @Parameter(MaxIterations.class) final int maxIterations,
@@ -71,6 +93,10 @@ public final class KMeansParameters implements UserParameters {
         .build();
   }
 
+  /**
+   * Specifies commandline arguments necessary for the K-means algorithm.
+   * @return commandline
+   */
   public static CommandLine getCommandLine() {
     final ConfigurationBuilder cb = Tang.Factory.getTang().newConfigurationBuilder();
     final CommandLine cl = new CommandLine(cb);

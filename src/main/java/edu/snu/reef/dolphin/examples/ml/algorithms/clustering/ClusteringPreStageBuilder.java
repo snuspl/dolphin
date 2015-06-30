@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +17,31 @@ package edu.snu.reef.dolphin.examples.ml.algorithms.clustering;
 
 import edu.snu.reef.dolphin.core.StageInfo;
 import edu.snu.reef.dolphin.examples.ml.sub.VectorListCodec;
+import org.apache.reef.tang.annotations.Name;
 
+/**
+ * A builder class for the preprocessing stage of clustering algorithms.
+ */
 public class ClusteringPreStageBuilder {
+
+  /**
+   * Build StageInfo for the preprocessing stage of clustering algorithms.
+   * @return StageInfo object
+   */
   public static StageInfo build() {
     return StageInfo.newBuilder(ClusteringPreCmpTask.class, ClusteringPreCtrlTask.class, ClusteringPreCommGroup.class)
         .setGather(VectorListCodec.class).build();
+  }
+
+  /**
+   * Name for a communication group used by the stage.
+   */
+  private final class ClusteringPreCommGroup implements Name<String> {
+  }
+
+  /**
+   * Empty private constructor to prohibit instantiation of utility class.
+   */
+  private ClusteringPreStageBuilder() {
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,35 +24,35 @@ import org.apache.mahout.math.Vector;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
+/**
+ * User-defined compute task class for the preprocessing stage of the K-means algorithm.
+ * The controller task sample initial centroids of clusters from samples received from compute tasks.
+ */
 public final class ClusteringPreCtrlTask extends UserControllerTask
     implements DataGatherReceiver<List<Vector>> {
 
-  private static final Logger LOG = Logger.getLogger(ClusteringPreCtrlTask.class.getName());
-
   /**
-   * Number of clusters
+   * Number of clusters learned by the clustering algorithm.
    */
   private final int numberOfClusters;
 
   /**
-   * List of cluster centroids to distribute to Compute Tasks
-   * Will be updated for each iteration
-   */
-  private final List<Vector> centroids = new ArrayList<Vector>();
-
-  /**
-   * Initial centroids passed from Compute Tasks
+   * Initial centroids passed from Compute Tasks.
    */
   private List<Vector> initialCentroids = null;
   private final KeyValueStore keyValueStore;
 
+  /**
+   * This class is instantiated by TANG.
+   *
+   * @param keyValueStore Key-value store object.
+   * @param numberOfClusters Number of clusters learned by the clustering algorithm.
+   */
   @Inject
-  public ClusteringPreCtrlTask(
+  private ClusteringPreCtrlTask(
       final KeyValueStore keyValueStore,
       @Parameter(NumberOfClusters.class) final int numberOfClusters) {
     this.keyValueStore = keyValueStore;

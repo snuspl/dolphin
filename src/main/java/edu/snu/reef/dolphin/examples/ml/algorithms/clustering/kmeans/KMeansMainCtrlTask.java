@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * User-defined controller task class for the main stage of the K-means algorithm.
+ * At every iteration, the controller task
+ * recomputes the centroid of each cluster.
+ */
 public final class KMeansMainCtrlTask extends UserControllerTask
     implements DataReduceReceiver<Map<Integer, VectorSum>>, DataBroadcastSender<List<Vector>> {
 
@@ -50,35 +55,41 @@ public final class KMeansMainCtrlTask extends UserControllerTask
   private final ClusteringConvCond clusteringConvergenceCondition;
 
   /**
-   * Maximum number of iterations allowed before job stops
+   * Maximum number of iterations allowed before job stops.
    */
   private final int maxIterations;
 
   /**
-   * Vector sum of the points assigned to each cluster
+   * Vector sum of the points assigned to each cluster.
    */
   private Map<Integer, VectorSum> pointSum = new HashMap<>();
 
   /**
-   * List of cluster centroids to distribute to Compute Tasks
-   * Will be updated for each iteration
+   * List of cluster centroids to distribute to Compute Tasks.
+   * Will be updated at each iteration.
    */
   private List<Vector> centroids = new ArrayList<>();
+
+  /**
+   * Key vaule store object.
+   */
   private final KeyValueStore keyValueStore;
+
+  /**
+   * Output stream provider object through which this task writes output.
+   */
   private final OutputStreamProvider outputStreamProvider;
 
   /**
-   * This class is instantiated by TANG
-   *
-   * Constructs the Controller Task for k-means
+   * This class is instantiated by TANG.
    *
    * @param clusteringConvergenceCondition conditions for checking convergence of algorithm
-   * @param keyValueStore
-   * @param outputStreamProvider
+   * @param keyValueStore key-value store object
+   * @param outputStreamProvider output stream provider object through which this task writes output
    * @param maxIterations maximum number of iterations allowed before job stops
    */
   @Inject
-  public KMeansMainCtrlTask(final ClusteringConvCond clusteringConvergenceCondition,
+  private KMeansMainCtrlTask(final ClusteringConvCond clusteringConvergenceCondition,
                             final KeyValueStore keyValueStore,
                             final OutputStreamProvider outputStreamProvider,
                             @Parameter(MaxIterations.class) final int maxIterations) {
@@ -90,7 +101,7 @@ public final class KMeansMainCtrlTask extends UserControllerTask
   }
 
   /**
-   * Receive initial centroids from the preprocess task
+   * Receive initial centroids from the preprocess task.
    */
   @Override
   public void initialize() {
