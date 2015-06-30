@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,16 @@ package edu.snu.reef.dolphin.groupcomm.interfaces;
 
 import java.util.List;
 
+/**
+ * Interface implemented by tasks sending data through Scatter.
+ * @param <T> Type of data sent trough Scatter.
+ */
 public interface DataScatterSender<T> {
-  public List<T> sendScatterData(int iteration);
+
+  /**
+   * Return data to be sent through Scatter.
+   * @param iteration the current number of iteration
+   * @return data to be sent through Scatter
+   */
+  List<T> sendScatterData(int iteration);
 }

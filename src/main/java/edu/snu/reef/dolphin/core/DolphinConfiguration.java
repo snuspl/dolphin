@@ -23,12 +23,30 @@ import org.apache.reef.tang.formats.ConfigurationModuleBuilder;
 
 import java.io.IOException;
 
+/**
+ * Tang configuration for DolphinLauncher.
+ */
 public final class DolphinConfiguration extends ConfigurationModuleBuilder {
-  public final static Configuration CONF(String[] args) throws IOException {
+
+  /**
+   * Create a configuration for DolphinLauncher from command-line arguments.
+   * @param args command-line arguments
+   * @return configuration for DolphinLauncher
+   * @throws IOException
+   */
+  public static Configuration CONF(String[] args) throws IOException {
     return CONF(args, new CommandLine());
   }
 
-  public final static Configuration CONF(String[] args, CommandLine cl) throws IOException {
+  /**
+   * Create a configuration for DolphinLauncher from command-line arguments.
+   *
+   * @param args command-line arguments
+   * @param cl specification for command-line arguments
+   * @return configuration for DolphinLauncher
+   * @throws IOException
+   */
+  public static Configuration CONF(String[] args, CommandLine cl) throws IOException {
     cl.registerShortNameOfClass(EvaluatorSize.class);
     cl.registerShortNameOfClass(OnLocal.class);
     cl.registerShortNameOfClass(EvaluatorNum.class);

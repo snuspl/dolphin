@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,9 +37,14 @@ import javax.inject.Inject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A class for Compute Task.
+ * Compute Task, which is a part of a stage,
+ * specifies local computation using data stored in local storage.
+ */
 public final class ComputeTask implements Task, TaskMessageSource {
-  public final static String TASK_ID_PREFIX = "CmpTask";
-  private final static Logger LOG = Logger.getLogger(ComputeTask.class.getName());
+  public static final String TASK_ID_PREFIX = "CmpTask";
+  private static final Logger LOG = Logger.getLogger(ComputeTask.class.getName());
 
   private final String taskId;
   private final UserComputeTask userComputeTask;
@@ -49,21 +54,32 @@ public final class ComputeTask implements Task, TaskMessageSource {
   private final ObjectSerializableCodec<Long> codecLong = new ObjectSerializableCodec<>();
   private long runTime = -1;
 
+  /**
+   * Compute Task constructor - instantiated via TANG.
+   *
+   * @param taskId id of the current task
+   * @param commGroupName
+   * @param groupCommClient
+   * @param userComputeTask
+   * @param heartBeatTriggerManager
+   * @throws ClassNotFoundException
+   */
   @Inject
-  public ComputeTask(final GroupCommClient groupCommClient,
-                     final UserComputeTask userComputeTask,
-                     @Parameter(TaskConfigurationOptions.Identifier.class) String taskId,
+  private ComputeTask(@Parameter(TaskConfigurationOptions.Identifier.class) final String taskId,
                      @Parameter(CommunicationGroup.class) final String commGroupName,
+                     final GroupCommClient groupCommClient,
+                     final UserComputeTask userComputeTask,
                      final HeartBeatTriggerManager heartBeatTriggerManager) throws ClassNotFoundException {
-    this.userComputeTask = userComputeTask;
     this.taskId = taskId;
-    this.commGroup = groupCommClient.getCommunicationGroup((Class<? extends Name<String>>) Class.forName(commGroupName));
+    this.commGroup = groupCommClient.getCommunicationGroup(
+        (Class<? extends Name<String>>) Class.forName(commGroupName));
     this.ctrlMessageBroadcast = commGroup.getBroadcastReceiver(CtrlMsgBroadcast.class);
+    this.userComputeTask = userComputeTask;
     this.heartBeatTriggerManager = heartBeatTriggerManager;
   }
 
   @Override
-  public final byte[] call(final byte[] memento) throws Exception {
+  public byte[] call(final byte[] memento) throws Exception {
     LOG.log(Level.INFO, String.format("%s starting...", taskId));
 
     userComputeTask.initialize();
@@ -82,6 +98,12 @@ public final class ComputeTask implements Task, TaskMessageSource {
     return null;
   }
 
+  /**
+   * Receive data from Controller Task.
+   *
+   * @param iteration the current number of iterations
+   * @throws Exception
+   */
   private void receiveData(int iteration) throws Exception {
     if (userComputeTask.isBroadcastUsed()) {
       ((DataBroadcastReceiver)userComputeTask).receiveBroadcastData(iteration,
@@ -93,6 +115,12 @@ public final class ComputeTask implements Task, TaskMessageSource {
     }
   }
 
+  /**
+   * Send data to Controller Task.
+   *
+   * @param iteration the current number of iterations
+   * @throws Exception
+   */
   private void sendData(int iteration) throws Exception {
     if (userComputeTask.isGatherUsed()) {
       commGroup.getGatherSender(DataGather.class).send(
@@ -104,6 +132,12 @@ public final class ComputeTask implements Task, TaskMessageSource {
     }
   }
 
+  /**
+   * Check whether Controller Task asks Compute Tasks to terminate or not.
+   *
+   * @return whether to terminate or not
+   * @throws Exception
+   */
   private boolean isTerminated() throws Exception {
     return ctrlMessageBroadcast.receive() == CtrlMessage.TERMINATE;
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,29 +31,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A service class of Output service.
- * Output service provides an Output writer,
- * through which tasks write their output to the file given by the user
+ * A service class of the output service.
+ * Output service provides an output writer,
+ * through which tasks write their output to the file given by the user.
  */
 @Unit
 public final class OutputService {
   private static Logger LOG = Logger.getLogger(OutputService.class.getName());
 
   /**
-   * A provider through which users create output streams
+   * A provider through which users create output streams.
    */
   private final OutputStreamProvider outputStreamProvider;
 
+  /**
+   * Output Service constructor - instantiated by Tang.
+   * @param outputStreamProvider A provider through which users create output streams.
+   */
   @Inject
   private OutputService(OutputStreamProvider outputStreamProvider) {
     this.outputStreamProvider = outputStreamProvider;
   }
 
   /**
-   * Provides a configuration for Output service
-   * @param outputDir
-   * @param onLocal
-   * @return
+   * Provides a service configuration for the output service.
+   * @param outputDir path of the output directory
+   * @param onLocal true for local runtime, false for Yarn runtime
+   * @return service configuration
    */
   public static Configuration getServiceConfiguration(final String outputDir, final boolean onLocal) {
     Class<? extends OutputStreamProvider> outputStreamProviderClass
@@ -72,6 +76,9 @@ public final class OutputService {
         .build();
   }
 
+  /**
+   * Handle the context stop event: close the output stream provider.
+   */
   private final class ContextStopHandler implements EventHandler<ContextStop> {
     @Override
     public void onNext(ContextStop contextStop) {
@@ -84,6 +91,9 @@ public final class OutputService {
     }
   }
 
+  /**
+   * Handles the task start event: set task ID to the output stream provider.
+   */
   private final class TaskStartHandler implements EventHandler<TaskStart> {
     @Override
     public void onNext(TaskStart taskStart) {
@@ -92,6 +102,9 @@ public final class OutputService {
     }
   }
 
+  /**
+   * Path of the directory to write output data to.
+   */
   @NamedParameter(doc = "Path of the directory to write output data to")
   final class OutputPath implements Name<String> {
   }

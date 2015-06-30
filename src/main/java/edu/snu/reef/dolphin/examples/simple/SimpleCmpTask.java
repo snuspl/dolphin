@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,21 @@ import edu.snu.reef.dolphin.groupcomm.interfaces.DataReduceSender;
 
 import javax.inject.Inject;
 
+/**
+ * User-defined compute task class for the simple example application.
+ * At every iteration, compute tasks print out the given message.
+ */
 public final class SimpleCmpTask extends UserComputeTask
     implements DataBroadcastReceiver<String>, DataReduceSender<Integer> {
+
+  /**
+   * message to print.
+   */
   private String message = null;
+
+  /**
+   * number of times that the task prints out the message.
+   */
   private Integer count = 0;
 
   @Inject
@@ -47,8 +59,4 @@ public final class SimpleCmpTask extends UserComputeTask
   public Integer sendReduceData(int iteration) {
     return count;
   }
-
 }
-
-
-

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,15 +23,20 @@ import edu.snu.reef.dolphin.examples.ml.data.ClusteringDataParser;
 import edu.snu.reef.dolphin.examples.ml.sub.CentroidListCodec;
 import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVSumCodec;
 import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVSumReduceFunction;
+import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * JobInfo class for the K-means algorithm.
+ */
 public final class KMeansJobInfo implements UserJobInfo {
 
   @Inject
-  public KMeansJobInfo(){
+  private KMeansJobInfo(){
   }
 
   @Override
@@ -54,5 +59,12 @@ public final class KMeansJobInfo implements UserJobInfo {
   @Override
   public Class<? extends DataParser> getDataParser() {
     return ClusteringDataParser.class;
+  }
+
+  /**
+   * Name for a communication group used by the job.
+   */
+  @NamedParameter(doc = "Name for a communication group used by the job.")
+  private static final class KMeansMainCommGroup implements Name<String> {
   }
 }

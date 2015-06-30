@@ -23,12 +23,17 @@ import org.apache.reef.tang.Tang;
 import java.util.logging.Logger;
 
 /**
- * Key-value store service used to pass the current stage's result to the next stage
- * Should be inserted alongside a context.
+ * A service class for the key-value store service.
+ * this service is used to pass the current stage's result to the next stage,
+ * and should be inserted alongside a context.
  */
-public class KeyValueStoreService {
+public final class KeyValueStoreService {
   private static Logger LOG = Logger.getLogger(KeyValueStoreService.class.getName());
 
+  /**
+   * Get the service configuration for the key-value store service.
+   * @return service configuration
+   */
   public static Configuration getServiceConfiguration() {
     Configuration partialServiceConf = ServiceConfiguration.CONF
         .set(ServiceConfiguration.SERVICES, KeyValueStore.class)
@@ -37,5 +42,8 @@ public class KeyValueStoreService {
     return Tang.Factory.getTang()
         .newConfigurationBuilder(partialServiceConf)
         .build();
+  }
+
+  private KeyValueStoreService() {
   }
 }

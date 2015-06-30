@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,17 @@ import edu.snu.reef.dolphin.parameters.JobIdentifier;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 
+/**
+ * Client for the simple example application.
+ */
 public final class SimpleREEF {
-  public final static void main(String[] args) throws Exception {
+
+  /**
+   * Run dolphin launcher to execute the simple example application.
+   * @param args command-line argument
+   * @throws Exception
+   */
+  public static void main(String[] args) throws Exception {
     DolphinLauncher.run(
         Configurations.merge(
             DolphinConfiguration.CONF(args),
@@ -33,5 +42,11 @@ public final class SimpleREEF {
                 .build()
         )
     );
+  }
+
+  /**
+   * Empty private constructor to prohibit instantiation of utility class.
+   */
+  private SimpleREEF() {
   }
 }

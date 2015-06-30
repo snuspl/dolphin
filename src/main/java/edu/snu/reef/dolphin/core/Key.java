@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,5 +15,10 @@
  */
 package edu.snu.reef.dolphin.core;
 
+/**
+ * Keys used in KeyValueStore should implement this interface.
+ *
+ * @param <T> type of the value.
+ */
 public interface Key<T> {
 }

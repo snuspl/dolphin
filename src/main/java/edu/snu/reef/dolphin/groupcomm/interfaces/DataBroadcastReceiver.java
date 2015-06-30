@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,16 @@
  */
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
+/**
+ * Interface implemented by tasks receiving data through Broadcast.
+ * @param <T> Type of data sent trough Broadcast.
+ */
 public interface DataBroadcastReceiver<T> {
-  public void receiveBroadcastData(int iteration, T data);
+
+  /**
+   * Receive data sent through Broadcast.
+   * @param iteration the current number of iteration
+   * @param data data sent through Broadcast
+   */
+  void receiveBroadcastData(int iteration, T data);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@ import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.util.Optional;
 
 /**
- * Information of a stage, which corresponds to a BSP algorithm
- * One or more stages compose a job, a unit of work in Dolphin
+ * Information of a stage, which corresponds to a BSP algorithm.
+ * One or more stages compose a job, a unit of work in Dolphin.
  */
 public final class StageInfo {
   private final Class<? extends UserComputeTask> userComputeTaskClass;
@@ -35,6 +35,13 @@ public final class StageInfo {
   private final Optional<? extends Class<? extends Codec>> reduceCodecClassOptional;
   private final Optional<? extends Class<? extends Reduce.ReduceFunction>> reduceFunctionClassOptional;
 
+  /**
+   * Create a new builder for StageInfo.
+   * @param userComputeTaskClass user-defined compute task class
+   * @param userControllerTaskClass user-defined controller task class
+   * @param communicationGroup name of the communication group used by this stage
+   * @return
+   */
   public static Builder newBuilder(Class<? extends UserComputeTask> userComputeTaskClass,
                                    Class<? extends UserControllerTask> userControllerTaskClass,
                                    Class<? extends Name<String>> communicationGroup) {
@@ -59,55 +66,94 @@ public final class StageInfo {
     this.reduceFunctionClassOptional = Optional.ofNullable(reduceFunctionClass);
   }
 
+  /**
+   * @return true if Broadcast is used in the stage, false otherwise.
+   */
   public boolean isBroadcastUsed() {
     return broadcastCodecClassOptional.isPresent();
   }
 
+  /**
+   * @return true if Scatter is used in the stage, false otherwise.
+   */
   public boolean isScatterUsed() {
     return scatterCodecClassOptional.isPresent();
   }
 
+  /**
+   * @return true if Gather is used in the stage, false otherwise.
+   */
   public boolean isGatherUsed() {
     return gatherCodecClassOptional.isPresent();
   }
 
+  /**
+   * @return true if Reduce is used in the stage, false otherwise.
+   */
   public boolean isReduceUsed() {
     return reduceCodecClassOptional.isPresent();
   }
 
+  /**
+   * @return codec used by Broadcast.
+   */
   public Class<? extends Codec> getBroadcastCodecClass() {
     return broadcastCodecClassOptional.get();
   }
 
+  /**
+   * @return codec used by Scatter.
+   */
   public Class<? extends Codec> getScatterCodecClass() {
     return scatterCodecClassOptional.get();
   }
 
+  /**
+   * @return codec used by Gather.
+   */
   public Class<? extends Codec> getGatherCodecClass() {
     return gatherCodecClassOptional.get();
   }
 
+  /**
+   * @return codec used by Reduce.
+   */
   public Class<? extends Codec> getReduceCodecClass() {
     return reduceCodecClassOptional.get();
   }
 
+  /**
+   * @return reduce function used by Reduce.
+   */
   public Class<? extends Reduce.ReduceFunction> getReduceFunctionClass() {
     return reduceFunctionClassOptional.get();
   }
 
+  /**
+   * @return user-defined compute task class.
+   */
   public Class<? extends UserComputeTask> getUserCmpTaskClass() {
     return this.userComputeTaskClass;
   }
 
+  /**
+   * @return user-defined controller task class.
+   */
   public Class<? extends UserControllerTask> getUserCtrlTaskClass() {
     return this.userControllerTaskClass;
   }
 
+  /**
+   * @return name of the communication group used by this stage.
+   */
   public Class<? extends Name<String>> getCommGroupName() {
     return this.commGroupName;
   }
 
-  public static class Builder implements org.apache.reef.util.Builder<StageInfo> {
+  /**
+   * Builder for StageInfo.
+   */
+  public static final class Builder implements org.apache.reef.util.Builder<StageInfo> {
     private Class<? extends UserComputeTask> userComputeTaskClass;
     private Class<? extends UserControllerTask> userControllerTaskClass;
     private Class<? extends Name<String>> commGroupName;
@@ -118,11 +164,13 @@ public final class StageInfo {
     private Class<? extends Reduce.ReduceFunction> reduceFunctionClass = null;
 
     /**
+     * Create a new builder for StageInfo.
+     *
      * @param userComputeTaskClass  user-defined compute task
      * @param userControllerTaskClass   user-defined controller task
      * @param communicationGroup    name of the communication group used by this stage
      */
-    public Builder(Class<? extends UserComputeTask> userComputeTaskClass,
+    private Builder(Class<? extends UserComputeTask> userComputeTaskClass,
                    Class<? extends UserControllerTask> userControllerTaskClass,
                    Class<? extends Name<String>> communicationGroup) {
       this.userComputeTaskClass = userComputeTaskClass;
@@ -130,21 +178,42 @@ public final class StageInfo {
       this.commGroupName = communicationGroup;
     }
 
+    /**
+     * Broadcast with the given codec is used in the stage.
+     * @param codecClass codec class for Broadcast
+     * @return builder
+     */
     public Builder setBroadcast(final Class<? extends Codec> codecClass) {
       this.broadcastCodecClass = codecClass;
       return this;
     }
 
+    /**
+     * Scatter with the given codec is used in the stage.
+     * @param codecClass codec class for Scatter
+     * @return builder
+     */
     public Builder setScatter(final Class<? extends Codec> codecClass) {
       this.scatterCodecClass = codecClass;
       return this;
     }
 
+    /**
+     * Gather with the given codec is used in the stage.
+     * @param codecClass codec class for Gather
+     * @return builder
+     */
     public Builder setGather(final Class<? extends Codec> codecClass) {
       this.gatherCodecClass = codecClass;
       return this;
     }
 
+    /**
+     * Reduce with the given codec and reduce function is used in the stage.
+     * @param codecClass codec class for Reduce
+     * @param reduceFunctionClass reduce function for Reduce
+     * @return builder
+     */
     public Builder setReduce(final Class<? extends Codec> codecClass,
                              final Class<? extends Reduce.ReduceFunction> reduceFunctionClass) {
       this.reduceCodecClass = codecClass;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,39 +30,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * User-defined compute task class for the main stage of the K-means algorithm.
+ * At every iteration, compute tasks assign each data point to the closest cluster
+ * and sent the number and sum of the points assigned to each cluster
+ * to the controller task.
+ */
 public final class KMeansMainCmpTask extends UserComputeTask
     implements DataBroadcastReceiver<List<Vector>>, DataReduceSender<Map<Integer, VectorSum>> {
 
   /**
-   * Points read from input data to work on
+   * Points read from input data to work on.
    */
   private List<Vector> points = null;
 
   /**
-   * Centroids of clusters
+   * Centroids of clusters.
    */
   private List<Vector> centroids = new ArrayList<>();
 
   /**
-   * Vector sum of the points assigned to each cluster
+   * Vector sum of the points assigned to each cluster.
    */
   private Map<Integer, VectorSum> pointSum = new HashMap<>();
 
   /**
-   * Definition of 'distance between points' for this job
-   * Default measure is Euclidean distance
+   * Definition of 'distance between points' for this job.
+   * Default measure is Euclidean distance.
    */
   private final VectorDistanceMeasure distanceMeasure;
   private final DataParser<List<Vector>> dataParser;
 
   /**
-   * This class is instantiated by TANG
-   * Constructs a single Compute Task for k-means
-   * @param dataParser
+   * This class is instantiated by TANG.
+   *
+   * @param dataParser dataParser object
    * @param distanceMeasure distance measure to use to compute distances between points
    */
   @Inject
-  public KMeansMainCmpTask(final VectorDistanceMeasure distanceMeasure,
+  private KMeansMainCmpTask(final VectorDistanceMeasure distanceMeasure,
                            final DataParser<List<Vector>> dataParser) {
 
     this.distanceMeasure = distanceMeasure;

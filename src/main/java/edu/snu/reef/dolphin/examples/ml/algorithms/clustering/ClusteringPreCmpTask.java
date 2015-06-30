@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,31 +28,37 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * User-defined compute task class for the preprocessing stage of the K-means algorithm.
+ * Compute tasks sample initial centroids of clusters from data point they have.
+ */
 public final class ClusteringPreCmpTask extends UserComputeTask
     implements DataGatherSender<List<Vector>> {
 
   /**
-   * Number of clusters
+   * Number of clusters.
    */
   private final int numberOfClusters;
 
   /**
-   * Points read from input data to work on
+   * Points read from input data to work on.
    */
   private List<Vector> points = null;
 
   /**
-   * Sampled points
+   * Sampled points.
    */
   private List<Vector> samples = new LinkedList<>();
   private final DataParser<List<Vector>> dataParser;
 
   /**
-   * @param dataParser
-   * @param numberOfClusters
+   * This class is instantiated by TANG.
+   *
+   * @param dataParser DataParser object.
+   * @param numberOfClusters Number of clusters learned by the clustering algorithm.
    */
   @Inject
-  public ClusteringPreCmpTask(
+  private ClusteringPreCmpTask(
       final DataParser<List<Vector>> dataParser,
       @Parameter(NumberOfClusters.class) final int numberOfClusters) {
     this.dataParser = dataParser;
@@ -77,9 +83,9 @@ public final class ClusteringPreCmpTask extends UserComputeTask
   }
 
   /**
-   * Random Sampling
-   * @param points
-   * @param maxNumOfSamples
+   * Conduct random sampling.
+   * @param points data points
+   * @param maxNumOfSamples maximum number of sampled data points
    * @return
    */
   static List<Vector> sample(List<Vector> points, int maxNumOfSamples) {

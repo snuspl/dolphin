@@ -16,18 +16,20 @@
 package edu.snu.reef.dolphin.core;
 
 /**
- * Interface for parse function class to be used with DataParseService
+ * Interface for parse function class to be used with DataParseService.
  */
 public interface DataParser<T> {
 
   /**
+   * Get parsed data.
+   *
    * @return parsed data as format T
    * @throws ParseException parsing has failed due to incorrect input format
    */
-  public T get() throws ParseException;
+  T get() throws ParseException;
 
   /**
-   * Parse data input and keep it for later get() calls
+   * Parse data input and keep it for later get() calls.
    */
-  public void parse();
+  void parse();
 }

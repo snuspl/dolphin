@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,16 @@
  */
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
+/**
+ * Interface implemented by tasks receiving data through Reduce.
+ * @param <T> Type of data sent trough Reduce.
+ */
 public interface DataReduceReceiver<T> {
-  public void receiveReduceData(int iteration, T data);
+
+  /**
+   * Receive data sent through Reduce.
+   * @param iteration the current number of iteration
+   * @param data data sent through Reduce
+   */
+  void receiveReduceData(int iteration, T data);
 }

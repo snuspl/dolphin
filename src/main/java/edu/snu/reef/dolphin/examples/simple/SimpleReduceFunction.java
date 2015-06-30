@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,14 +18,17 @@ package edu.snu.reef.dolphin.examples.simple;
 import com.microsoft.reef.io.network.group.operators.Reduce;
 import javax.inject.Inject;
 
-public class SimpleReduceFunction implements Reduce.ReduceFunction<Integer> {
+/**
+ * Reduce function used by the simple example application.
+ */
+public final class SimpleReduceFunction implements Reduce.ReduceFunction<Integer> {
 
   @Inject
-  public SimpleReduceFunction() {
+  private SimpleReduceFunction() {
   }
 
   @Override
-  public final Integer apply(Iterable<Integer> dataList) {
+  public Integer apply(Iterable<Integer> dataList) {
     Integer sum = 0;
     for (final Integer data : dataList) {
       sum += data;

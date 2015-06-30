@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +23,17 @@ import edu.snu.reef.dolphin.parameters.JobIdentifier;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 
-public class KMeansREEF {
-  public final static void main(String[] args) throws Exception {
+/**
+ * Client for the k-means algorithm.
+ */
+public final class KMeansREEF {
+
+  /**
+   * Run DolphinLauncher to execute the k-means algorithm.
+   * @param args command-line argument
+   * @throws Exception
+   */
+  public static void main(String[] args) throws Exception {
     DolphinLauncher.run(
         Configurations.merge(
             DolphinConfiguration.CONF(args, KMeansParameters.getCommandLine()),
@@ -35,5 +44,11 @@ public class KMeansREEF {
                 .build()
         )
     );
+  }
+
+  /**
+   * Empty private constructor to prohibit instantiation of utility class.
+   */
+  private KMeansREEF() {
   }
 }

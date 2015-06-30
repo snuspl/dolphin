@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +27,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * DataParser class for the simple example application.
+ */
 public class SimpleDataParser implements DataParser<List<String>> {
-  private final static Logger LOG = Logger.getLogger(SimpleDataParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(SimpleDataParser.class.getName());
 
+  /**
+   * Data load from the input data.
+   */
   private final DataSet<LongWritable, Text> dataSet;
+
+  /**
+   * Data parsed by this data parser.
+   */
   private List<String> result;
 
   @Inject

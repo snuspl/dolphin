@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,28 +32,45 @@ import javax.inject.Inject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A class for Controller Task.
+ * Controller Task, which is a part of a stage,
+ * (1) specifies execution flow within a stage,
+ * (2) receives data from compute tasks,
+ * (3) processes the data,
+ * and (4) sends the processed data back to compute tasks.
+ */
 public final class ControllerTask implements Task {
-  public final static String TASK_ID_PREFIX = "CtrlTask";
-  private final static Logger LOG = Logger.getLogger(ControllerTask.class.getName());
+  protected static final String TASK_ID_PREFIX = "CtrlTask";
+  private static final Logger LOG = Logger.getLogger(ControllerTask.class.getName());
 
   private final String taskId;
   private final UserControllerTask userControllerTask;
   private final CommunicationGroupClient commGroup;
   private final Broadcast.Sender<CtrlMessage> ctrlMessageBroadcast;
 
+  /**
+   * Controller Task constructor - instantiated via TANG.
+   * @param groupCommClient
+   * @param userControllerTask
+   * @param taskId
+   * @param commGroupName
+   * @throws ClassNotFoundException
+   */
   @Inject
-  public ControllerTask(final GroupCommClient groupCommClient,
-                        final UserControllerTask userControllerTask,
-                        @Parameter(TaskConfigurationOptions.Identifier.class) String taskId,
-                        @Parameter(CommunicationGroup.class) final String commGroupName) throws ClassNotFoundException {
-    this.commGroup = groupCommClient.getCommunicationGroup((Class<? extends Name<String>>) Class.forName(commGroupName));
-    this.userControllerTask = userControllerTask;
+  private ControllerTask(@Parameter(TaskConfigurationOptions.Identifier.class) final String taskId,
+                        @Parameter(CommunicationGroup.class) final String commGroupName,
+                        final GroupCommClient groupCommClient,
+                        final UserControllerTask userControllerTask) throws ClassNotFoundException {
     this.taskId = taskId;
+    this.commGroup = groupCommClient.getCommunicationGroup(
+        (Class<? extends Name<String>>) Class.forName(commGroupName));
     this.ctrlMessageBroadcast = commGroup.getBroadcastSender(CtrlMsgBroadcast.class);
+    this.userControllerTask = userControllerTask;
   }
 
   @Override
-  public final byte[] call(final byte[] memento) throws Exception {
+  public byte[] call(final byte[] memento) throws Exception {
     LOG.log(Level.INFO, String.format("%s starting...", taskId));
 
     int iteration = 0;
@@ -73,14 +90,20 @@ public final class ControllerTask implements Task {
   }
 
   /**
-   * Update the group communication topology, if it has changed
+   * Update the group communication topology, if it has changed.
    */
-  private final void updateTopology() {
+  private void updateTopology() {
     if (commGroup.getTopologyChanges().exist()) {
       commGroup.updateTopology();
     }
   }
 
+  /**
+   * Send data to Compute Tasks.
+   *
+   * @param iteration the current number of iterations
+   * @throws Exception
+   */
   private void sendData(int iteration) throws Exception {
     if (userControllerTask.isBroadcastUsed()) {
       commGroup.getBroadcastSender(DataBroadcast.class).send(
@@ -92,6 +115,12 @@ public final class ControllerTask implements Task {
     }
   }
 
+  /**
+   * Receive data from Compute Tasks.
+   *
+   * @param iteration the current number of iterations
+   * @throws Exception
+   */
   private void receiveData(int iteration) throws Exception {
     if (userControllerTask.isGatherUsed()) {
       ((DataGatherReceiver)userControllerTask).receiveGatherData(iteration,

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,9 @@ package edu.snu.reef.dolphin.groupcomm.names;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
+/**
+ * Name for the operation used to reduce data.
+ */
 @NamedParameter(doc = "Name for the operation used to reduce data")
 public final class DataGather implements Name<String> {
 }

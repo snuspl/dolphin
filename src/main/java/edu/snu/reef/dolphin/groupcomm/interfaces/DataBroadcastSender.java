@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,16 @@
  */
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
+/**
+ * Interface implemented by tasks sending data through Broadcast.
+ * @param <T> Type of data sent trough Broadcast.
+ */
 public interface DataBroadcastSender<T> {
-  public T sendBroadcastData(int iteration);
+
+  /**
+   * Return data to be sent through Broadcast.
+   * @param iteration the current number of iteration
+   * @return data to be sent through Broadcast
+   */
+  T sendBroadcastData(int iteration);
 }
