@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,9 @@ package edu.snu.reef.dolphin.core;
 
 import java.io.Serializable;
 
+/**
+ * Control messages sent to Compute Tasks by Controller Task.
+ */
 public enum CtrlMessage implements Serializable {
 
   // run the next iteration of the main loop

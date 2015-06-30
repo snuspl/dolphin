@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,9 @@ import org.apache.reef.tang.annotations.Parameter;
 import javax.inject.Inject;
 import java.io.File;
 
+/**
+ * Parameters required by Dolphin Launcher.
+ */
 public final class DolphinParameters {
   private final String identifier;
   private final UserJobInfo userJobInfo;
@@ -35,6 +38,19 @@ public final class DolphinParameters {
   private final boolean onLocal;
   private final int timeout;
 
+  /**
+   * Dolphin Parameters constructor - instantiated by Tang.
+   *
+   * @param identifier
+   * @param userJobInfo
+   * @param userParameters
+   * @param evalNum
+   * @param evalSize
+   * @param inputDir
+   * @param outputDir
+   * @param onLocal
+   * @param timeout
+   */
   @Inject
   private DolphinParameters(@Parameter(JobIdentifier.class) final String identifier,
                             final UserJobInfo userJobInfo,
@@ -57,10 +73,10 @@ public final class DolphinParameters {
   }
 
   /**
-   * Return a configuration for the driver
+   * Return a configuration for the driver.
    * @return
    */
-  public final Configuration getDriverConf() {
+  public Configuration getDriverConf() {
     Configuration driverConf = Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(EvaluatorNum.class, String.valueOf(evalNum))
         .bindNamedParameter(OutputDir.class, processOutputDir(outputDir, onLocal))
@@ -72,13 +88,15 @@ public final class DolphinParameters {
   }
 
   /**
+   * Process the path of the output directory.
    * If a relative local file path is given as the output directory,
    * transform the relative path into the absolute path based on the current directory where the user runs REEF.
+   *
    * @param outputDir path of the output directory given by the user
    * @param onLocal whether the path of the output directory given by the user is a local path
    * @return
    */
-  private final static String processOutputDir(final String outputDir, final boolean onLocal) {
+  private static String processOutputDir(final String outputDir, final boolean onLocal) {
     if (!onLocal) {
       return outputDir;
     }
@@ -86,27 +104,45 @@ public final class DolphinParameters {
     return outputFile.getAbsolutePath();
   }
 
-  public final String getIdentifier() {
+  /**
+   * @return identifier.
+   */
+  public String getIdentifier() {
     return identifier;
   }
 
-  public final int getEvalNum() {
+  /**
+   * @return number of evaluators.
+   */
+  public int getEvalNum() {
     return evalNum;
   }
 
-  public final int getEvalSize() {
+  /**
+   * @return amount of memory space allocated to each evaluator.
+   */
+  public int getEvalSize() {
     return evalSize;
   }
 
-  public final String getInputDir() {
+  /**
+   * @return path of the input directory.
+   */
+  public String getInputDir() {
     return inputDir;
   }
 
-  public final boolean getOnLocal() {
+  /**
+   * @return path of the output directory.
+   */
+  public boolean getOnLocal() {
     return onLocal;
   }
 
-  public final int getTimeout() {
+  /**
+   * @return timeout on the job.
+   */
+  public int getTimeout() {
     return timeout;
   }
 }

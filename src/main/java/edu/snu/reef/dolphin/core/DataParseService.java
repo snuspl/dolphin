@@ -40,23 +40,29 @@ public final class DataParseService {
   private static Logger LOG = Logger.getLogger(DataParseService.class.getName());
 
   /**
-   * parse function to exploit
+   * Parser to use.
    */
   private final DataParser dataParser;
 
   /**
-   * This class is instantiated by TANG
+   * Data Parse Service Constructor - instantiated by TANG.
    *
    * Constructor for parse manager, which accepts an actual parse function as a parameter
-   * @param dataParser parse function to exploit
+   * @param dataParser parser to use
    */
   @Inject
   private DataParseService(DataParser dataParser) {
     this.dataParser = dataParser;
   }
 
+  /**
+   * Provides a service configuration for the data parse service.
+   *
+   * @param dataParseClass parser to use
+   * @return service configuration for the data parse service
+   */
   public static Configuration getServiceConfiguration(Class<? extends DataParser> dataParseClass) {
-    Configuration partialServiceConf = ServiceConfiguration.CONF
+    final Configuration partialServiceConf = ServiceConfiguration.CONF
         .set(ServiceConfiguration.SERVICES, dataParseClass)
         .set(ServiceConfiguration.ON_CONTEXT_STARTED, ContextStartHandler.class)
         .build();
@@ -66,6 +72,9 @@ public final class DataParseService {
         .build();
   }
 
+  /**
+   * Handles the ContextStart event: Load and parse the input data.
+   */
   private final class ContextStartHandler implements EventHandler<ContextStart> {
     @Override
     public void onNext(ContextStart contextStart) {

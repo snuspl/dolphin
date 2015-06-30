@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,12 @@ import javax.inject.Inject;
 
 
 /**
- * Default implementation of {@link edu.snu.reef.dolphin.core.UserParameters} which returns empty configurations.
+ * Default implementation of {@link UserParameters} which returns empty configurations.
  */
 public final class UserParametersImpl implements UserParameters {
 
   @Inject
-  public UserParametersImpl() {
+  private UserParametersImpl() {
   }
 
   @Override

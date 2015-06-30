@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +19,21 @@ import java.util.List;
 
 /**
  * Interface for a user-defined job, which is a unit of work in Dolphin.
- * This class should be implemented by a user-defined job
- * which specify a data parser and stages composing the job
+ * This class should be implemented by a user-defined job.
+ * which specify a data parser and stages composing the job.
  */
 public interface UserJobInfo {
-  public abstract List<StageInfo> getStageInfoList();
 
-  public abstract Class<? extends DataParser> getDataParser();
+  /**
+   * Get the list of stages consisting of the job.
+   *
+   * @return list of stages
+   */
+  List<StageInfo> getStageInfoList();
+
+  /**
+   * Get the data parser used in the job.
+   * @return data parser
+   */
+  Class<? extends DataParser> getDataParser();
 }

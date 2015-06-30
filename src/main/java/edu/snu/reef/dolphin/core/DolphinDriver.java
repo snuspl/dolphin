@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  */
 @Unit
 public final class DolphinDriver {
-  private final static Logger LOG = Logger.getLogger(DolphinDriver.class.getName());
+  private static final Logger LOG = Logger.getLogger(DolphinDriver.class.getName());
 
   /**
    * Sub-id for Compute Tasks.
@@ -73,23 +73,23 @@ public final class DolphinDriver {
   private String ctrlTaskContextId;
 
   /**
-   * Driver that manages Group Communication settings
+   * Driver that manages Group Communication settings.
    */
   private final GroupCommDriver groupCommDriver;
 
   /**
-   * Accessor for data loading service
+   * Accessor for data loading service.
    * Can check whether a evaluator is configured with the service or not.
    */
   private final DataLoadingService dataLoadingService;
 
   /**
-   * Job to execute
+   * Job to execute.
    */
   private final UserJobInfo userJobInfo;
 
   /**
-   * List of stages composing the job to execute
+   * List of stages composing the job to execute.
    */
   private final List<StageInfo> stageInfoList;
 
@@ -100,12 +100,12 @@ public final class DolphinDriver {
   private final List<CommunicationGroupDriver> commGroupDriverList;
 
   /**
-   * Map to record which stage is being executed by each evaluator which is identified by context id
+   * Map to record which stage is being executed by each evaluator which is identified by context id.
    */
   private final Map<String, Integer> contextToStageSequence;
 
   /**
-   * The number of evaluators assigned for Compute Tasks
+   * The number of evaluators assigned for Compute Tasks.
    */
   private final Integer evalNum;
 
@@ -116,7 +116,7 @@ public final class DolphinDriver {
 
 
   /**
-   * This class is instantiated by TANG
+   * Dolphin Driver constructor - instantiated by TANG.
    *
    * Constructor for the Driver of a Dolphin job.
    * Store various objects as well as configuring Group Communication with
@@ -152,12 +152,12 @@ public final class DolphinDriver {
   }
 
   /**
-   * Initialize the group communication driver
+   * Initialize the group communication driver.
    */
   private void initializeCommDriver(){
     int sequence = 0;
     for (StageInfo stageInfo : stageInfoList) {
-      CommunicationGroupDriver commGroup = groupCommDriver.newCommunicationGroup(
+      final CommunicationGroupDriver commGroup = groupCommDriver.newCommunicationGroup(
           stageInfo.getCommGroupName(), evalNum + 1);
       commGroup.addBroadcast(CtrlMsgBroadcast.class,
           BroadcastOperatorSpec.newBuilder()
@@ -199,6 +199,9 @@ public final class DolphinDriver {
     }
   }
 
+  /**
+   * Handle the active context event: submit contexts, services, and tasks.
+   */
   final class ActiveContextHandler implements EventHandler<ActiveContext> {
 
     @Override
@@ -211,8 +214,8 @@ public final class DolphinDriver {
       // the Data Loading API is currently constructed to add its own context before
       // allowing any other ones.
       if (!groupCommDriver.isConfigured(activeContext)) {
-        Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
-        Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
+        final Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
+        final Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
         Configuration finalServiceConf;
 
         if (dataLoadingService.isComputeContext(activeContext)) {
@@ -244,7 +247,10 @@ public final class DolphinDriver {
   }
 
   /**
-   * Return the ID of the given Context
+   * Return the ID of the given context.
+   *
+   * @param contextConf context configuration
+   * @return id of the given context
    */
   private String getContextId(final Configuration contextConf) {
     try {
@@ -256,7 +262,7 @@ public final class DolphinDriver {
   }
 
   /**
-   * Receives metrics from compute tasks
+   * Handle the task message event: gather metrics from tasks.
    */
   final class TaskMessageHandler implements EventHandler<TaskMessage> {
 
@@ -265,31 +271,34 @@ public final class DolphinDriver {
       final long result = codecLong.decode(message.get());
       final String msg = "Task message " + message.getId() + ": " + result;
 
-      //TODO: use metric to run optimization plan
+      //TODO: use metric to run optimization plan.
       LOG.info(msg);
     }
   }
 
+  /**
+   * Handle the task running event: log the start of tasks.
+   */
   final class TaskRunningHandler implements EventHandler<RunningTask> {
 
     @Override
-    public void onNext(RunningTask runningTask) {
+    public void onNext(final RunningTask runningTask) {
       LOG.info(runningTask.getId() + " has started.");
     }
   }
 
   /**
-   * When a certain task completes, the following task is submitted
+   * Handle the task completed event: submit the next stage's task.
    */
   final class TaskCompletedHandler implements EventHandler<CompletedTask> {
 
     @Override
-    public void onNext(CompletedTask completedTask) {
+    public void onNext(final CompletedTask completedTask) {
       LOG.info(completedTask.getId() + " has completed.");
 
-      ActiveContext activeContext = completedTask.getActiveContext();
-      String contextId = activeContext.getId();
-      int nextSequence = contextToStageSequence.get(contextId)+1;
+      final ActiveContext activeContext = completedTask.getActiveContext();
+      final String contextId = activeContext.getId();
+      final int nextSequence = contextToStageSequence.get(contextId)+1;
       if (nextSequence >= stageInfoList.size()) {
         completedTask.getActiveContext().close();
         return;
@@ -299,6 +308,9 @@ public final class DolphinDriver {
     }
   }
 
+  /**
+   * Handle the task failed event: log the failure of tasks.
+   */
   final class TaskFailedHandler implements EventHandler<FailedTask> {
 
     @Override
@@ -308,11 +320,12 @@ public final class DolphinDriver {
   }
 
   /**
-   * Execute the task of the given stage
+   * Execute the task of the given stage.
+   *
    * @param activeContext
    * @param stageSequence
    */
-  final private void submitTask(ActiveContext activeContext, int stageSequence) {
+  private void submitTask(final ActiveContext activeContext, final int stageSequence) {
     contextToStageSequence.put(activeContext.getId(), stageSequence);
     StageInfo taskInfo = stageInfoList.get(stageSequence);
     CommunicationGroupDriver commGroup = commGroupDriverList.get(stageSequence);
@@ -358,7 +371,13 @@ public final class DolphinDriver {
     activeContext.submitTask(finalTaskConf);
   }
 
-  final private boolean isCtrlTaskId(String id){
+  /**
+   * Check whether the given task is a controller task or not.
+   *
+   * @param id id of the current task
+   * @return  whether the given task is a controller task or not
+   */
+  private boolean isCtrlTaskId(final String id){
     if (ctrlTaskContextId==null) {
       return false;
     } else {
@@ -366,15 +385,23 @@ public final class DolphinDriver {
     }
   }
 
-  final private String getCtrlTaskId(int sequence) {
+  /**
+   * Return the controller task's id of the given stage.
+   *
+   * @param sequence sequence of the given stage
+   * @return id of the controller task of the given stage
+   */
+  private String getCtrlTaskId(final int sequence) {
     return ControllerTask.TASK_ID_PREFIX + "-" + sequence;
   }
 
-  final private String getCmpTaskId(int sequence) {
+  /**
+   * Return the id of compute tasks.
+   *
+   * @param sequence sub-id of the compute tasks
+   * @return id of the compute task
+   */
+  private String getCmpTaskId(final int sequence) {
     return ComputeTask.TASK_ID_PREFIX + "-" + sequence;
   }
-
-
-
-
 }

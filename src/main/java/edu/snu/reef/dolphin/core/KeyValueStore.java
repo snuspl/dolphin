@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,20 +20,35 @@ import javax.inject.Inject;
 import java.util.HashMap;
 
 /**
- * Simple Key-value store used by key-value store service
+ * Simple Key-value store used by the key-value store service.
  */
 public final class KeyValueStore {
   private final HashMap<Class<? extends Key>, Object> hashMap;
 
+  /**
+   * KeyValueStore constructor - injected by Tang.
+   */
   @Inject
   public KeyValueStore() {
     hashMap = new HashMap<>();
   }
 
+  /**
+   * Put the given key value pair.
+   * @param key key
+   * @param value value
+   * @param <T> type of the value
+   */
   public <T> void put(Class<? extends Key<T>> key, T value) {
     hashMap.put(key, value);
   }
 
+  /**
+   * Get the value corresponding to the given key.
+   * @param key key
+   * @param <T> type of the value
+   * @return value
+   */
   @SuppressWarnings("unchecked")
   public <T> T get(Class<? extends Key<T>> key) {
     return (T) hashMap.get(key);

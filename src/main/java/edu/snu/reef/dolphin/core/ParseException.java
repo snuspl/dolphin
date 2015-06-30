@@ -19,6 +19,11 @@ package edu.snu.reef.dolphin.core;
  * Exception used by DataParser.
  */
 public final class ParseException extends Exception {
+
+  /**
+   * Instantiate Parse Exception using the given message describing the exception.
+   * @param msg message describing the exception
+   */
   public ParseException(String msg) {
     super(msg);
   }

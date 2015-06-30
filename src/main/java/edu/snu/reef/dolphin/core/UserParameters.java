@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +19,28 @@ import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.annotations.DefaultImplementation;
 
 /**
- * Interface for providing configurations setting user-defined (algorithmic-specific, application-specific) parameters
+ * Interface for providing configurations taking algorithmic-specific parameters into account.
  */
 @DefaultImplementation(UserParametersImpl.class)
 public interface UserParameters {
-  public Configuration getDriverConf();
 
-  public Configuration getServiceConf();
+  /**
+   * @return Driver configuration
+   */
+  Configuration getDriverConf();
 
-  public Configuration getUserCmpTaskConf();
+  /**
+   * @return Service configuration
+   */
+  Configuration getServiceConf();
 
-  public Configuration getUserCtrlTaskConf();
+  /**
+   * @return Configuration for user-defined compute tasks
+   */
+  Configuration getUserCmpTaskConf();
+
+  /**
+   * @return Configuration for user-defined controller tasks
+   */
+  Configuration getUserCtrlTaskConf();
 }
