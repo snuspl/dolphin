@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,17 @@ import edu.snu.reef.dolphin.groupcomm.interfaces.DataReduceReceiver;
 
 import javax.inject.Inject;
 
+/**
+ * User-defined controller task class for the simple example application.
+ * It broadcast message across compute tasks
+ * and reduce the number of times that compute tasks print out the message.
+ */
 public final class SimpleCtrlTask extends UserControllerTask
     implements DataReduceReceiver<Integer>, DataBroadcastSender<String> {
+
+  /**
+   * Number of times that compute tasks print out the message sent by the controller task.
+   */
   private Integer count = 0;
 
   @Inject

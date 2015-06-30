@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,15 +17,19 @@ package edu.snu.reef.dolphin.examples.simple;
 
 import edu.snu.reef.dolphin.core.*;
 import org.apache.reef.io.serialization.SerializableCodec;
+import org.apache.reef.tang.annotations.Name;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SimpleJobInfo implements UserJobInfo{
+/**
+ * JobInfo class for the simple example application.
+ */
+public final class SimpleJobInfo implements UserJobInfo{
 
   @Inject
-  public SimpleJobInfo(){
+  private SimpleJobInfo(){
   }
 
   @Override
@@ -42,5 +46,11 @@ public class SimpleJobInfo implements UserJobInfo{
   @Override
   public Class<? extends DataParser> getDataParser() {
     return SimpleDataParser.class;
+  }
+
+  /**
+   * Name for a communication group used by the job.
+   */
+  private final class SimpleCommGroup implements Name<String> {
   }
 }
