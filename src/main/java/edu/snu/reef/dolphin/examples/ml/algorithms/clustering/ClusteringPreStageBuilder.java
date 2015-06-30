@@ -18,6 +18,7 @@ package edu.snu.reef.dolphin.examples.ml.algorithms.clustering;
 import edu.snu.reef.dolphin.core.StageInfo;
 import edu.snu.reef.dolphin.examples.ml.sub.VectorListCodec;
 import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
 
 /**
  * A builder class for the preprocessing stage of clustering algorithms.
@@ -36,7 +37,8 @@ public class ClusteringPreStageBuilder {
   /**
    * Name for a communication group used by the stage.
    */
-  private final class ClusteringPreCommGroup implements Name<String> {
+  @NamedParameter(doc = "Name for a communication group used by the stage.")
+  private static final class ClusteringPreCommGroup implements Name<String> {
   }
 
   /**

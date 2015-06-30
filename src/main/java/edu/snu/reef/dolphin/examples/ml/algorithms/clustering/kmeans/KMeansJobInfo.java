@@ -24,6 +24,7 @@ import edu.snu.reef.dolphin.examples.ml.sub.CentroidListCodec;
 import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVSumCodec;
 import edu.snu.reef.dolphin.examples.ml.sub.MapOfIntVSumReduceFunction;
 import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
@@ -63,6 +64,7 @@ public final class KMeansJobInfo implements UserJobInfo {
   /**
    * Name for a communication group used by the job.
    */
-  private final class KMeansMainCommGroup implements Name<String> {
+  @NamedParameter(doc = "Name for a communication group used by the job.")
+  private static final class KMeansMainCommGroup implements Name<String> {
   }
 }

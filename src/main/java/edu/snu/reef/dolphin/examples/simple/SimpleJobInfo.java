@@ -18,6 +18,7 @@ package edu.snu.reef.dolphin.examples.simple;
 import edu.snu.reef.dolphin.core.*;
 import org.apache.reef.io.serialization.SerializableCodec;
 import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
@@ -51,6 +52,7 @@ public final class SimpleJobInfo implements UserJobInfo{
   /**
    * Name for a communication group used by the job.
    */
-  private final class SimpleCommGroup implements Name<String> {
+  @NamedParameter(doc = "Name for a communication group used by the job.")
+  private static final class SimpleCommGroup implements Name<String> {
   }
 }
