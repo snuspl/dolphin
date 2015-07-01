@@ -38,6 +38,7 @@ public final class SvdDataParser implements DataParser<List<Triple<Integer, Inte
 
   private final DataSet<LongWritable, Text> dataSet;
   private List<Triple<Integer, Integer, Double>> ret;
+  private ParseException parseException;
 
   @Inject
   public SvdDataParser(final DataSet<LongWritable, Text> dataSet) {
@@ -48,6 +49,10 @@ public final class SvdDataParser implements DataParser<List<Triple<Integer, Inte
   public List<Triple<Integer, Integer, Double>> get() throws ParseException {
     if (ret == null) {
       parse();
+    }
+
+    if (parseException != null) {
+      throw parseException;
     }
 
     return ret;
@@ -62,14 +67,37 @@ public final class SvdDataParser implements DataParser<List<Triple<Integer, Inte
 
     ret = new LinkedList<>();
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
-      String[] split = keyValue.second.toString().trim().split("\\s+");
-      if (split.length != 3) {
+      final String text = keyValue.second.toString();
+      if (text.startsWith("#") || text.length() == 0) {
         continue;
       }
-      ret.add(
-          new ImmutableTriple<>(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Double.parseDouble(split[2])));
-    }
 
+      final String[] split = text.trim().split("\\s+");
+      if (split.length != 3) {
+        parseException = new ParseException("Parsed failed: need row index, column index AND value");
+        return;
+      }
+
+      final int rowIndex;
+      final int columnIndex;
+      try {
+        rowIndex = Integer.parseInt(split[0]);
+        columnIndex = Integer.parseInt(split[1]);
+      } catch (final NumberFormatException e) {
+        parseException = new ParseException("Parse failed: indices should be INT");
+        return;
+      }
+
+      final double value;
+      try {
+        value = Double.parseDouble(split[2]);
+      } catch (final NumberFormatException e) {
+        parseException = new ParseException("Parse failed: value should be DOUBLE");
+        return;
+      }
+
+      ret.add(new ImmutableTriple<>(rowIndex, columnIndex, value));
+    }
     LOG.log(Level.INFO, ret.toString());
     LOG.log(Level.INFO, "Parsing data ended!");
   }
