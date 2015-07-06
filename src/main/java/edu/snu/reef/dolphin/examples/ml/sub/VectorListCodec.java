@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A codec that encodes and decodes a list of Vectors
+ * A codec that encodes and decodes a list of Vectors.
  */
 public final class VectorListCodec implements Codec<List<Vector>> {
 
@@ -34,47 +34,40 @@ public final class VectorListCodec implements Codec<List<Vector>> {
   }
 
   @Override
-  public final byte[] encode(final List<Vector> list) {
+  public byte[] encode(final List<Vector> list) {
+    // This codec assume that vectors have the same length
+    int length = list.size() > 0 ? list.get(0).size() : 0;
 
-    /*
-     * This codec assume that vectors have the same length
-     */
-    int length = 0;
-    for (final Vector vector : list) {
-      length = vector.size();
-    }
-
-    final ByteArrayOutputStream baos =
-        new ByteArrayOutputStream(Integer.SIZE
-            + Integer.SIZE
-            + Double.SIZE * length * list.size());
-
-    try (final DataOutputStream daos = new DataOutputStream(baos)) {
+    try (final ByteArrayOutputStream baos =
+             new ByteArrayOutputStream(Integer.SIZE
+                 + Integer.SIZE
+                 + Double.SIZE * length * list.size());
+         final DataOutputStream daos = new DataOutputStream(baos)) {
       daos.writeInt(list.size());
       daos.writeInt(length);
+
       for (final Vector vector : list) {
-        for (int i = 0; i < length; i++) {
-          daos.writeDouble(vector.get(i));
+        for (int i = 0; i < vector.size(); i++) {
+          daos.writeDouble(vector.getQuick(i));
         }
       }
+
+      return baos.toByteArray();
     } catch (final IOException e) {
       throw new RuntimeException(e.getCause());
     }
-
-    return baos.toByteArray();
   }
 
-  public final List<Vector> decode(final byte[] data) {
-    final ByteArrayInputStream bais = new ByteArrayInputStream(data);
+  public List<Vector> decode(final byte[] data) {
     final List<Vector> resultList = new LinkedList<>();
 
-    try (final DataInputStream dais = new DataInputStream(bais)) {
+    try (final DataInputStream dais = new DataInputStream(new ByteArrayInputStream(data))) {
       final int listSize = dais.readInt();
       final int length = dais.readInt();
       for (int i = 0; i < listSize; i++) {
         final Vector vector = new DenseVector(length);
         for (int j = 0; j < length; j++) {
-          vector.set(j, dais.readDouble());
+          vector.setQuick(j, dais.readDouble());
         }
         resultList.add(vector);
       }
