@@ -18,7 +18,7 @@ package edu.snu.reef.dolphin.examples.ml.algorithms.linear;
 import org.apache.reef.tang.annotations.Name;
 
 /**
- * Name of group communication before computing eigen vectors and values used in svd.
+ * Name of group communication after computing eigen vectors and values used in svd.
  */
 public final class PostEigenCommGroup implements Name<String> {
 }

@@ -19,7 +19,7 @@ import edu.snu.reef.dolphin.core.StageInfo;
 import org.apache.reef.io.serialization.SerializableCodec;
 
 /**
- * Stage builder before computing eigen vectors and values used in svd.
+ * Stage builder after computing eigen vectors and values used in svd.
  */
 public final class PostEigenStageBuilder {
   private PostEigenStageBuilder() {

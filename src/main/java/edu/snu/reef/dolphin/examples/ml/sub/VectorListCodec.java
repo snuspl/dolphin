@@ -35,14 +35,8 @@ public final class VectorListCodec implements Codec<List<Vector>> {
 
   @Override
   public byte[] encode(final List<Vector> list) {
-
-    /*
-     * This codec assume that vectors have the same length
-     */
-    int length = 0;
-    for (final Vector vector : list) {
-      length = Math.max(length, vector.size());
-    }
+    // This codec assume that vectors have the same length
+    int length = list.size() > 0 ? list.get(0).size() : 0;
 
     try (final ByteArrayOutputStream baos =
              new ByteArrayOutputStream(Integer.SIZE
@@ -51,15 +45,13 @@ public final class VectorListCodec implements Codec<List<Vector>> {
          final DataOutputStream daos = new DataOutputStream(baos)) {
       daos.writeInt(list.size());
       daos.writeInt(length);
+
       for (final Vector vector : list) {
-        int i;
-        for (i = 0; i < vector.size(); i++) {
-          daos.writeDouble(vector.get(i));
-        }
-        for (i = vector.size(); i < length; ++i) {
-          daos.writeDouble(0);
+        for (int i = 0; i < vector.size(); i++) {
+          daos.writeDouble(vector.getQuick(i));
         }
       }
+
       return baos.toByteArray();
     } catch (final IOException e) {
       throw new RuntimeException(e.getCause());

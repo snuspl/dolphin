@@ -39,9 +39,7 @@ public final class SvdJobInfo implements UserJobInfo {
 
     // Load the input matrix A
     stageInfoList.add(LoadMatrixStageBuilder.build());
-    // Compute eigen values and eigen vectors in ATA for the column vectors of V
     stageInfoList.add(EigenStageBuilder.build());
-    // Compute column vectors of U and and result
     stageInfoList.add(PostEigenStageBuilder.build());
 
     return stageInfoList;

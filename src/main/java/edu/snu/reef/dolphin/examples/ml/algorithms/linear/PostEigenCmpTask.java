@@ -16,7 +16,6 @@
 package edu.snu.reef.dolphin.examples.ml.algorithms.linear;
 
 import edu.snu.reef.dolphin.core.KeyValueStore;
-import edu.snu.reef.dolphin.core.OutputStreamProvider;
 import edu.snu.reef.dolphin.core.ParseException;
 import edu.snu.reef.dolphin.core.UserComputeTask;
 import edu.snu.reef.dolphin.examples.ml.key.MatrixA;
@@ -31,33 +30,24 @@ import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.Vector;
 
 import javax.inject.Inject;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Compute task before computing eigen vectors and values used in svd.
+ * Compute task after computing eigen vectors and values used in svd.
  */
 public class PostEigenCmpTask extends UserComputeTask
     implements DataScatterReceiver<List<Integer>>,
-    DataBroadcastReceiver<Double>,
+    DataBroadcastReceiver<List<Double>>,
     DataGatherSender<List<Triple<Integer, Integer, Double>>> {
-  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
   private static final Logger LOG = Logger.getLogger(PostEigenCtrlTask.class.getName());
 
   /**
    * Storage for the matrix A, Sigma, and VT.
    */
   private final KeyValueStore keyValueStore;
-
-  /**
-   * Output service provider to logging matrix A, U, Sigma, VT and result.
-   */
-  private final OutputStreamProvider outputStreamProvider;
 
   /**
    * The input matrix A.
@@ -95,10 +85,8 @@ public class PostEigenCmpTask extends UserComputeTask
   private List<Integer> targetRows;
 
   @Inject
-  public PostEigenCmpTask(final KeyValueStore keyValueStore,
-                          final OutputStreamProvider outputStreamProvider) {
+  public PostEigenCmpTask(final KeyValueStore keyValueStore) {
     this.keyValueStore = keyValueStore;
-    this.outputStreamProvider = outputStreamProvider;
   }
 
   @Override
@@ -119,45 +107,43 @@ public class PostEigenCmpTask extends UserComputeTask
 
   @Override
   public void cleanup() {
-    LOG.log(Level.INFO, "Print out matrix A, U, Sigma, VT, result");
-    final StringBuilder sb = new StringBuilder();
-    appendMatrix(sb, "A", matrixA);
-    appendMatrix(sb, "U", matrixU);
-    appendMatrix(sb, "Sigma", matrixSigma);
-    appendMatrix(sb, "VT", matrixVT);
-    appendMatrix(sb, "result", result);
-    try (final DataOutputStream dataOutputStream = outputStreamProvider.create("SVD")) {
-      dataOutputStream.writeBytes(sb.toString());
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
-  public void receiveBroadcastData(final int iteration, final Double data) {
-    if (iteration == 0) {
+  public void receiveBroadcastData(final int iteration, final List<Double> data) {
+    if (iteration != 1) {
+      return;
+    } else if (data == null) {
       return;
     }
 
     // And assign it to ith column of matrix U after normalizing it.
     LOG.log(Level.INFO, "Received norm value of column vector in iteration #" + iteration);
-    final Vector ui = matrixU.viewColumn(iteration - 1);
-    ui.assign(ui.divide(data));
+
+    for (int i = 0; i < data.size(); ++i) {
+      final Vector ui = matrixU.viewColumn(i);
+      ui.assign(ui.divide(data.get(i)));
+    }
   }
 
   @Override
   public List<Triple<Integer, Integer, Double>> sendGatherData(final int iteration) {
-    if (iteration < r) {
-      LOG.log(Level.INFO, "Sending partial column vector of matrix U in iteration #" + iteration);
-      final List<Triple<Integer, Integer, Double>> partialVec = new LinkedList<>();
-      final Vector vi = matrixVT.viewRow(iteration);
-      final Vector ui = matrixU.viewColumn(iteration);
-      for (final int row : targetRows) {
-        final double value = matrixA.viewRow(row).dot(vi);
-        partialVec.add(new ImmutableTriple<>(0, row, value));
-        ui.setQuick(row, value);
+    if (iteration == 0) {
+      LOG.log(Level.INFO, "Sending partial column vectors of matrix U in iteration #" + iteration);
+      final List<Triple<Integer, Integer, Double>> partialVectors = new LinkedList<>();
+
+      for (int i = 0; i < r; ++i) {
+        final Vector vi = matrixVT.viewRow(i);
+        final Vector ui = matrixU.viewColumn(i);
+
+        for (final int row : targetRows) {
+          final double value = matrixA.viewRow(row).dot(vi);
+          partialVectors.add(new ImmutableTriple<>(row, i, value));
+          ui.setQuick(row, value);
+        }
       }
-      return partialVec;
+
+      return partialVectors;
     } else {
       // Compute the partial result matrix by multiplying partial matrix U, Sigma, and VT.
       LOG.log(Level.INFO, "Sending partial result matrix in iteration #" + iteration);
@@ -165,11 +151,11 @@ public class PostEigenCmpTask extends UserComputeTask
       for (final int row : targetRows) {
         final Vector uRow = matrixU.viewRow(row);
         final Vector uSigma = result.viewRow(row).clone();
-        for (int i = 0; i < r; ++i) {
+        for (int i = 0; i < uRow.size(); ++i) {
           uSigma.setQuick(i, uRow.get(i) * matrixSigma.get(i, i));
         }
         final Vector resultRow = result.viewRow(row);
-        for (int i = 0; i < r; ++i) {
+        for (int i = 0; i < matrixVT.columnSize(); ++i) {
           final double value = uSigma.dot(matrixVT.viewColumn(i));
           resultRow.setQuick(i, value);
           matrixValues.add(new ImmutableTriple<>(row, i, value));
@@ -189,20 +175,5 @@ public class PostEigenCmpTask extends UserComputeTask
 
     LOG.log(Level.INFO, "Received target rows in iteration #" + iteration);
     targetRows = data;
-  }
-
-  private void appendMatrix(final StringBuilder sb, final String matrixName, final Matrix matrix) {
-    sb.append(matrixName).append(" : ").append(LINE_SEPARATOR);
-
-    final int rowSize = matrix.rowSize();
-    for (int i = 0; i < rowSize; ++i) {
-      final Vector row = matrix.viewRow(i);
-
-      if (row.getNumNonZeroElements() == 0) {
-        continue;
-      }
-
-      sb.append(i).append(" : ").append(row).append(LINE_SEPARATOR);
-    }
   }
 }

@@ -30,13 +30,16 @@ import org.apache.mahout.math.Vector;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Compute task for computing eigen vectors and values used in svd.
+ * Compute eigen vectors and values by power iteration and deflation.
+ * Power iterate for eigen vectors in matrix ATA, and remove the component by deflating from matrix ATA.
+ * Eigen vectors are stored in matrix VT and eigen values are stored in matrix Sigma's main diagonal.
  */
 public class EigenCmpTask extends UserComputeTask
     implements DataScatterReceiver<List<Integer>>,
@@ -114,7 +117,6 @@ public class EigenCmpTask extends UserComputeTask
     matrixA = keyValueStore.get(MatrixA.class);
     matrixSigma = matrixA.like();
     matrixVT = matrixA.like(matrixA.columnSize(), matrixA.columnSize());
-    matrixATA = matrixA.like(matrixA.columnSize(), matrixA.columnSize());
     targetRows = new LinkedList<>();
     partialVec = new LinkedList<>();
   }
@@ -131,9 +133,9 @@ public class EigenCmpTask extends UserComputeTask
       matrixVT.assignRow(index, vectorB);
 
       // Each compute task is responsible for specific rows
-      for (final int row : targetRows) {
-        final Vector targetRow = matrixATA.viewRow(row);
-        targetRow.assign(targetRow.minus(vectorB.times(vectorB.get(row)).times(norm)));
+      for (int i = 0; i < targetRows.size(); ++i) {
+        final Vector targetRow = matrixATA.viewRow(i);
+        targetRow.assign(targetRow.minus(vectorB.times(vectorB.get(targetRows.get(i))).times(norm)));
       }
 
       // Store the singular value from controller task.
@@ -147,9 +149,10 @@ public class EigenCmpTask extends UserComputeTask
       final Vector vectorB = dataVector.divide(norm);
 
       partialVec.clear();
-      for (final int row : targetRows) {
-        final double value = matrixATA.viewRow(row).dot(vectorB);
-        partialVec.add(new ImmutablePair<>(row, value));
+
+      for (int i = 0; i < targetRows.size(); ++i) {
+        final double value = matrixATA.viewRow(i).dot(vectorB);
+        partialVec.add(new ImmutablePair<>(targetRows.get(i), value));
       }
     }
   }
@@ -167,16 +170,24 @@ public class EigenCmpTask extends UserComputeTask
       state = State.RECEIVE_TARGET_ROWS;
     } else if (iteration % (approxCnt + 1) == 0) {
       state = State.DEFLATION;
+
+      // Used in run method.
+      dataVector = data;
     } else {
       state = State.POWER_ITERATION;
-    }
 
-    // Used in run method.
-    dataVector = data;
+      // Used in run method.
+      dataVector = data;
+    }
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Pair<Integer, Double>> sendGatherData(final int iteration) {
+    if (state != state.POWER_ITERATION) {
+      return Collections.EMPTY_LIST;
+    }
+
     LOG.log(Level.INFO, "Sending partial column vector of matrix V in iteration #" + iteration);
     return partialVec;
   }
@@ -193,11 +204,14 @@ public class EigenCmpTask extends UserComputeTask
     // Because the column vectors of matrix V are the eigen vectors of ATA.
     LOG.log(Level.INFO, "Received target rows in iteration #" + iteration);
     targetRows.addAll(data);
-    for (final int row : targetRows) {
-      final Vector targetRow = matrixATA.viewRow(row);
-      final Vector column = matrixA.viewColumn(row);
-      for (int i = 0; i < matrixA.columnSize(); ++i) {
-        targetRow.setQuick(i, column.dot(matrixA.viewColumn(i)));
+
+    matrixATA = matrixA.like(targetRows.size(), matrixA.columnSize());
+
+    for (int i = 0; i < targetRows.size(); ++i) {
+      final Vector targetRow = matrixATA.viewRow(i);
+      final Vector column = matrixA.viewColumn(targetRows.get(i));
+      for (int j = 0; j < matrixA.columnSize(); ++j) {
+        targetRow.setQuick(j, column.dot(matrixA.viewColumn(j)));
       }
     }
   }

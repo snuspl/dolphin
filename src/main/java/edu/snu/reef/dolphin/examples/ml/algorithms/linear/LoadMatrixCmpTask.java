@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.mahout.math.Matrix;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,7 +94,12 @@ public final class LoadMatrixCmpTask extends UserComputeTask
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Triple<Integer, Integer, Double>> sendGatherData(final int iteration) {
+    if (iteration != 0) {
+      return Collections.EMPTY_LIST;
+    }
+
     // Send partial input matrix to controller task.
     LOG.log(Level.INFO, "Send the partial input matrix A in iteration #" + iteration);
     return matrixValues;

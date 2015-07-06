@@ -38,11 +38,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Control task before computing eigen vectors and values used in svd.
+ * Control task after computing eigen vectors and values used in svd.
  */
 public class PostEigenCtrlTask extends UserControllerTask
     implements DataScatterSender<Integer>,
-    DataBroadcastSender<Double>,
+    DataBroadcastSender<List<Double>>,
     DataGatherReceiver<List<Triple<Integer, Integer, Double>>> {
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -96,7 +96,7 @@ public class PostEigenCtrlTask extends UserControllerTask
   /**
    * The 2-norm of the column vector of matrix U.
    */
-  private double norm;
+  private List<Double> norms;
 
   @Inject
   public PostEigenCtrlTask(final KeyValueStore keyValueStore,
@@ -118,6 +118,7 @@ public class PostEigenCtrlTask extends UserControllerTask
     for (int i = 0; i < matrixA.rowSize(); ++i) {
       targetRows.add(i);
     }
+    norms = new LinkedList<>();
   }
 
   @Override
@@ -126,7 +127,7 @@ public class PostEigenCtrlTask extends UserControllerTask
 
   @Override
   public final boolean isTerminated(final int iteration) {
-    return iteration > r;
+    return iteration > 1;
   }
 
   @Override
@@ -146,27 +147,35 @@ public class PostEigenCtrlTask extends UserControllerTask
   }
 
   @Override
-  public Double sendBroadcastData(final int iteration) {
+  public List<Double> sendBroadcastData(final int iteration) {
+    if (iteration != 1) {
+      return Collections.EMPTY_LIST;
+    }
+
     LOG.log(Level.INFO, "Sending norm value of column vector of matrix U in iteration #" + iteration);
-    return norm;
+    return norms;
   }
 
   @Override
   public void receiveGatherData(final int iteration, final List<List<Triple<Integer, Integer, Double>>> data) {
-    if (iteration < r) {
+    if (iteration == 0) {
       // U column vector gather
       LOG.log(Level.INFO, "Received the column vector of matrix U in iteration #" + iteration);
-      final Vector ui = matrixU.viewColumn(iteration);
+
       for (final List<Triple<Integer, Integer, Double>> list : data) {
         for (final Triple<Integer, Integer, Double> datum : list) {
-          ui.setQuick(datum.getMiddle(), datum.getRight());
+          matrixU.setQuick(datum.getLeft(), datum.getMiddle(), datum.getRight());
         }
       }
 
-      // Compute the norm of entire ith column vector of matrix U and broadcast it.
-      norm = ui.norm(2);
-      ui.assign(ui.divide(norm));
-    } else {
+      for (int i = 0; i < r; ++i) {
+        // Compute the norm of entire ith column vector of matrix U and broadcast it.
+        Vector ui = matrixU.viewColumn(i);
+        double norm = ui.norm(2);
+        norms.add(norm);
+        ui.assign(ui.divide(norm));
+      }
+    } else if (iteration == 1) {
       // result matrix gather
       LOG.log(Level.INFO, "Received the result matrix in iteration #" + iteration);
       for (final List<Triple<Integer, Integer, Double>> list : data) {

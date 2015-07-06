@@ -27,6 +27,7 @@ import edu.snu.reef.dolphin.groupcomm.interfaces.DataScatterSender;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.DenseVector;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -37,7 +38,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Control task for computing eigen vectors and values used in svd.
+ * Gather eigen vectors and values computed by eigen compute task.
+ * Gather vector b and broadcast it on every power iteration.
+ * Store eigen vectors in matrix VT and eigen values in matrix Sigma's main diagonal on every deflation.
  */
 public class EigenCtrlTask extends UserControllerTask
     implements DataScatterSender<Integer>,
@@ -69,6 +72,7 @@ public class EigenCtrlTask extends UserControllerTask
    * Vector used for computing column vector of matrix V.
    */
   private Vector vectorB;
+  private final Vector emptyVector;
 
   /**
    * The 2-norm of the vector b.
@@ -90,6 +94,7 @@ public class EigenCtrlTask extends UserControllerTask
                        @Parameter(ApproxCnt.class) final int approxCnt) {
     this.keyValueStore = keyValueStore;
     this.approxCnt = approxCnt;
+    this.emptyVector = new DenseVector(0);
   }
 
   @Override
@@ -122,7 +127,7 @@ public class EigenCtrlTask extends UserControllerTask
 
     // The ith singular value is sqrt of the norm of ith column vector of matrix V.
     matrixSigma.setQuick(index, index, Math.sqrt(norm));
-    matrixVT.assignRow(index, vectorB.clone().divide(norm));
+    matrixVT.assignRow(index, vectorB.divide(norm));
   }
 
   @Override
@@ -139,6 +144,10 @@ public class EigenCtrlTask extends UserControllerTask
 
   @Override
   public Vector sendBroadcastData(final int iteration) {
+    if (iteration == 0) {
+      return emptyVector;
+    }
+
     LOG.log(Level.INFO, "Sending column vector of matrix V in iteration #" + iteration);
     return vectorB;
   }
