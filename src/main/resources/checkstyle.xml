@@ -78,7 +78,7 @@
         <!-- Allows use of @SuppressWarnings annotation to suppress audits. Used with SuppressWarningsFilter. -->
         <module name="SuppressWarningsHolder"/>
 
-        <!-- Checks for Javadoc comments. TODO #77 Turn on this check. Currently just a warning. -->
+        <!-- Checks for Javadoc comments. Currently just a warning. -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
         <module name="JavadocType">
             <property name="scope" value="public"/>
@@ -185,15 +185,6 @@
             <property name="caseIndent" value="0"/>
         </module>
         <module name="UpperEll"/>
-        <!-- TODO #79 Add TODO comment checkstyle. Currently checks for JIRA comments, and set as warning. -->
-        <module name="TodoComment">
-            <property name="severity" value="warning"/>
-            <property name="format" value="TODO[^\[][^J][^I][^R][^A]"/>
-        </module>
-        <module name="TodoComment">
-            <property name="severity" value="info"/>
-            <property name="format" value="TODO\[JIRA"/>
-        </module>
         <!-- Check that parameters for methods, constructors, and catch blocks are final. -->
         <module name="FinalParameters"/>
     </module>
