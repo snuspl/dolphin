@@ -155,7 +155,7 @@ public final class EMMainCtrlTask extends UserControllerTask
       } else {
         newCovariance = clusterStats.computeCovariance();
       }
-      final double newPrior = clusterStats.probSum; //unnormalized prior
+      final double newPrior = clusterStats.getProbSum(); //unnormalized prior
 
       centroids.set(clusterID, newCentroid);
       clusterSummaries.set(clusterID, new ClusterSummary(newPrior, newCentroid, newCovariance));

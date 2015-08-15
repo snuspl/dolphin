@@ -128,4 +128,12 @@ public final class VectorSum implements Serializable {
     }
     return b.toString();
   }
+
+  public Vector getSum() {
+    return sum;
+  }
+
+  public int getCount() {
+    return count;
+  }
 }
