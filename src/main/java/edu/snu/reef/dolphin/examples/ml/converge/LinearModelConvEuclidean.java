@@ -24,9 +24,9 @@ import org.apache.reef.tang.annotations.Parameter;
 import javax.inject.Inject;
 
 /**
- * Default implementation of LinearModelConvCond
+ * Default implementation of LinearModelConvCond.
  * Algorithm converges when its model is changed less than
- * a certain threshold in terms of Euclidean distance after an iteration
+ * a certain threshold in terms of Euclidean distance after an iteration.
  */
 public class LinearModelConvEuclidean implements  LinearModelConvCond {
   private LinearModel oldModel;
@@ -42,7 +42,7 @@ public class LinearModelConvEuclidean implements  LinearModelConvCond {
   }
 
   @Override
-  public final boolean checkConvergence(LinearModel model) {
+  public final boolean checkConvergence(final LinearModel model) {
     if (oldModel == null) {
       oldModel = new LinearModel(model.getParameters().clone());
       return false;
@@ -51,7 +51,7 @@ public class LinearModelConvEuclidean implements  LinearModelConvCond {
     }
   }
 
-  public final double distance(Vector v1, Vector v2) {
+  public final double distance(final Vector v1, final Vector v2) {
     return euclideanDistance.distance(v1, v2);
   }
 }

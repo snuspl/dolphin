@@ -16,5 +16,5 @@
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
 public interface DataReduceSender<T> {
-  public T sendReduceData(int iteration);
+  T sendReduceData(int iteration);
 }

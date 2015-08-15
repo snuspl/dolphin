@@ -35,18 +35,18 @@ public final class ClusteringPreCtrlTask extends UserControllerTask
   private static final Logger LOG = Logger.getLogger(ClusteringPreCtrlTask.class.getName());
 
   /**
-   * Number of clusters
+   * Number of clusters.
    */
   private final int numberOfClusters;
 
   /**
-   * List of cluster centroids to distribute to Compute Tasks
-   * Will be updated for each iteration
+   * List of cluster centroids to distribute to Compute Tasks.
+   * Will be updated for each iteration.
    */
   private final List<Vector> centroids = new ArrayList<Vector>();
 
   /**
-   * Initial centroids passed from Compute Tasks
+   * Initial centroids passed from Compute Tasks.
    */
   private List<Vector> initialCentroids = null;
   private final KeyValueStore keyValueStore;
@@ -60,7 +60,7 @@ public final class ClusteringPreCtrlTask extends UserControllerTask
   }
 
   @Override
-  public void run(int iteration) {
+  public void run(final int iteration) {
     //do nothing
   }
 
@@ -72,18 +72,18 @@ public final class ClusteringPreCtrlTask extends UserControllerTask
   }
 
   @Override
-  public boolean isTerminated(int iteration) {
+  public boolean isTerminated(final int iteration) {
     return iteration > 0;
 
   }
 
   @Override
-  public void receiveGatherData(int iteration, List<List<Vector>> initialCentroids) {
+  public void receiveGatherData(final int iteration, final List<List<Vector>> initialCentroidsData) {
     final List<Vector> points = new LinkedList<>();
 
     // Flatten the given list of lists
-    for(List<Vector> list : initialCentroids) {
-      for(Vector vector: list){
+    for (final List<Vector> list : initialCentroidsData) {
+      for (final Vector vector : list) {
         points.add(vector);
       }
     }

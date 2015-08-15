@@ -33,7 +33,7 @@ import java.util.List;
 public final class EMJobInfo implements UserJobInfo {
 
   @Inject
-  public EMJobInfo(){
+  public EMJobInfo() {
   }
 
   @Override

@@ -23,11 +23,18 @@ import edu.snu.reef.dolphin.parameters.JobIdentifier;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 
-public class EMREEF {
-  public final static void main(String[] args) throws Exception {
+public final class EMREEF {
+
+  /**
+   * Should not be instantiated.
+   */
+  private EMREEF() {
+  }
+
+  public static void main(final String[] args) throws Exception {
     DolphinLauncher.run(
         Configurations.merge(
-            DolphinConfiguration.CONF(args, EMParameters.getCommandLine()),
+            DolphinConfiguration.getConfiguration(args, EMParameters.getCommandLine()),
             Tang.Factory.getTang().newConfigurationBuilder()
                 .bindNamedParameter(JobIdentifier.class, "EM Clustering")
                 .bindImplementation(UserJobInfo.class, EMJobInfo.class)

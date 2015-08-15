@@ -32,17 +32,17 @@ public final class ClusteringPreCmpTask extends UserComputeTask
     implements DataGatherSender<List<Vector>> {
 
   /**
-   * Number of clusters
+   * Number of clusters.
    */
   private final int numberOfClusters;
 
   /**
-   * Points read from input data to work on
+   * Points read from input data to work on.
    */
   private List<Vector> points = null;
 
   /**
-   * Sampled points
+   * Sampled points.
    */
   private List<Vector> samples = new LinkedList<>();
   private final DataParser<List<Vector>> dataParser;
@@ -65,24 +65,24 @@ public final class ClusteringPreCmpTask extends UserComputeTask
   }
 
   @Override
-  public void run(int iteration) {
+  public void run(final int iteration) {
 
     //randomly sample points so that the number of points are equal to that of clusters
     samples = sample(points, numberOfClusters);
   }
 
   @Override
-  public List<Vector> sendGatherData(int iteration) {
+  public List<Vector> sendGatherData(final int iteration) {
     return samples;
   }
 
   /**
-   * Random Sampling
+   * Random Sampling.
    * @param points
    * @param maxNumOfSamples
    * @return
    */
-  static List<Vector> sample(List<Vector> points, int maxNumOfSamples) {
+  static List<Vector> sample(final List<Vector> points, final int maxNumOfSamples) {
     final List<Vector> samples = new LinkedList<>();
 
     if (points.isEmpty()) {
@@ -94,10 +94,10 @@ public final class ClusteringPreCmpTask extends UserComputeTask
     final int numberOfPoints = points.size();
     final int numberOfSamples = Math.min(maxNumOfSamples, numberOfPoints);
 
-    for (int i=0; i<numberOfSamples; i++) {
+    for (int i = 0; i < numberOfSamples; i++) {
       final int index = random.nextInt(numberOfPoints - 1 - i);
       samples.add(pointArray[index]);
-      pointArray[index] = pointArray[numberOfPoints-1-i];
+      pointArray[index] = pointArray[numberOfPoints - 1 - i];
     }
 
     return samples;

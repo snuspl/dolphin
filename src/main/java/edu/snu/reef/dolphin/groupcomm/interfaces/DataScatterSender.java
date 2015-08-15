@@ -18,5 +18,5 @@ package edu.snu.reef.dolphin.groupcomm.interfaces;
 import java.util.List;
 
 public interface DataScatterSender<T> {
-  public List<T> sendScatterData(int iteration);
+  List<T> sendScatterData(int iteration);
 }

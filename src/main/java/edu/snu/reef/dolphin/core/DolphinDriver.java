@@ -61,7 +61,7 @@ import java.util.logging.Logger;
  */
 @Unit
 public final class DolphinDriver {
-  private final static Logger LOG = Logger.getLogger(DolphinDriver.class.getName());
+  private static final Logger LOG = Logger.getLogger(DolphinDriver.class.getName());
 
   /**
    * Sub-id for Compute Tasks.
@@ -78,23 +78,23 @@ public final class DolphinDriver {
   private String ctrlTaskContextId;
 
   /**
-   * Driver that manages Group Communication settings
+   * Driver that manages Group Communication settings.
    */
   private final GroupCommDriver groupCommDriver;
 
   /**
-   * Accessor for data loading service
+   * Accessor for data loading service.
    * Can check whether a evaluator is configured with the service or not.
    */
   private final DataLoadingService dataLoadingService;
 
   /**
-   * Job to execute
+   * Job to execute.
    */
   private final UserJobInfo userJobInfo;
 
   /**
-   * List of stages composing the job to execute
+   * List of stages composing the job to execute.
    */
   private final List<StageInfo> stageInfoList;
 
@@ -105,17 +105,17 @@ public final class DolphinDriver {
   private final List<CommunicationGroupDriver> commGroupDriverList;
 
   /**
-   * Map to record which stage is being executed by each evaluator which is identified by context id
+   * Map to record which stage is being executed by each evaluator which is identified by context id.
    */
   private final Map<String, Integer> contextToStageSequence;
 
   /**
-   * The number of evaluators assigned for Compute Tasks
+   * The number of evaluators assigned for Compute Tasks.
    */
   private final Integer evalNum;
 
   /**
-   * Codec for metrics
+   * Codec for metrics.
    */
   private final MetricCodec metricCodec;
 
@@ -165,12 +165,12 @@ public final class DolphinDriver {
   }
 
   /**
-   * Initialize the group communication driver
+   * Initialize the group communication driver.
    */
-  private void initializeCommDriver(){
+  private void initializeCommDriver() {
     int sequence = 0;
-    for (StageInfo stageInfo : stageInfoList) {
-      CommunicationGroupDriver commGroup = groupCommDriver.newCommunicationGroup(
+    for (final StageInfo stageInfo : stageInfoList) {
+      final CommunicationGroupDriver commGroup = groupCommDriver.newCommunicationGroup(
           stageInfo.getCommGroupName(), evalNum + 1);
       commGroup.addBroadcast(CtrlMsgBroadcast.class,
           BroadcastOperatorSpec.newBuilder()
@@ -224,13 +224,13 @@ public final class DolphinDriver {
       // the Data Loading API is currently constructed to add its own context before
       // allowing any other ones.
       if (!groupCommDriver.isConfigured(activeContext)) {
-        Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
-        Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
+        final Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
+        final Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
         final Configuration outputServiceConf = OutputService.getServiceConfiguration(outputDir, onLocal);
         final Configuration keyValueServiceStoreConf = KeyValueStoreService.getServiceConfiguration();
         final Configuration metricTrackerServiceConf = MetricTrackerService.getServiceConfiguration();
         final Configuration finalContextConf = MetricTrackerService.getContextConfiguration(groupCommContextConf);
-        Configuration finalServiceConf;
+        final Configuration finalServiceConf;
 
         if (dataLoadingService.isComputeContext(activeContext)) {
           LOG.log(Level.INFO, "Submitting GroupCommContext for ControllerTask to underlying context");
@@ -260,7 +260,7 @@ public final class DolphinDriver {
   }
 
   /**
-   * Return the ID of the given Context
+   * Return the ID of the given Context.
    */
   private String getContextId(final Configuration contextConf) {
     try {
@@ -272,18 +272,18 @@ public final class DolphinDriver {
   }
 
   /**
-   * Receives metrics from context
+   * Receives metrics from context.
    */
   final class ContextMessageHandler implements EventHandler<ContextMessage> {
 
     @Override
     public void onNext(final ContextMessage message) {
 
-      if(message.getMessageSourceID().equals(MetricTrackerService.class.getName())) {
+      if (message.getMessageSourceID().equals(MetricTrackerService.class.getName())) {
 
         LOG.info("Metrics are gathered from " + message.getId());
         final Map<String, Double> map = metricCodec.decode(message.get());
-        for(Map.Entry<String, Double> entry : map.entrySet()) {
+        for (final Map.Entry<String, Double> entry : map.entrySet()) {
           LOG.info("Metric Info: Source=" + message.getId() + " Key=" + entry.getKey() + " Value=" + entry.getValue());
         }
       }
@@ -293,23 +293,23 @@ public final class DolphinDriver {
   final class TaskRunningHandler implements EventHandler<RunningTask> {
 
     @Override
-    public void onNext(RunningTask runningTask) {
+    public void onNext(final RunningTask runningTask) {
       LOG.info(runningTask.getId() + " has started.");
     }
   }
 
   /**
-   * When a certain task completes, the following task is submitted
+   * When a certain task completes, the following task is submitted.
    */
   final class TaskCompletedHandler implements EventHandler<CompletedTask> {
 
     @Override
-    public void onNext(CompletedTask completedTask) {
+    public void onNext(final CompletedTask completedTask) {
       LOG.info(completedTask.getId() + " has completed.");
 
-      ActiveContext activeContext = completedTask.getActiveContext();
-      String contextId = activeContext.getId();
-      int nextSequence = contextToStageSequence.get(contextId)+1;
+      final ActiveContext activeContext = completedTask.getActiveContext();
+      final String contextId = activeContext.getId();
+      final int nextSequence = contextToStageSequence.get(contextId) + 1;
       if (nextSequence >= stageInfoList.size()) {
         completedTask.getActiveContext().close();
         return;
@@ -322,17 +322,17 @@ public final class DolphinDriver {
   final class TaskFailedHandler implements EventHandler<FailedTask> {
 
     @Override
-    public void onNext(FailedTask failedTask) {
+    public void onNext(final FailedTask failedTask) {
       LOG.info(failedTask.getId() + " has failed.");
     }
   }
 
   /**
-   * Execute the task of the given stage
+   * Execute the task of the given stage.
    * @param activeContext
    * @param stageSequence
    */
-  final private void submitTask(ActiveContext activeContext, int stageSequence) {
+  private void submitTask(final ActiveContext activeContext, final int stageSequence) {
     contextToStageSequence.put(activeContext.getId(), stageSequence);
     final StageInfo stageInfo = stageInfoList.get(stageSequence);
     final CommunicationGroupDriver commGroup = commGroupDriverList.get(stageSequence);
@@ -386,19 +386,19 @@ public final class DolphinDriver {
     activeContext.submitTask(finalTaskConf);
   }
 
-  final private boolean isCtrlTaskId(String id){
-    if (ctrlTaskContextId==null) {
+  private boolean isCtrlTaskId(final String id) {
+    if (ctrlTaskContextId == null) {
       return false;
     } else {
       return ctrlTaskContextId.equals(id);
     }
   }
 
-  final private String getCtrlTaskId(int sequence) {
+  private String getCtrlTaskId(final int sequence) {
     return ControllerTask.TASK_ID_PREFIX + "-" + sequence;
   }
 
-  final private String getCmpTaskId(int sequence) {
+  private String getCmpTaskId(final int sequence) {
     return ComputeTask.TASK_ID_PREFIX + "-" + sequence;
   }
 

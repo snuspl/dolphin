@@ -37,8 +37,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ControllerTask implements Task {
-  public final static String TASK_ID_PREFIX = "CtrlTask";
-  private final static Logger LOG = Logger.getLogger(ControllerTask.class.getName());
+  public static final String TASK_ID_PREFIX = "CtrlTask";
+  private static final Logger LOG = Logger.getLogger(ControllerTask.class.getName());
 
   private final String taskId;
   private final UserControllerTask userControllerTask;
@@ -53,8 +53,10 @@ public final class ControllerTask implements Task {
                         @Parameter(TaskConfigurationOptions.Identifier.class) final String taskId,
                         @Parameter(CommunicationGroup.class) final String commGroupName,
                         final MetricManager metricManager,
-                        @Parameter(MetricTrackers.class) final Set<MetricTracker> metricTrackerSet) throws ClassNotFoundException {
-    this.commGroup = groupCommClient.getCommunicationGroup((Class<? extends Name<String>>) Class.forName(commGroupName));
+                        @Parameter(MetricTrackers.class) final Set<MetricTracker> metricTrackerSet)
+      throws ClassNotFoundException {
+    this.commGroup =
+        groupCommClient.getCommunicationGroup((Class<? extends Name<String>>) Class.forName(commGroupName));
     this.userControllerTask = userControllerTask;
     this.taskId = taskId;
     this.ctrlMessageBroadcast = commGroup.getBroadcastSender(CtrlMsgBroadcast.class);
@@ -63,14 +65,14 @@ public final class ControllerTask implements Task {
   }
 
   @Override
-  public final byte[] call(final byte[] memento) throws Exception {
+  public byte[] call(final byte[] memento) throws Exception {
     LOG.log(Level.INFO, String.format("%s starting...", taskId));
 
     userControllerTask.initialize();
     try (final MetricManager metricManager = this.metricManager;) {
       metricManager.registerTrackers(metricTrackerSet);
       int iteration = 0;
-      while(!userControllerTask.isTerminated(iteration)) {
+      while (!userControllerTask.isTerminated(iteration)) {
         metricManager.start();
         ctrlMessageBroadcast.send(CtrlMessage.RUN);
         sendData(iteration);
@@ -88,15 +90,15 @@ public final class ControllerTask implements Task {
   }
 
   /**
-   * Update the group communication topology, if it has changed
+   * Update the group communication topology, if it has changed.
    */
-  private final void updateTopology() {
+  private void updateTopology() {
     if (commGroup.getTopologyChanges().exist()) {
       commGroup.updateTopology();
     }
   }
 
-  private final void sendData(final int iteration) throws Exception {
+  private void sendData(final int iteration) throws Exception {
     if (userControllerTask.isBroadcastUsed()) {
       commGroup.getBroadcastSender(DataBroadcast.class).send(
           ((DataBroadcastSender) userControllerTask).sendBroadcastData(iteration));
@@ -107,7 +109,7 @@ public final class ControllerTask implements Task {
     }
   }
 
-  private final void receiveData(final int iteration) throws Exception {
+  private void receiveData(final int iteration) throws Exception {
     if (userControllerTask.isGatherUsed()) {
       ((DataGatherReceiver)userControllerTask).receiveGatherData(iteration,
           commGroup.getGatherReceiver(DataGather.class).receive());

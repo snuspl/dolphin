@@ -35,7 +35,7 @@ public final class MapOfIntVSumCodec implements Codec<Map<Integer, VectorSum>> {
   }
 
   @Override
-  public final byte[] encode(final Map<Integer, VectorSum> map) {
+  public byte[] encode(final Map<Integer, VectorSum> map) {
 
     /* This codec does not assume consistent centroid vector sizes(dimensions).
      * Therefore to specify the initial data size,
@@ -70,7 +70,7 @@ public final class MapOfIntVSumCodec implements Codec<Map<Integer, VectorSum>> {
   }
 
   @Override
-  public final Map<Integer, VectorSum> decode(final byte[] data) {
+  public Map<Integer, VectorSum> decode(final byte[] data) {
     final ByteArrayInputStream bais = new ByteArrayInputStream(data);
     final Map<Integer, VectorSum> resultMap = new HashMap<>();
 

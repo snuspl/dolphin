@@ -16,5 +16,5 @@
 package edu.snu.reef.dolphin.core;
 
 public interface Optimizer {
-  public OptimizeScheme optimize();
+  OptimizeScheme optimize();
 }

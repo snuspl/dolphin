@@ -22,10 +22,10 @@ import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SimpleJobInfo implements UserJobInfo{
+public class SimpleJobInfo implements UserJobInfo {
 
   @Inject
-  public SimpleJobInfo(){
+  public SimpleJobInfo() {
   }
 
   @Override

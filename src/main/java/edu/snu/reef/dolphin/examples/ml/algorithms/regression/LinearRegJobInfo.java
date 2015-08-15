@@ -33,7 +33,7 @@ import java.util.List;
 public final class LinearRegJobInfo implements UserJobInfo {
 
   @Inject
-  public LinearRegJobInfo(){
+  public LinearRegJobInfo() {
   }
 
   @Override

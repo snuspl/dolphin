@@ -37,26 +37,25 @@ import java.util.logging.Logger;
  */
 @Unit
 public final class DataParseService {
-  private static Logger LOG = Logger.getLogger(DataParseService.class.getName());
+  private static final Logger LOG = Logger.getLogger(DataParseService.class.getName());
 
   /**
-   * parse function to exploit
+   * parse function to exploit.
    */
   private final DataParser dataParser;
 
   /**
-   * This class is instantiated by TANG
-   *
-   * Constructor for parse manager, which accepts an actual parse function as a parameter
+   * Constructor for parse manager, which accepts an actual parse function as a parameter.
+   * This class is instantiated by TANG.
    * @param dataParser parse function to exploit
    */
   @Inject
-  private DataParseService(DataParser dataParser) {
+  private DataParseService(final DataParser dataParser) {
     this.dataParser = dataParser;
   }
 
-  public static Configuration getServiceConfiguration(Class<? extends DataParser> dataParseClass) {
-    Configuration partialServiceConf = ServiceConfiguration.CONF
+  public static Configuration getServiceConfiguration(final Class<? extends DataParser> dataParseClass) {
+    final Configuration partialServiceConf = ServiceConfiguration.CONF
         .set(ServiceConfiguration.SERVICES, dataParseClass)
         .set(ServiceConfiguration.ON_CONTEXT_STARTED, ContextStartHandler.class)
         .build();
@@ -68,7 +67,7 @@ public final class DataParseService {
 
   private final class ContextStartHandler implements EventHandler<ContextStart> {
     @Override
-    public void onNext(ContextStart contextStart) {
+    public void onNext(final ContextStart contextStart) {
       LOG.log(Level.INFO, "Context started, asking parser to parse.");
       dataParser.parse();
     }

@@ -25,22 +25,22 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * Implementation of {@link OutputStreamProvider} which provides FileOutputStreams on HDFS
+ * Implementation of {@link OutputStreamProvider} which provides FileOutputStreams on HDFS.
  */
 public final class OutputStreamProviderHDFS implements OutputStreamProvider {
 
   /**
-   * Path of the output directory on HDFS to write outputs
+   * Path of the output directory on HDFS to write outputs.
    */
   private final String outputPath;
 
   /**
-   * Id of the current task
+   * Id of the current task.
    */
   private String taskId;
 
   /**
-   * HDFS File system
+   * HDFS File system.
    */
   private FileSystem fs;
 
@@ -53,7 +53,7 @@ public final class OutputStreamProviderHDFS implements OutputStreamProvider {
   }
 
   @Override
-  public DataOutputStream create(String name) throws IOException {
+  public DataOutputStream create(final String name) throws IOException {
     final String directoryPath = outputPath + Path.SEPARATOR + name;
     if (!fs.exists(new Path(directoryPath))) {
       fs.mkdirs(new Path(directoryPath));
@@ -67,7 +67,7 @@ public final class OutputStreamProviderHDFS implements OutputStreamProvider {
   }
 
   @Override
-  public void setTaskId(String taskId) {
+  public void setTaskId(final String taskId) {
     this.taskId = taskId;
   }
 }

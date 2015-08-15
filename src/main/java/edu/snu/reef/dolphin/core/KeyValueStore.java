@@ -20,7 +20,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 
 /**
- * Simple Key-value store used by key-value store service
+ * Simple Key-value store used by key-value store service.
  */
 public final class KeyValueStore {
   private final HashMap<Class<? extends Key>, Object> hashMap;
@@ -30,12 +30,12 @@ public final class KeyValueStore {
     hashMap = new HashMap<>();
   }
 
-  public <T> void put(Class<? extends Key<T>> key, T value) {
+  public <T> void put(final Class<? extends Key<T>> key, final T value) {
     hashMap.put(key, value);
   }
 
   @SuppressWarnings("unchecked")
-  public <T> T get(Class<? extends Key<T>> key) {
+  public <T> T get(final Class<? extends Key<T>> key) {
     return (T) hashMap.get(key);
   }
 }

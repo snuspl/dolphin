@@ -16,5 +16,5 @@
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
 public interface DataGatherSender<T> {
-  public T sendGatherData(int iteration);
+  T sendGatherData(int iteration);
 }
