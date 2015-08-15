@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,5 +16,5 @@
 package edu.snu.reef.dolphin.groupcomm.interfaces;
 
 public interface DataBroadcastReceiver<T> {
-  public void receiveBroadcastData(int iteration, T data);
+  void receiveBroadcastData(int iteration, T data);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Default implementation of MetricCodec
+ * Default implementation of MetricCodec.
  */
 public final class DefaultMetricCodecImpl implements MetricCodec {
 

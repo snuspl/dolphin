@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,17 +18,17 @@ package edu.snu.reef.dolphin.core.metric;
 import java.util.Map;
 
 /**
- * Interface that metric trackers implement
+ * Interface that metric trackers implement.
  */
 public interface MetricTracker extends AutoCloseable {
 
   /**
-   * start tracking metrics
+   * start tracking metrics.
    */
   void start();
 
   /**
-   * stop tracking metrics and return currently tracked metrics
+   * stop tracking metrics and return currently tracked metrics.
    * @return key and value of metrics
    */
   Map<String, Double> stop();

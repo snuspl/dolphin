@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,11 +26,17 @@ import java.util.logging.Logger;
  * Key-value store service used to pass the current stage's result to the next stage
  * Should be inserted alongside a context.
  */
-public class KeyValueStoreService {
-  private static Logger LOG = Logger.getLogger(KeyValueStoreService.class.getName());
+public final class KeyValueStoreService {
+  private static final Logger LOG = Logger.getLogger(KeyValueStoreService.class.getName());
+
+  /**
+   * Should not be instantiated.
+   */
+  private KeyValueStoreService() {
+  }
 
   public static Configuration getServiceConfiguration() {
-    Configuration partialServiceConf = ServiceConfiguration.CONF
+    final Configuration partialServiceConf = ServiceConfiguration.CONF
         .set(ServiceConfiguration.SERVICES, KeyValueStore.class)
         .build();
 

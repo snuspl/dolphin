@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class RegressionDataParser implements DataParser<List<Row>> {
-  private final static Logger LOG = Logger.getLogger(RegressionDataParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(RegressionDataParser.class.getName());
 
   private final AtomicInteger count = new AtomicInteger(0);
   private final int dimension;
@@ -51,7 +51,7 @@ public final class RegressionDataParser implements DataParser<List<Row>> {
   }
 
   @Override
-  public final List<Row> get() throws ParseException {
+  public List<Row> get() throws ParseException {
     LOG.log(Level.INFO, "RegressionDataParser called {0} times", count.incrementAndGet());
     if (result == null) {
       parse();
@@ -65,7 +65,7 @@ public final class RegressionDataParser implements DataParser<List<Row>> {
   }
 
   @Override
-  public final void parse() {
+  public void parse() {
     LOG.log(Level.INFO, "Trying to parse!");
     result = new ArrayList<>();
 
@@ -78,11 +78,11 @@ public final class RegressionDataParser implements DataParser<List<Row>> {
 
       final String[] split = text.split("\\s+");
       if (split.length != dimension + 1) {
-        parseException = new ParseException("Parse failed: the number of features is not "+dimension);
+        parseException = new ParseException("Parse failed: the number of features is not " + dimension);
         return;
       }
 
-      double output;
+      final double output;
       final Vector feature = new DenseVector(split.length);
       try {
         output = Double.valueOf(split[dimension]);

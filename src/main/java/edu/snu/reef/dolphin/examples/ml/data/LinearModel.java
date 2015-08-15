@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,9 +44,9 @@ public final class LinearModel implements Model {
     final StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < parameters.size() - 1; i++) {
       buffer.append(String.valueOf(parameters.get(i)));
-      buffer.append("x"+(i+1)+" + ");
+      buffer.append("x" + (i + 1) + " + ");
     }
-    buffer.append(parameters.get(parameters.size()-1));
+    buffer.append(parameters.get(parameters.size() - 1));
     return buffer.toString();
   }
 }

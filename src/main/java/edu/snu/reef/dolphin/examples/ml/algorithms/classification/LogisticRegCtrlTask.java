@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 public class LogisticRegCtrlTask extends UserControllerTask
     implements DataReduceReceiver<LogisticRegSummary>, DataBroadcastSender<LinearModel> {
-  private final static Logger LOG = Logger.getLogger(LogisticRegCtrlTask.class.getName());
+  private static final Logger LOG = Logger.getLogger(LogisticRegCtrlTask.class.getName());
 
   private final LinearModelConvCond convergeCondition;
   private final int maxIter;
@@ -51,27 +51,27 @@ public class LogisticRegCtrlTask extends UserControllerTask
     this.outputStreamProvider = outputStreamProvider;
     this.convergeCondition = convergeCondition;
     this.maxIter = maxIter;
-    this.model = new LinearModel(new DenseVector(dimension+1));
+    this.model = new LinearModel(new DenseVector(dimension + 1));
   }
   
   @Override
-  public final void run(int iteration) {
+  public void run(final int iteration) {
     LOG.log(Level.INFO, "{0}-th iteration accuracy: {1}%, new model: {2}",
-        new Object[] { iteration, accuracy * 100, model });
+        new Object[] {iteration, accuracy * 100, model});
   }
   
   @Override
-  public final LinearModel sendBroadcastData(int iteration) {
+  public LinearModel sendBroadcastData(final int iteration) {
     return model;
   }
   
   @Override
-  public final boolean isTerminated(int iteration) {
+  public boolean isTerminated(final int iteration) {
     return convergeCondition.checkConvergence(model) || iteration >= maxIter;
   }
 
   @Override
-  public void receiveReduceData(int iteration, LogisticRegSummary summary) {
+  public void receiveReduceData(final int iteration, final LogisticRegSummary summary) {
     this.accuracy = ((double) summary.getPosNum()) / (summary.getPosNum() + summary.getNegNum());
     this.model = new LinearModel(summary.getModel().getParameters()
         .times(1.0 / summary.getCount()));

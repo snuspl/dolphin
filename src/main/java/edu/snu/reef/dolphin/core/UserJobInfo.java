@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ import java.util.List;
  * which specify a data parser and stages composing the job
  */
 public interface UserJobInfo {
-  public abstract List<StageInfo> getStageInfoList();
+  List<StageInfo> getStageInfoList();
 
-  public abstract Class<? extends DataParser> getDataParser();
+  Class<? extends DataParser> getDataParser();
 }

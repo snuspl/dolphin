@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,38 +54,37 @@ public final class EMMainCtrlTask extends UserControllerTask
   private final ClusteringConvCond clusteringConvergenceCondition;
 
   /**
-   * Maximum number of iterations allowed before job stops
+   * Maximum number of iterations allowed before job stops.
    */
   private final int maxIterations;
 
   /**
-   * Aggregated statistics of each cluster received from Compute Task
+   * Aggregated statistics of each cluster received from Compute Task.
    */
   private Map<Integer, ClusterStats> clusterStatsMap = new HashMap<>();
 
   /**
-   * List of the centroids of the clusters passed from the preprocess stage
-   * Will be updated for each iteration
+   * List of the centroids of the clusters passed from the preprocess stage.
+   * Will be updated for each iteration.
    */
   private List<Vector> centroids = new ArrayList<>();
 
   /**
-   * List of the summaries of the clusters to distribute to Compute Tasks
-   * Will be updated for each iteration
+   * List of the summaries of the clusters to distribute to Compute Tasks.
+   * Will be updated for each iteration.
    */
   private List<ClusterSummary> clusterSummaries = new ArrayList<>();
 
   /**
-   * Whether to share a covariance matrix among clusters or not
+   * Whether to share a covariance matrix among clusters or not.
    */
   private final boolean isCovarianceShared;
   private final KeyValueStore keyValueStore;
   private final OutputStreamProvider outputStreamProvider;
 
   /**
-   * This class is instantiated by TANG
-   *
-   * Constructs the Controller Task for EM
+   * Constructs the Controller Task for EM.
+   * This class is instantiated by TANG.
    *
    * @param clusteringConvergenceCondition  conditions for checking convergence of algorithm
    * @param keyValueStore
@@ -108,7 +107,7 @@ public final class EMMainCtrlTask extends UserControllerTask
   }
 
   /**
-   * Receive initial centroids from the preprocess task
+   * Receive initial centroids from the preprocess task.
    */
   @Override
   public void initialize() {
@@ -118,7 +117,7 @@ public final class EMMainCtrlTask extends UserControllerTask
 
     // Initialize cluster summaries
     final int numClusters = centroids.size();
-    for(int clusterID=0; clusterID<numClusters; clusterID++) {
+    for (int clusterID = 0; clusterID < numClusters; clusterID++) {
       final Vector vector = centroids.get(clusterID);
       final int dimension = vector.size();
       clusterSummaries.add(new ClusterSummary(1.0, vector,
@@ -127,7 +126,7 @@ public final class EMMainCtrlTask extends UserControllerTask
   }
 
   @Override
-  public void run(int iteration) {
+  public void run(final int iteration) {
 
     // Compute the shared covariance matrix if necessary
     Matrix covarianceMatrix = null;
@@ -135,13 +134,13 @@ public final class EMMainCtrlTask extends UserControllerTask
       ClusterStats clusterStatsSum = null;
       for (final Integer id : clusterStatsMap.keySet()) {
         final ClusterStats clusterStats = clusterStatsMap.get(id);
-        if (clusterStatsSum==null) {
+        if (clusterStatsSum == null) {
           clusterStatsSum = new ClusterStats(clusterStats, true);
         } else {
           clusterStatsSum.add(clusterStats);
         }
       }
-      if (clusterStatsSum!=null) {
+      if (clusterStatsSum != null) {
         covarianceMatrix = clusterStatsSum.computeCovariance();
       }
     }
@@ -156,7 +155,7 @@ public final class EMMainCtrlTask extends UserControllerTask
       } else {
         newCovariance = clusterStats.computeCovariance();
       }
-      final double newPrior = clusterStats.probSum; //unnormalized prior
+      final double newPrior = clusterStats.getProbSum(); //unnormalized prior
 
       centroids.set(clusterID, newCentroid);
       clusterSummaries.set(clusterID, new ClusterSummary(newPrior, newCentroid, newCovariance));
@@ -168,18 +167,18 @@ public final class EMMainCtrlTask extends UserControllerTask
   }
 
   @Override
-  public boolean isTerminated(int iteration) {
+  public boolean isTerminated(final int iteration) {
     return clusteringConvergenceCondition.checkConvergence(centroids)
         || (iteration >= maxIterations);
   }
 
   @Override
-  public void receiveReduceData(int iteration, Map<Integer, ClusterStats> data) {
+  public void receiveReduceData(final int iteration, final Map<Integer, ClusterStats> data) {
     clusterStatsMap = data;
   }
 
   @Override
-  public List<ClusterSummary> sendBroadcastData(int iteration) {
+  public List<ClusterSummary> sendBroadcastData(final int iteration) {
     return clusterSummaries;
   }
 
@@ -196,7 +195,8 @@ public final class EMMainCtrlTask extends UserControllerTask
       }
       covarianceStream.writeBytes(String.format("cluster_id,covariance%n"));
       for (int i = 0; i < centroids.size(); i++) {
-        covarianceStream.writeBytes(String.format("%d,%s%n", (i + 1), clusterSummaries.get(i).getCovariance().toString()));
+        covarianceStream.writeBytes(
+            String.format("%d,%s%n", (i + 1), clusterSummaries.get(i).getCovariance().toString()));
       }
     } catch (final IOException e) {
       throw new RuntimeException(e);

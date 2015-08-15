@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,5 +18,5 @@ package edu.snu.reef.dolphin.groupcomm.interfaces;
 import java.util.List;
 
 public interface DataGatherReceiver<T> {
-  public void receiveGatherData(int iteration, List<T> data);
+  void receiveGatherData(int iteration, List<T> data);
 }

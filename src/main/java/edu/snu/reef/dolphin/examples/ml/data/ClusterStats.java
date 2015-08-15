@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,25 +24,15 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 /**
- * This class represents statistics obtained from data points assigned to each cluster
- * Statistics include (1) the pointSum of probabilities (2) the weighted pointSum of data points, and (3) the weighted pointSum of the outer product of data points
+ * This class represents statistics obtained from data points assigned to each cluster.
+ * Statistics include (1) the pointSum of probabilities (2) the weighted pointSum of data points,
+ * and (3) the weighted pointSum of the outer product of data points.
  */
 public final class ClusterStats implements Serializable {
 
-  /**
-   * weighted sum of outer product of data points
-   */
-  public Matrix outProdSum;
-
-  /**
-   * weighted pointSum of data points
-   */
-  public Vector pointSum;
-
-  /**
-   * pointSum of probability
-   */
-  public double probSum =0; // error occurs without initialize
+  private Matrix outProdSum;
+  private Vector pointSum;
+  private double probSum = 0; // error occurs without initialize
 
   /**
    * We may select whether to create a deep copy of @member pointSum and @member outProdSum, or just a reference.
@@ -67,27 +57,27 @@ public final class ClusterStats implements Serializable {
   }
 
   /**
-   * A deep copy constructor
+   * A deep copy constructor.
    */
   public ClusterStats(final ClusterStats clusterStats, final boolean isDeepCopy) {
     this(clusterStats.outProdSum, clusterStats.pointSum, clusterStats.probSum, isDeepCopy);
   }
 
   /**
-   * Add the given statistics to the current statistics
+   * Add the given statistics to the current statistics.
    * @param clusterStats
    */
-  public final void add(ClusterStats clusterStats) {
+  public void add(final ClusterStats clusterStats) {
     this.outProdSum = this.outProdSum.plus(clusterStats.outProdSum);
     this.pointSum = this.pointSum.plus(clusterStats.pointSum);
     this.probSum += clusterStats.probSum;
   }
 
   /**
-   * Compute mean from the statistics
+   * Compute mean from the statistics.
    * @return
    */
-  public final Vector computeMean() {
+  public Vector computeMean() {
     final Vector mean = new DenseVector(pointSum.size());
     for (int i = 0; i < mean.size(); i++) {
       mean.set(i, pointSum.get(i) / probSum);
@@ -96,23 +86,44 @@ public final class ClusterStats implements Serializable {
   }
 
   /**
-   * Compute the covariance matrix from the statistics
+   * Compute the covariance matrix from the statistics.
    * @return
    */
-  public final Matrix computeCovariance() {
+  public Matrix computeCovariance() {
     final Vector mean = computeMean();
     final Matrix covariance = outProdSum.clone();
 
-    final Iterator<MatrixSlice> sliceIterator=outProdSum.iterator();
+    final Iterator<MatrixSlice> sliceIterator = outProdSum.iterator();
     while (sliceIterator.hasNext()) {
-      final MatrixSlice slice=sliceIterator.next();
-      int row = slice.index();
-      for (Vector.Element e : slice.nonZeroes()) {
-        final int col=e.index();
+      final MatrixSlice slice = sliceIterator.next();
+      final int row = slice.index();
+      for (final Vector.Element e : slice.nonZeroes()) {
+        final int col = e.index();
         final double squaredSum = e.get();
-        covariance.set(row, col, squaredSum/probSum - mean.get(row) * mean.get(col));
+        covariance.set(row, col, squaredSum / probSum - mean.get(row) * mean.get(col));
       }
     }
     return covariance;
+  }
+
+  /**
+   * weighted sum of outer product of data points.
+   */
+  public Matrix getOutProdSum() {
+    return this.outProdSum;
+  }
+
+  /**
+   * weighted pointSum of data points.
+   */
+  public Vector getPointSum() {
+    return this.pointSum;
+  }
+
+  /**
+   * pointSum of probability.
+   */
+  public double getProbSum() {
+    return this.probSum;
   }
 }

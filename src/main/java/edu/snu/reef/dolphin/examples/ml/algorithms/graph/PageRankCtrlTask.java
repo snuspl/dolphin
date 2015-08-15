@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * PageRank algorithm control class
+ * PageRank algorithm control class.
  * 
  * Reference
  * - http://en.wikipedia.org/wiki/PageRank
@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  */
 public class PageRankCtrlTask extends UserControllerTask
     implements DataReduceReceiver<PageRankSummary>, DataBroadcastSender<Map<Integer, Double>> {
-  private final static Logger LOG = Logger.getLogger(PageRankCtrlTask.class.getName());
+  private static final Logger LOG = Logger.getLogger(PageRankCtrlTask.class.getName());
 
   /**
    * Check function to determine whether algorithm has converged or not.
@@ -52,29 +52,28 @@ public class PageRankCtrlTask extends UserControllerTask
   private final PageRankConvCond pageRankConvergenceCondition;
 
   /**
-   * Damping Factor
+   * Damping Factor.
    */
   private final double dampingFactor;
 
   /**
-   * Maximum number of iterations allowed before job stops
+   * Maximum number of iterations allowed before job stops.
    */
   private final int maxIter;
 
   /**
-   * Map of <nodeid, rank>
+   * Map of <nodeid, rank>.
    */
   private Map<Integer, Double> rank;
 
   /**
-   * Output stream provider to save the final ranks
+   * Output stream provider to save the final ranks.
    */
   private final OutputStreamProvider outputStreamProvider;
 
   /**
-   * This class is instantiated by TANG
-   *
-   * Constructs the Controller Task for PageRank
+   * Constructs the Controller Task for PageRank.
+   * This class is instantiated by TANG.
    *
    * @param outputStreamProvider
    * @param maxIter maximum number of iterations allowed before job stops
@@ -92,25 +91,25 @@ public class PageRankCtrlTask extends UserControllerTask
   }
 
   @Override
-  public final void run(int iteration) {
-    LOG.log(Level.INFO, "{0}-th iteration", new Object[] { iteration });
+  public final void run(final int iteration) {
+    LOG.log(Level.INFO, "{0}-th iteration", new Object[] {iteration});
   }
 
   @Override
-  public final Map<Integer, Double> sendBroadcastData(int iteration) {
+  public final Map<Integer, Double> sendBroadcastData(final int iteration) {
     return rank;
   }
 
   @Override
-  public final boolean isTerminated(int iteration) {
+  public final boolean isTerminated(final int iteration) {
     return pageRankConvergenceCondition.checkConvergence(rank)
         || iteration >= maxIter;
   }
 
   @Override
-  public void receiveReduceData(int iteration, PageRankSummary increment) {
+  public void receiveReduceData(final int iteration, final PageRankSummary increment) {
     rank = increment.getModel();
-    for (Integer key : rank.keySet()) {
+    for (final Integer key : rank.keySet()) {
       rank.put(key, (1 - dampingFactor) + dampingFactor * rank.get(key));
     }
   }
@@ -120,7 +119,7 @@ public class PageRankCtrlTask extends UserControllerTask
     //output the ranks
     try (final DataOutputStream rankStream = outputStreamProvider.create("rank")) {
       rankStream.writeBytes(String.format("node_id,rank%n"));
-      for (Map.Entry<Integer, Double> entry : rank.entrySet()) {
+      for (final Map.Entry<Integer, Double> entry : rank.entrySet()) {
         rankStream.writeBytes(String.format("%d,%f%n", entry.getKey(), entry.getValue()));
       }
     } catch (final IOException e) {

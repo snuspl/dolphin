@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ public final class MetricTrackerService {
   }
 
   /**
-   * Return the service configuration for the metric tracker service
+   * Return the service configuration for the metric tracker service.
    * @return service configuration for the metric tracker service
    */
   public static Configuration getServiceConfiguration() {
@@ -47,7 +47,7 @@ public final class MetricTrackerService {
   }
 
   /**
-   * Return the context configuration for the metric tracker service
+   * Return the context configuration for the metric tracker service.
    * @return context configuration for the metric tracker service
    */
   public static Configuration getContextConfiguration() {
@@ -58,12 +58,12 @@ public final class MetricTrackerService {
   }
 
   /**
-   * Add a context message source to the pre-existed context configuration
+   * Add a context message source to the pre-existed context configuration.
    * @param previousConfiguration pre-existed context configuration
    * @return context configuration to which a context message source is added
    */
   public static Configuration getContextConfiguration(final Configuration previousConfiguration) {
-    Configuration contextConf = Tang.Factory.getTang().newConfigurationBuilder()
+    final Configuration contextConf = Tang.Factory.getTang().newConfigurationBuilder()
         .bindSetEntry(ContextMessageSources.class, MetricManager.class)
         .build();
 

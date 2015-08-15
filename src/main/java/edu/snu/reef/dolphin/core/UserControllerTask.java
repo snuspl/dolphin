@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ import edu.snu.reef.dolphin.groupcomm.interfaces.DataScatterSender;
 public abstract class UserControllerTask {
 
   /**
-   * Main process of a user-defined controller task
+   * Main process of a user-defined controller task.
    * @param iteration
    */
   public abstract void run(int iteration);
@@ -41,7 +41,7 @@ public abstract class UserControllerTask {
   }
 
   /**
-   * Clean up a user-defined controller task
+   * Clean up a user-defined controller task.
    * Default behavior of this method is to do nothing, but this method can be overridden in subclasses
    */
   public void cleanup() {
@@ -50,19 +50,19 @@ public abstract class UserControllerTask {
 
   public abstract boolean isTerminated(int iteration);
 
-  final public boolean isReduceUsed() {
+  public final boolean isReduceUsed() {
     return (this instanceof DataReduceReceiver);
   }
 
-  final public boolean isGatherUsed() {
+  public final boolean isGatherUsed() {
     return (this instanceof DataGatherReceiver);
   }
 
-  final public boolean isBroadcastUsed() {
+  public final boolean isBroadcastUsed() {
     return (this instanceof DataBroadcastSender);
   }
 
-  final public boolean isScatterUsed() {
+  public final boolean isScatterUsed() {
     return (this instanceof DataScatterSender);
   }
 }

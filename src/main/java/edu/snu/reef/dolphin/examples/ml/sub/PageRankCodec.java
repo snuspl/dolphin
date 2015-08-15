@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Codec for encoding and decoding a list of page rank
+ * Codec for encoding and decoding a list of page rank.
  */
 public final class PageRankCodec implements Codec<Map<Integer, Double>> {
 
@@ -32,14 +32,14 @@ public final class PageRankCodec implements Codec<Map<Integer, Double>> {
   }
 
   @Override
-  public final byte[] encode(final Map<Integer, Double> map) {
+  public byte[] encode(final Map<Integer, Double> map) {
     final int size = map.size();
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream(
-      Integer.SIZE + (Integer.SIZE + Double.SIZE) * size);
+        Integer.SIZE + (Integer.SIZE + Double.SIZE) * size);
     try (final DataOutputStream daos = new DataOutputStream(baos)) {
       daos.writeInt(size);
-      for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+      for (final Map.Entry<Integer, Double> entry : map.entrySet()) {
         daos.writeInt(entry.getKey());
         daos.writeDouble(entry.getValue());
       }
@@ -51,7 +51,7 @@ public final class PageRankCodec implements Codec<Map<Integer, Double>> {
   }
 
   @Override
-  public final Map<Integer, Double> decode(final byte[] data) {
+  public Map<Integer, Double> decode(final byte[] data) {
     final ByteArrayInputStream bais = new ByteArrayInputStream(data);
     final Map<Integer, Double> map = new HashMap<>();
 
@@ -59,8 +59,8 @@ public final class PageRankCodec implements Codec<Map<Integer, Double>> {
       final int size = dais.readInt();
 
       for (int i = 0; i < size; i++) {
-        int nodeId = dais.readInt();
-        double nodeRank = dais.readDouble();
+        final int nodeId = dais.readInt();
+        final double nodeRank = dais.readDouble();
         map.put(nodeId, nodeRank);
       }
     } catch (final IOException e) {

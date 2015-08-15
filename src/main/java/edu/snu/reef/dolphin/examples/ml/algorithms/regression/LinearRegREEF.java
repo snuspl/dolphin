@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,11 +23,18 @@ import edu.snu.reef.dolphin.parameters.JobIdentifier;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 
-public class LinearRegREEF {
-  public final static void main(String[] args) throws Exception {
+public final class LinearRegREEF {
+
+  /**
+   * Should not be instantiated.
+   */
+  private LinearRegREEF() {
+  }
+
+  public static void main(final String[] args) throws Exception {
     DolphinLauncher.run(
         Configurations.merge(
-            DolphinConfiguration.CONF(args, LinearRegParameters.getCommandLine()),
+            DolphinConfiguration.getConfiguration(args, LinearRegParameters.getCommandLine()),
             Tang.Factory.getTang().newConfigurationBuilder()
                 .bindNamedParameter(JobIdentifier.class, "Linear Regression")
                 .bindImplementation(UserJobInfo.class, LinearRegJobInfo.class)

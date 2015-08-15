@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,7 @@
  */
 package edu.snu.reef.dolphin.examples.ml.sub;
 
-import edu.snu.reef.dolphin.examples.ml.data.LinearModel;
 import edu.snu.reef.dolphin.examples.ml.data.PageRankSummary;
-import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.Vector;
 import org.apache.reef.io.serialization.Codec;
 
 import javax.inject.Inject;
@@ -29,7 +26,7 @@ import java.util.Map;
 public class PageRankSummaryCodec implements Codec<PageRankSummary> {
 
   @Inject
-  public PageRankSummaryCodec(){
+  public PageRankSummaryCodec() {
   }
 
   @Override
@@ -41,7 +38,7 @@ public class PageRankSummaryCodec implements Codec<PageRankSummary> {
     try (final DataOutputStream daos = new DataOutputStream(baos)) {
       daos.writeInt(model.size());
 
-      for (Map.Entry<Integer, Double> entry : model.entrySet()) {
+      for (final Map.Entry<Integer, Double> entry : model.entrySet()) {
         daos.writeInt(entry.getKey());
         daos.writeDouble(entry.getValue());
       }

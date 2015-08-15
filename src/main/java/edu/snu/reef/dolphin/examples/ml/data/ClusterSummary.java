@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 /**
- * This class represents a summary of the cluster
+ * This class represents a summary of the cluster.
  * The summary includes (1) prior probability, (2) the centroid, and (3) the covariance matrix
  */
 public final class ClusterSummary {
@@ -30,21 +30,21 @@ public final class ClusterSummary {
   private final Vector centroid;
   private final Matrix covariance;
 
-  public ClusterSummary(double prior, Vector centroid, Matrix covariance) {
+  public ClusterSummary(final double prior, final Vector centroid, final Matrix covariance) {
     this.prior = prior;
     this.centroid = centroid;
     this.covariance = covariance;
   }
 
-  public final double getPrior() {
+  public double getPrior() {
     return prior;
   }
 
-  public final Vector getCentroid() {
+  public Vector getCentroid() {
     return centroid;
   }
 
-  public final Matrix getCovariance() {
+  public Matrix getCovariance() {
     return covariance;
   }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class SimpleDataParser implements DataParser<List<String>> {
-  private final static Logger LOG = Logger.getLogger(SimpleDataParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(SimpleDataParser.class.getName());
 
   private final DataSet<LongWritable, Text> dataSet;
   private List<String> result;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +33,7 @@ import java.util.List;
 public final class LinearRegJobInfo implements UserJobInfo {
 
   @Inject
-  public LinearRegJobInfo(){
+  public LinearRegJobInfo() {
   }
 
   @Override

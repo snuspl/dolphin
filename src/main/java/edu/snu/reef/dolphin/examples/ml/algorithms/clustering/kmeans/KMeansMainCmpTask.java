@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,30 +34,30 @@ public final class KMeansMainCmpTask extends UserComputeTask
     implements DataBroadcastReceiver<List<Vector>>, DataReduceSender<Map<Integer, VectorSum>> {
 
   /**
-   * Points read from input data to work on
+   * Points read from input data to work on.
    */
   private List<Vector> points = null;
 
   /**
-   * Centroids of clusters
+   * Centroids of clusters.
    */
   private List<Vector> centroids = new ArrayList<>();
 
   /**
-   * Vector sum of the points assigned to each cluster
+   * Vector sum of the points assigned to each cluster.
    */
   private Map<Integer, VectorSum> pointSum = new HashMap<>();
 
   /**
-   * Definition of 'distance between points' for this job
-   * Default measure is Euclidean distance
+   * Definition of 'distance between points' for this job.
+   * Default measure is Euclidean distance.
    */
   private final VectorDistanceMeasure distanceMeasure;
   private final DataParser<List<Vector>> dataParser;
 
   /**
-   * This class is instantiated by TANG
-   * Constructs a single Compute Task for k-means
+   * Constructs a single Compute Task for k-means.
+   * This class is instantiated by TANG.
    * @param dataParser
    * @param distanceMeasure distance measure to use to compute distances between points
    */
@@ -75,7 +75,7 @@ public final class KMeansMainCmpTask extends UserComputeTask
   }
 
   @Override
-  public void run(int iteration) {
+  public void run(final int iteration) {
 
     // Compute the nearest cluster centroid for each point
     pointSum = new HashMap<>();
@@ -83,7 +83,7 @@ public final class KMeansMainCmpTask extends UserComputeTask
       double nearestClusterDist = Double.MAX_VALUE;
       int nearestClusterId = -1;
       int clusterId = 0;
-      for (Vector centroid : centroids) {
+      for (final Vector centroid : centroids) {
         final double distance = distanceMeasure.distance(centroid, vector);
         if (nearestClusterDist > distance) {
           nearestClusterDist = distance;
@@ -102,12 +102,12 @@ public final class KMeansMainCmpTask extends UserComputeTask
   }
 
   @Override
-  public void receiveBroadcastData(int iteration, List<Vector> centroids) {
-    this.centroids = centroids;
+  public void receiveBroadcastData(final int iteration, final List<Vector> centroidsData) {
+    this.centroids = centroidsData;
   }
 
   @Override
-  public Map<Integer, VectorSum> sendReduceData(int iteration) {
+  public Map<Integer, VectorSum> sendReduceData(final int iteration) {
     return pointSum;
   }
 }
