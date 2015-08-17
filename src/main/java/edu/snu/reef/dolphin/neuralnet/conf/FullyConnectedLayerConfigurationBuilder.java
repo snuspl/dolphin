@@ -33,6 +33,7 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
   private int numOutput;
   private double initWeight;
   private double initBias;
+  private String activationFunction;
 
   public FullyConnectedLayerConfigurationBuilder setNumInput(final int numInput) {
     this.numInput = numInput;
@@ -51,6 +52,11 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
 
   public FullyConnectedLayerConfigurationBuilder setInitBias(final double initBias) {
     this.initBias = initBias;
+    return this;
+  }
+
+  public FullyConnectedLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
+    this.activationFunction = activationFunction;
     return this;
   }
 

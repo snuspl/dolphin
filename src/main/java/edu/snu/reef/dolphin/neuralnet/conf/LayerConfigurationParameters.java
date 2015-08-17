@@ -28,7 +28,7 @@ public final class LayerConfigurationParameters {
   public static final class InitialWeight implements Name<Double> {
   }
 
-  @NamedParameter
+  @NamedParameter(doc = "Index of the layer", short_name = "index")
   public static final class LayerIndex implements Name<Integer> {
   }
 
@@ -38,5 +38,9 @@ public final class LayerConfigurationParameters {
 
   @NamedParameter(doc = "Number of layer output nodes", short_name = "numOutput")
   public static final class NumberOfOutput implements Name<Integer> {
+  }
+
+  @NamedParameter(doc = "Activation function of layer node", short_name = "activationFunc")
+  public static final class ActivationFunction implements Name<String> {
   }
 }

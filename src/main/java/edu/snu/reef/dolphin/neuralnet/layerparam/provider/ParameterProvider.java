@@ -16,7 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
-import org.jblas.DoubleMatrix;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public interface ParameterProvider {
    * @param activations
    * @param gradients
    */
-  void push(final List<DoubleMatrix> activations, final List<DoubleMatrix> gradients);
+  void push(final List<INDArray> activations, final List<INDArray> gradients);
 
   /**
    * Returns updated parameters.

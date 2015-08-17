@@ -15,7 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layers;
 
-import org.jblas.DoubleMatrix;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 /**
  * Interface for the layer of a neural network.
@@ -45,14 +45,14 @@ public interface Layer {
    * @param activation
    * @return
    */
-  DoubleMatrix derivative(final DoubleMatrix activation);
+  INDArray derivative(final INDArray activation);
 
   /**
    * Computes the activation values.
    * @param input
    * @return
    */
-  DoubleMatrix feedForward(final DoubleMatrix input);
+  INDArray feedForward(final INDArray input);
 
   /**
    * Computes the gradients.
@@ -62,10 +62,10 @@ public interface Layer {
    * @param nextGradient the gradients of the next layer.
    * @return
    */
-  DoubleMatrix backPropagate(final DoubleMatrix activation,
-                             final DoubleMatrix derivative,
-                             final LayerParameter prevParam,
-                             final DoubleMatrix nextGradient);
+  INDArray backPropagate(final INDArray activation,
+                         final INDArray derivative,
+                         final LayerParameter prevParam,
+                         final INDArray nextGradient);
 
   /**
    * Computes the gradients. (only for output layer)
@@ -73,6 +73,6 @@ public interface Layer {
    * @param label
    * @return
    */
-  DoubleMatrix backPropagate(final DoubleMatrix activation,
-                             final DoubleMatrix label);
+  INDArray backPropagate(final INDArray activation,
+                         final INDArray label);
 }

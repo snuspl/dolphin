@@ -15,14 +15,14 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layers;
 
-import org.jblas.DoubleMatrix;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 /**
  * The parameter of the layer.
  */
 public final class LayerParameter {
-  private final DoubleMatrix weightParam;
-  private final DoubleMatrix biasParam;
+  private final INDArray weightParam;
+  private final INDArray biasParam;
 
   /**
    * Returns the new LayerParameter builder.
@@ -36,7 +36,7 @@ public final class LayerParameter {
    * Returns the weight matrix of the parameter.
    * @return
    */
-  public DoubleMatrix getWeightParam() {
+  public INDArray getWeightParam() {
     return weightParam;
   }
 
@@ -44,20 +44,20 @@ public final class LayerParameter {
    * Returns the bias vector of the parameter.
    * @return
    */
-  public DoubleMatrix getBiasParam() {
+  public INDArray getBiasParam() {
     return biasParam;
   }
 
   public static final class Builder implements org.apache.reef.util.Builder<LayerParameter> {
-    private DoubleMatrix weightParam;
-    private DoubleMatrix biasParam;
+    private INDArray weightParam;
+    private INDArray biasParam;
 
-    public Builder setWeightParam(final DoubleMatrix weightParam) {
+    public Builder setWeightParam(final INDArray weightParam) {
       this.weightParam = weightParam;
       return this;
     }
 
-    public Builder setBiasParam(final DoubleMatrix biasParam) {
+    public Builder setBiasParam(final INDArray biasParam) {
       this.biasParam = biasParam;
       return this;
     }
@@ -68,8 +68,8 @@ public final class LayerParameter {
     }
   }
 
-  LayerParameter(final DoubleMatrix weightParam,
-                 final DoubleMatrix biasParam) {
+  LayerParameter(final INDArray weightParam,
+                 final INDArray biasParam) {
     this.weightParam = weightParam;
     this.biasParam = biasParam;
   }
