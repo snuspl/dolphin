@@ -26,23 +26,25 @@ import org.apache.reef.util.Builder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Configuration builder for neural network.
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
-  private Collection<String> layerConfigurations = new ArrayList<>();
-  private int batchSize = 1;
-  private int index = 0;
-  private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
-  private Class<? extends ParameterProvider> parameterProviderClass;
+  private final Collection<String> layerConfigurations = new ArrayList<>();
+  private final AtomicInteger batchSize = new AtomicInteger(1);
+  private volatile int index = 0;
+  private final ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
+  private final AtomicReference<Class<? extends ParameterProvider>> parameterProviderClass = new AtomicReference<>();
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
   }
 
-  public NeuralNetworkConfigurationBuilder addLayerConfiguration(final Configuration layerConfiguration) {
+  public synchronized NeuralNetworkConfigurationBuilder addLayerConfiguration(final Configuration layerConfiguration) {
 
     final Configuration finalLayerConfiguration = Configurations.merge(layerConfiguration,
         Tang.Factory.getTang().newConfigurationBuilder()
@@ -55,13 +57,13 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   }
 
   public NeuralNetworkConfigurationBuilder setBatchSize(final int batchSize) {
-    this.batchSize = batchSize;
+    this.batchSize.set(batchSize);
     return this;
   }
 
   public NeuralNetworkConfigurationBuilder setParameterProviderClass(
       final Class<? extends ParameterProvider> parameterProviderClass) {
-    this.parameterProviderClass = parameterProviderClass;
+    this.parameterProviderClass.set(parameterProviderClass);
     return this;
   }
 
@@ -74,7 +76,8 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
       jb.bindSetEntry(NeuralNetworkParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
     }
 
-    jb.bindNamedParameter(NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.getName());
+    jb.bindNamedParameter(
+        NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.get().getName());
 
     return jb.build();
   }
