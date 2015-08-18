@@ -18,6 +18,9 @@ package edu.snu.reef.dolphin.neuralnet.conf;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
+/**
+ * Parameters for layer configuration.
+ */
 public final class LayerConfigurationParameters {
 
   @NamedParameter(doc = "Initial bias of a parameter", short_name = "initB")

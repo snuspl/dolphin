@@ -20,6 +20,9 @@ import org.apache.reef.tang.annotations.NamedParameter;
 
 import java.util.Set;
 
+/**
+ * Parameters for neural network configuration.
+ */
 public final class NeuralNetworkParameters {
 
   private NeuralNetworkParameters() {

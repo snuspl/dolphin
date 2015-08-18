@@ -27,6 +27,9 @@ import org.apache.reef.util.Builder;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Configuration builder for neural network.
+ */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
   private Collection<String> layerConfigurations = new ArrayList<>();

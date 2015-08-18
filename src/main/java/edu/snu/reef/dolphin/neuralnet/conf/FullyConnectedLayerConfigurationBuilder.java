@@ -23,6 +23,9 @@ import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.util.Builder;
 
+/**
+ * Configuration builder for fully connected layer.
+ */
 public final class FullyConnectedLayerConfigurationBuilder implements Builder<Configuration> {
 
   public static FullyConnectedLayerConfigurationBuilder newConfigurationBuilder() {
