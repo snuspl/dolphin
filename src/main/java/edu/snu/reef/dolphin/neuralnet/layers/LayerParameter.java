@@ -68,7 +68,7 @@ public final class LayerParameter {
     }
   }
 
-  LayerParameter(final INDArray weightParam,
+  private LayerParameter(final INDArray weightParam,
                  final INDArray biasParam) {
     this.weightParam = weightParam;
     this.biasParam = biasParam;
