@@ -25,6 +25,8 @@ import org.apache.reef.util.Builder;
 
 /**
  * Configuration builder for fully connected layer.
+ *
+ * The configuration that this builder generates is used to create a fully connected layer instance.
  */
 public final class FullyConnectedLayerConfigurationBuilder implements Builder<Configuration> {
 

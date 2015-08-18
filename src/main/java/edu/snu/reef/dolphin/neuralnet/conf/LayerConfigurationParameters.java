@@ -20,30 +20,32 @@ import org.apache.reef.tang.annotations.NamedParameter;
 
 /**
  * Parameters for layer configuration.
+ *
+ * When we need new parameters of new type of layer, we can add them as inner classes of this class.
  */
 public final class LayerConfigurationParameters {
 
-  @NamedParameter(doc = "Initial bias of a parameter", short_name = "initB")
+  @NamedParameter(doc = "initial bias of a parameter", short_name = "initB")
   public static final class InitialBias implements Name<Double> {
   }
 
-  @NamedParameter(doc = "Initial weight of a parameter", short_name = "initW")
+  @NamedParameter(doc = "initial weight of a parameter", short_name = "initW")
   public static final class InitialWeight implements Name<Double> {
   }
 
-  @NamedParameter(doc = "Index of the layer", short_name = "index")
+  @NamedParameter(doc = "index of the layer", short_name = "index")
   public static final class LayerIndex implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "Number of layer input nodes", short_name = "numInput")
+  @NamedParameter(doc = "number of layer input nodes", short_name = "numInput")
   public static final class NumberOfInput implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "Number of layer output nodes", short_name = "numOutput")
+  @NamedParameter(doc = "number of layer output nodes", short_name = "numOutput")
   public static final class NumberOfOutput implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "Activation function of layer node", short_name = "activationFunc")
+  @NamedParameter(doc = "activation function of layer node", short_name = "activationFunc")
   public static final class ActivationFunction implements Name<String> {
   }
 }

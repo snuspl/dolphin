@@ -19,6 +19,8 @@ import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 
 /**
  * Interface for parameter initializer.
+ *
+ * The parameter initializer generates the initial parameter of the layer by the layer configuration.
  */
 public interface LayerParameterInitializer {
 

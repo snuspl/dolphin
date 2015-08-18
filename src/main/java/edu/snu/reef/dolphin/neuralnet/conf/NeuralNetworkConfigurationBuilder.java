@@ -29,6 +29,8 @@ import java.util.Collection;
 
 /**
  * Configuration builder for neural network.
+ *
+ * The configuration that this builder generates is used to create a neural network instance.
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
