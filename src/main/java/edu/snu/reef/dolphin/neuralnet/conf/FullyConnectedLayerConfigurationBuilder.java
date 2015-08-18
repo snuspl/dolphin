@@ -38,33 +38,33 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
   private double initBias;
   private String activationFunction;
 
-  public FullyConnectedLayerConfigurationBuilder setNumInput(final int numInput) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setNumInput(final int numInput) {
     this.numInput = numInput;
     return this;
   }
 
-  public FullyConnectedLayerConfigurationBuilder setNumOutput(final int numOutput) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setNumOutput(final int numOutput) {
     this.numOutput = numOutput;
     return this;
   }
 
-  public FullyConnectedLayerConfigurationBuilder setInitWeight(final double initWeight) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setInitWeight(final double initWeight) {
     this.initWeight = initWeight;
     return this;
   }
 
-  public FullyConnectedLayerConfigurationBuilder setInitBias(final double initBias) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setInitBias(final double initBias) {
     this.initBias = initBias;
     return this;
   }
 
-  public FullyConnectedLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
     this.activationFunction = activationFunction;
     return this;
   }
 
   @Override
-  public Configuration build() {
+  public synchronized Configuration build() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerConfigurationParameters.NumberOfInput.class, String.valueOf(numInput))
         .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
