@@ -34,11 +34,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
-  private final Collection<String> layerConfigurations = new ArrayList<>();
-  private final AtomicInteger batchSize = new AtomicInteger(1);
-  private volatile int index = 0;
-  private final ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
-  private final AtomicReference<Class<? extends ParameterProvider>> parameterProviderClass = new AtomicReference<>();
+  private Collection<String> layerConfigurations = new ArrayList<>();
+  private int batchSize = 1;
+  private int index = 0;
+  private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
+  private Class<? extends ParameterProvider> parameterProviderClass;
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
@@ -56,19 +56,19 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
-  public NeuralNetworkConfigurationBuilder setBatchSize(final int batchSize) {
-    this.batchSize.set(batchSize);
+  public synchronized NeuralNetworkConfigurationBuilder setBatchSize(final int batchSize) {
+    this.batchSize = batchSize;
     return this;
   }
 
-  public NeuralNetworkConfigurationBuilder setParameterProviderClass(
+  public synchronized NeuralNetworkConfigurationBuilder setParameterProviderClass(
       final Class<? extends ParameterProvider> parameterProviderClass) {
-    this.parameterProviderClass.set(parameterProviderClass);
+    this.parameterProviderClass = parameterProviderClass;
     return this;
   }
 
   @Override
-  public Configuration build() {
+  public synchronized Configuration build() {
     final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(NeuralNetworkParameters.BatchSize.class, String.valueOf(batchSize));
 
@@ -77,7 +77,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     }
 
     jb.bindNamedParameter(
-        NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.get().getName());
+        NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.getName());
 
     return jb.build();
   }
