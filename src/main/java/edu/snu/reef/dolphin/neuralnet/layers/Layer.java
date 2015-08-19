@@ -24,7 +24,7 @@ public interface Layer {
 
   /**
    * Returns the index of the layer.
-   * @return
+   * @return the index of the layer.
    */
   int getIndex();
 
@@ -36,27 +36,27 @@ public interface Layer {
 
   /**
    * Replaces the parameter of the layer.
-   * @param layerParameter
+   * @param layerParameter a new parameter of the layer.
    */
   void setLayerParameter(final LayerParameter layerParameter);
 
   /**
    * Returns the parameter of the layer.
-   * @return
+   * @return the parameter of the layer.
    */
   LayerParameter getLayerParameter();
 
   /**
    * Applies the derivative of the activation function of the layer to each element of matrix.
-   * @param activation
-   * @return
+   * @param activation the activations of the layer.
+   * @return the derivatives for the given activation.
    */
   INDArray derivative(final INDArray activation);
 
   /**
-   * Computes the activation values.
-   * @param input
-   * @return
+   * Computes the activations.
+   * @param input the input vector for the layer.
+   * @return the activations.
    */
   INDArray feedForward(final INDArray input);
 
@@ -66,7 +66,7 @@ public interface Layer {
    * @param derivative the derivatives of activation function.
    * @param prevParam the parameter of the previous layer.
    * @param nextGradient the gradients of the next layer.
-   * @return
+   * @return the gradients for the specified activations and derivatives.
    */
   INDArray backPropagate(final INDArray activation,
                          final INDArray derivative,
@@ -75,9 +75,9 @@ public interface Layer {
 
   /**
    * Computes the gradients. (only for output layer)
-   * @param activation
-   * @param label
-   * @return
+   * @param activation the activations for output layer.
+   * @param label the expected output.
+   * @return the gradients for output layer.
    */
   INDArray backPropagate(final INDArray activation,
                          final INDArray label);

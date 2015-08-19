@@ -25,14 +25,14 @@ import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 public interface LayerParameterInitializer {
 
   /**
-   * Returns initial parameter of layer.
-   * @return
+   * Returns initial parameter of the layer.
+   * @return the initial parameter of the layer.
    */
   LayerParameter generateInitialParameter();
 
   /**
-   * Returns the index of layer.
-   * @return
+   * Returns the index of the layer.
+   * @return the index of the layer.
    */
   int getIndex();
 }

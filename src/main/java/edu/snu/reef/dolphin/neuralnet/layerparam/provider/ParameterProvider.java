@@ -26,15 +26,15 @@ import java.util.List;
 public interface ParameterProvider {
 
   /**
-   * Pushes the activation values and gradients.
-   * @param activations
-   * @param gradients
+   * Pushes activation values and gradients for each training input.
+   * @param activations activation values of the training input.
+   * @param gradients error gradient vectors of the training input.
    */
   void push(final List<INDArray> activations, final List<INDArray> gradients);
 
   /**
-   * Returns updated parameters.
-   * @return
+   * Returns the updated parameters of the whole network.
+   * @return the updated parameters.
    */
   LayerParameter[] pull();
 }
