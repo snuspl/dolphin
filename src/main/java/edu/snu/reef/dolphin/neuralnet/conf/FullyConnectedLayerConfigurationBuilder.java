@@ -15,10 +15,10 @@
  */
 package edu.snu.reef.dolphin.neuralnet.conf;
 
-//import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.FullyConnectedLayerParameterInitializer;
-//import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
-//import edu.snu.reef.dolphin.neuralnet.layers.FullyConnectedLayer;
-//import edu.snu.reef.dolphin.neuralnet.layers.Layer;
+import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.FullyConnectedLayerParameterInitializer;
+import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.reef.dolphin.neuralnet.layers.FullyConnectedLayer;
+import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.util.Builder;
@@ -36,6 +36,7 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
 
   private int numInput;
   private int numOutput;
+  private long randomSeed = System.currentTimeMillis();
   private double initWeight;
   private double initBias;
   private String activationFunction;
@@ -47,6 +48,11 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
 
   public synchronized FullyConnectedLayerConfigurationBuilder setNumOutput(final int numOutput) {
     this.numOutput = numOutput;
+    return this;
+  }
+
+  public synchronized FullyConnectedLayerConfigurationBuilder setRandomSeed(final long randomSeed) {
+    this.randomSeed = randomSeed;
     return this;
   }
 
@@ -70,10 +76,12 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerConfigurationParameters.NumberOfInput.class, String.valueOf(numInput))
         .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
+        .bindNamedParameter(LayerConfigurationParameters.RandomSeed.class, String.valueOf(randomSeed))
         .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))
         .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
-//        .bindImplementation(Layer.class, FullyConnectedLayer.class)
-//        .bindImplementation(LayerParameterInitializer.class, FullyConnectedLayerParameterInitializer.class)
+        .bindNamedParameter(LayerConfigurationParameters.ActivationFunction.class, String.valueOf(activationFunction))
+        .bindImplementation(Layer.class, FullyConnectedLayer.class)
+        .bindImplementation(LayerParameterInitializer.class, FullyConnectedLayerParameterInitializer.class)
         .build();
   }
 }
