@@ -26,6 +26,7 @@ import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.util.FeatureUtil;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -83,6 +84,15 @@ public final class NeuralNetwork {
     parameterProvider.push(activations, gradients);
 
     // TODO: pull a updated parameter from parameter provider
+  }
+
+  /**
+   * Trains neural network with the given input and label.
+   * @param input the input matrix.
+   * @param label the label.
+   */
+  public void train(final INDArray input, final int label) {
+    train(input, FeatureUtil.toOutcomeVector(label, layers[layers.length - 1].getNumOutput()));
   }
 
   /**

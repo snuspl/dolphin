@@ -29,6 +29,12 @@ public interface Layer {
   int getIndex();
 
   /**
+   * Returns the number of layer output nodes.
+   * @return the number of layer output nodes.
+   */
+  int getNumOutput();
+
+  /**
    * Replaces the parameter of the layer.
    * @param layerParameter
    */

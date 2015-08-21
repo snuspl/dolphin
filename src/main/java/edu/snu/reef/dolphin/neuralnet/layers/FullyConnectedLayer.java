@@ -30,15 +30,18 @@ public final class FullyConnectedLayer implements Layer {
 
   protected final int index;
   private final String activationFunction;
+  private final int numOutput;
   private LayerParameter layerParameter;
 
   @Inject
   public FullyConnectedLayer(@Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
                              @Parameter(LayerConfigurationParameters.ActivationFunction.class)
                                final String activationFunction,
+                             @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
                              final LayerParameterInitializer layerParameterInitializer) {
     this.index = index;
     this.activationFunction = activationFunction;
+    this.numOutput = numOutput;
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
   }
 
@@ -47,6 +50,12 @@ public final class FullyConnectedLayer implements Layer {
   @Override
   public int getIndex() {
     return index;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int getNumOutput() {
+    return numOutput;
   }
 
   /** {@inheritDoc} */
