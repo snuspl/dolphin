@@ -103,13 +103,9 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   @Override
   public void push(final List<INDArray> activations, final List<INDArray> gradients) {
     for (int i = 0; i < deltaLayerParameters.length; ++i) {
-      final INDArray activation = activations.get(i);
-      assert activation.isRowVector();
-
-      activation.transposei();
+      final INDArray activation = activations.get(i).transpose();
+      assert activation.isColumnVector();
       deltaLayerParameters[i].getWeightParam().addi(activation.mmul(gradients.get(i)));
-      activation.transposei();
-
       deltaLayerParameters[i].getBiasParam().addi(gradients.get(i));
     }
 
