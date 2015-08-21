@@ -15,9 +15,6 @@
  */
 package edu.snu.reef.dolphin.core;
 
-import com.microsoft.reef.io.network.group.operators.Broadcast;
-import com.microsoft.reef.io.network.nggroup.api.task.CommunicationGroupClient;
-import com.microsoft.reef.io.network.nggroup.api.task.GroupCommClient;
 import edu.snu.reef.dolphin.core.metric.MetricManager;
 import edu.snu.reef.dolphin.core.metric.MetricTracker;
 import edu.snu.reef.dolphin.core.metric.MetricTrackers;
@@ -27,6 +24,9 @@ import edu.snu.reef.dolphin.groupcomm.interfaces.DataReduceSender;
 import edu.snu.reef.dolphin.groupcomm.interfaces.DataScatterReceiver;
 import edu.snu.reef.dolphin.groupcomm.names.*;
 import org.apache.reef.driver.task.TaskConfigurationOptions;
+import org.apache.reef.io.network.group.api.operators.Broadcast;
+import org.apache.reef.io.network.group.api.task.CommunicationGroupClient;
+import org.apache.reef.io.network.group.api.task.GroupCommClient;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.task.Task;
