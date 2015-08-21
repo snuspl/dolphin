@@ -15,6 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
+import edu.snu.reef.dolphin.examples.ml.parameters.StepSize;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkParameters;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
@@ -42,14 +43,17 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   private final LayerParameter[] layerParameters;
   private final LayerParameter[] deltaLayerParameters;
+  private final double stepSize;
   private int numUpdate = 0;
 
   @Inject
   public LocalNeuralNetParameterProvider(@Parameter(NeuralNetworkParameters.SerializedLayerConfigurationSet.class)
                                            final Set<String> serializedLayerConfigurationSet,
+                                         @Parameter(StepSize.class) final double stepSize,
                                          final ConfigurationSerializer configurationSerializer) {
     layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
+    this.stepSize = stepSize;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
@@ -120,9 +124,8 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       for (int i = 0; i < deltaLayerParameters.length; ++i) {
         final LayerParameter layerParameter = layerParameters[i];
         final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
-
-        layerParameter.getWeightParam().addi(deltaLayerParameter.getWeightParam().divi(numUpdate));
-        layerParameter.getBiasParam().addi(deltaLayerParameter.getBiasParam().divi(numUpdate));
+        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepSize));
+        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepSize));
       }
 
       reset();
