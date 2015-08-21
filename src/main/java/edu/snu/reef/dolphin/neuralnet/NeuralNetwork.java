@@ -18,6 +18,7 @@ package edu.snu.reef.dolphin.neuralnet;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkParameters;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
+import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
@@ -67,6 +68,18 @@ public final class NeuralNetwork {
         throw new RuntimeException("InjectionException", exception);
       }
     }
+  }
+
+  /**
+   * Returns the parameters of each layer in the network.
+   * @return the parameters of each layer.
+   */
+  public LayerParameter[] getParameters() {
+    final LayerParameter[] parameters = new LayerParameter[layers.length];
+    for (int i = 0; i < layers.length; ++i) {
+      parameters[i] = layers[i].getLayerParameter();
+    }
+    return parameters;
   }
 
   /**
