@@ -35,8 +35,4 @@ public final class NeuralNetworkParameters {
   @NamedParameter(doc = "batch size")
   public static final class BatchSize implements Name<Integer> {
   }
-
-  @NamedParameter(doc = "the name of the ParameterProvider implementation class to use")
-  public static final class ParameterProviderClassName implements Name<String> {
-  }
 }

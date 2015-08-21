@@ -76,8 +76,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
       jb.bindSetEntry(NeuralNetworkParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
     }
 
-    jb.bindNamedParameter(
-        NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.getName());
+    jb.bindImplementation(ParameterProvider.class, parameterProviderClass);
 
     return jb.build();
   }
