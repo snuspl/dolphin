@@ -89,15 +89,13 @@ public final class NeuralNetworkREEF {
   }
 
   /**
-   * Returns the configuration for running a neural network job.
-   * @return the configuration for runtime.
+   * @return the configuration for running a neural network job.
    */
   private Configuration getRuntimeConfiguration() {
     return onLocal ? getLocalConfiguration() : getYarnRuntimeConfiguration();
   }
 
   /**
-   * Returns the configuration for driver with data loading.
    * @return the configuration for driver with data loading.
    */
   private Configuration getDriverConfWithDataLoad() {
@@ -121,7 +119,6 @@ public final class NeuralNetworkREEF {
   }
 
   /**
-   * Returns the configuration for running on local environment.
    * @return the configuration for running on local environment.
    */
   private Configuration getLocalConfiguration() {
@@ -131,7 +128,6 @@ public final class NeuralNetworkREEF {
   }
 
   /**
-   * Returns the configuration for running on YARN.
    * @return the configuration for running on YARN.
    */
   private Configuration getYarnRuntimeConfiguration() {

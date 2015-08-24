@@ -33,8 +33,7 @@ public interface ParameterProvider {
   void push(final List<INDArray> activations, final List<INDArray> gradients);
 
   /**
-   * Returns the updated parameters of the whole network.
-   * @return the updated parameters.
+   * @return the updated parameters of the whole network.
    */
   LayerParameter[] pull();
 }

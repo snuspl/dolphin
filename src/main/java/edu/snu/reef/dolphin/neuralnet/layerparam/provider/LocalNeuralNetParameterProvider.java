@@ -49,11 +49,11 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   @Inject
   public LocalNeuralNetParameterProvider(
       @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
-        final Set<String> serializedLayerConfigurationSet,
+          final Set<String> serializedLayerConfigurationSet,
       @Parameter(StepSize.class) final double stepSize,
       final ConfigurationSerializer configurationSerializer) {
-    layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
+    this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
+    this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepSize = stepSize;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
@@ -65,7 +65,7 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
             injector.getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
-        layerParameters[index] = layerParameterInitializer.generateInitialParameter();
+        this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();
 
       } catch (final IOException exception) {
         throw new RuntimeException("IOException", exception);
@@ -73,7 +73,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
         throw new RuntimeException("InjectionException", exception);
       }
     }
-
     initDeltaParameters();
   }
 
@@ -100,7 +99,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       layerParameter.getWeightParam().assign(0.0);
       layerParameter.getBiasParam().assign(0.0);
     }
-
     numUpdate = 0;
   }
 
@@ -113,7 +111,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       deltaLayerParameters[i].getWeightParam().addi(activation.mmul(gradients.get(i)));
       deltaLayerParameters[i].getBiasParam().addi(gradients.get(i));
     }
-
     ++numUpdate;
   }
 
@@ -128,7 +125,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
         layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepSize));
         layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepSize));
       }
-
       reset();
     }
 

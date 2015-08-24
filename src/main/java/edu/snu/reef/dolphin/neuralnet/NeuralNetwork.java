@@ -53,7 +53,7 @@ public final class NeuralNetwork {
   @Inject
   public NeuralNetwork(final ConfigurationSerializer configurationSerializer,
                        @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
-                         final Set<String> serializedLayerConfigurationSet,
+                           final Set<String> serializedLayerConfigurationSet,
                        @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
                        final ParameterProvider parameterProvider) {
     this.batchSize = batchSize;
@@ -76,7 +76,6 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Returns the parameters of each layer in the network.
    * @return the parameters of each layer.
    */
   public LayerParameter[] getParameters() {

@@ -38,12 +38,11 @@ public final class NeuralNetworkTaskParameters {
   @Inject
   private NeuralNetworkTaskParameters(final ConfigurationSerializer configurationSerializer,
                                       @Parameter(SerializedNeuralNetworkConfiguration.class)
-                                        final String serializedNeuralNetworkConfiguration) throws IOException {
+                                          final String serializedNeuralNetworkConfiguration) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetworkConfiguration);
   }
 
   /**
-   * Returns the configuration for task.
    * @return the configuration for task.
    */
   public Configuration getTaskConfiguration() {

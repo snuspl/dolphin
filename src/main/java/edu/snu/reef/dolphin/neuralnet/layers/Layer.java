@@ -23,13 +23,11 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 public interface Layer {
 
   /**
-   * Returns the index of the layer.
    * @return the index of the layer.
    */
   int getIndex();
 
   /**
-   * Returns the number of layer output nodes.
    * @return the number of layer output nodes.
    */
   int getNumOutput();
@@ -41,7 +39,6 @@ public interface Layer {
   void setLayerParameter(final LayerParameter layerParameter);
 
   /**
-   * Returns the parameter of the layer.
    * @return the parameter of the layer.
    */
   LayerParameter getLayerParameter();

@@ -64,16 +64,14 @@ public final class NeuralNetworkTask implements Task {
     }
 
     /**
-     * Returns the prediction accuracy of model.
-     * @return the prediction accuracy.
+     * @return the prediction accuracy of model.
      */
     public double getStats() {
       return correctNum / (double) totalNum;
     }
 
     /**
-     * Returns the total number of samples that are used for evaluation.
-     * @return the total number of samples.
+     * @return the total number of samples that are used for evaluation.
      */
     public int getTotalNum() {
       return totalNum;

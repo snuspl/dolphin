@@ -93,7 +93,6 @@ public final class NeuralNetworkDriverParameters {
   }
 
   /**
-   * Returns the configuration for driver.
    * @return the configuration for driver.
    */
   public Configuration getDriverConfiguration() {
