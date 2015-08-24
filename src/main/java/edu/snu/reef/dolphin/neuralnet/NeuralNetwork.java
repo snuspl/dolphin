@@ -45,6 +45,11 @@ public final class NeuralNetwork {
   private final Layer[] layers;
   private final ParameterProvider parameterProvider;
 
+  /**
+   * The number of processed training inputs.
+   */
+  private int trainedCount;
+
   @Inject
   public NeuralNetwork(final ConfigurationSerializer configurationSerializer,
                        @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
@@ -84,8 +89,8 @@ public final class NeuralNetwork {
 
   /**
    * Trains neural network with the given input and label.
-   * @param input
-   * @param label
+   * @param input the input matrix.
+   * @param label the label vector.
    */
   public void train(final INDArray input, final INDArray label) {
     final Pair<List<INDArray>, List<INDArray>> actAndDeriv = activationAndDerivative(input);
@@ -95,8 +100,14 @@ public final class NeuralNetwork {
     final List<INDArray> gradients = backPropagate(activations, derivatives, label);
 
     parameterProvider.push(activations, gradients);
-
-    // TODO: pull a updated parameter from parameter provider
+    
+    if (++trainedCount >= batchSize) {
+      final LayerParameter[] updatedParameters = parameterProvider.pull();
+      for (int i = 0; i < layers.length; ++i) {
+        layers[i].setLayerParameter(updatedParameters[i]);
+      }
+      trainedCount = 0;
+    }
   }
 
   /**
@@ -110,7 +121,7 @@ public final class NeuralNetwork {
 
   /**
    * Computes activations from input layer to output layer.
-   * @param input
+   * @param input the input matrix for input layer.
    * @return a list of activations for each layer.
    */
   public List<INDArray> feedForward(final INDArray input) {
@@ -121,7 +132,7 @@ public final class NeuralNetwork {
    * Computes activations from the specified beginning layer to the specified ending layer.
    * @param begin the index of beginning layer.
    * @param end the index of ending layer.
-   * @param input
+   * @param input the input matrix.
    * @return a list of activations for each layer.
    */
   public List<INDArray> feedForward(final int begin, final int end, final INDArray input) {
@@ -140,7 +151,7 @@ public final class NeuralNetwork {
 
   /**
    * Computes activations and derivatives from input layer to output layer.
-   * @param input
+   * @param input the input matrix.
    * @return a pair of a list of activations for each layer and a list of derivatives for each layer.
    */
   public Pair<List<INDArray>, List<INDArray>> activationAndDerivative(final INDArray input) {
@@ -151,7 +162,7 @@ public final class NeuralNetwork {
    * Computes activations and derivatives from the specified beginning layer and the specified ending layer.
    * @param begin the index of beginning layer.
    * @param end the index of ending layer.
-   * @param input
+   * @param input the input matrix for beginning layer.
    * @return a pair of a list of activations for each layer and a list of derivatives for each layer.
    */
   public Pair<List<INDArray>, List<INDArray>> activationAndDerivative(final int begin,
@@ -202,7 +213,6 @@ public final class NeuralNetwork {
     final INDArray gradient = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
     final List<INDArray> gradients =
         backPropagateFromTo(lastLayerIndex - 1, to, activations, derivatives, gradient);
-
     gradients.add(gradient);
     return gradients;
   }
@@ -221,7 +231,7 @@ public final class NeuralNetwork {
                                             final List<INDArray> derivatives,
                                             final INDArray nextGradient) {
     if (begin == layers.length - 1) {
-      throw new RuntimeException("backPropgateFromTo start layer cannot be output layer");
+      throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
     }
 
     final List<INDArray> gradients = new ArrayList<>();
