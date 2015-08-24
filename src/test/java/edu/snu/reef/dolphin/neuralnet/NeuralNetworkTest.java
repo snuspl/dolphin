@@ -183,8 +183,8 @@ public class NeuralNetworkTest {
   @Test
   public void backPropagateTest() {
     final Pair<List<INDArray>, List<INDArray>> actAndDeriv = neuralNetwork.activationAndDerivative(input);
-    final List<INDArray> activations = actAndDeriv.first;
-    final List<INDArray> derivatives = actAndDeriv.second;
+    final List<INDArray> activations = actAndDeriv.getFirst();
+    final List<INDArray> derivatives = actAndDeriv.getSecond();
     assertTrue(compare(activations, expectedActivations));
 
     final List<INDArray> gradients = neuralNetwork.backPropagate(activations, derivatives, label);

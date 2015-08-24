@@ -89,8 +89,8 @@ public final class NeuralNetwork {
    */
   public void train(final INDArray input, final INDArray label) {
     final Pair<List<INDArray>, List<INDArray>> actAndDeriv = activationAndDerivative(input);
-    final List<INDArray> activations = actAndDeriv.first;
-    final List<INDArray> derivatives = actAndDeriv.second;
+    final List<INDArray> activations = actAndDeriv.getFirst();
+    final List<INDArray> derivatives = actAndDeriv.getSecond();
 
     final List<INDArray> gradients = backPropagate(activations, derivatives, label);
 
