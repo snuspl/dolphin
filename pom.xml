@@ -144,6 +144,8 @@
               <exclude>**/target/**</exclude>
               <!-- REEF run files -->
               <exclude>**/REEF_LOCAL_RUNTIME/**</exclude>
+              <!-- Testcases result files -->
+              <exclude>**/test/resources/result/**</exclude>
             </excludes>
           </configuration>
           <dependencies>
