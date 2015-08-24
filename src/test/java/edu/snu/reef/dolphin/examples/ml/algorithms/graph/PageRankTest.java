@@ -37,7 +37,7 @@ import java.io.File;
  * Launch the PageRank test.
  */
 public final class PageRankTest {
-  private static final String OUTPUT_PATH = "test_pagerank";
+  private static final String OUTPUT_PATH = "target/test-pagerank";
 
   /**
    * Set up the test environment.
