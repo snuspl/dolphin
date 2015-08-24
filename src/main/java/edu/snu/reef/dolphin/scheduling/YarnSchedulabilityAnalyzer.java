@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.ml.sub;
-
-import edu.snu.reef.dolphin.examples.ml.data.LinearRegSummary;
-import org.apache.reef.io.network.group.api.operators.Reduce;
+package edu.snu.reef.dolphin.scheduling;
 
 import javax.inject.Inject;
 
-public class LinearRegReduceFunction implements Reduce.ReduceFunction<LinearRegSummary> {
+// TODO: This class should be implemented and used as a part of changes to support Gang Scheduling in Yarn.
+/**
+ * Not yet implemented, so always returns isSchedulable as true.
+ * A future implementation should take into account total Yarn resources and
+ * queue quotas to determine if Gang Scheduling for dolphin is feasible.
+ */
+public final class YarnSchedulabilityAnalyzer implements SchedulabilityAnalyzer {
 
   @Inject
-  public LinearRegReduceFunction() {
+  private YarnSchedulabilityAnalyzer() {
   }
 
+  /**
+   * @return true
+   */
   @Override
-  public final LinearRegSummary apply(final Iterable<LinearRegSummary> summaryList) {
-    LinearRegSummary reducedSummary = null;
-    for (final LinearRegSummary summary : summaryList) {
-      if (reducedSummary == null) {
-        reducedSummary = summary;
-      } else {
-        reducedSummary.plus(summary);
-      }
-    }
-    return reducedSummary;
+  public boolean isSchedulable() {
+    return true;
   }
 }

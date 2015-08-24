@@ -15,13 +15,13 @@
  */
 package edu.snu.reef.dolphin.core;
 
-import com.microsoft.reef.io.network.nggroup.impl.driver.GroupCommService;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.reef.client.DriverConfiguration;
 import org.apache.reef.client.DriverLauncher;
 import org.apache.reef.client.LauncherStatus;
 import org.apache.reef.driver.evaluator.EvaluatorRequest;
 import org.apache.reef.io.data.loading.api.DataLoadingRequestBuilder;
+import org.apache.reef.io.network.group.impl.driver.GroupCommService;
 import org.apache.reef.runtime.local.client.LocalRuntimeConfiguration;
 import org.apache.reef.runtime.yarn.client.YarnClientConfiguration;
 import org.apache.reef.tang.Configuration;
@@ -77,7 +77,7 @@ public final class DolphinLauncher {
 
   private Configuration getLocalRuntimeConfiguration() {
     return LocalRuntimeConfiguration.CONF
-        .set(LocalRuntimeConfiguration.MAX_NUMBER_OF_EVALUATORS, dolphinParameters.getEvalNum() + 1)
+        .set(LocalRuntimeConfiguration.MAX_NUMBER_OF_EVALUATORS, dolphinParameters.getLocalRuntimeMaxNumEvaluators())
         .build();
   }
 
@@ -101,7 +101,7 @@ public final class DolphinLauncher {
         .setMemoryMB(dolphinParameters.getEvalSize())
         .setInputFormatClass(TextInputFormat.class)
         .setInputPath(processInputDir(dolphinParameters.getInputDir()))
-        .setNumberOfDesiredSplits(dolphinParameters.getEvalNum())
+        .setNumberOfDesiredSplits(dolphinParameters.getDesiredSplits())
         .setComputeRequest(evalRequest)
         .setDriverConfigurationModule(driverConfiguration)
         .build();

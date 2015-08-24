@@ -13,24 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.simple;
-
-import org.apache.reef.io.network.group.api.operators.Reduce;
-
-import javax.inject.Inject;
-
-public class SimpleReduceFunction implements Reduce.ReduceFunction<Integer> {
-
-  @Inject
-  public SimpleReduceFunction() {
-  }
-
-  @Override
-  public final Integer apply(final Iterable<Integer> dataList) {
-    Integer sum = 0;
-    for (final Integer data : dataList) {
-      sum += data;
-    }
-    return sum;
-  }
-}
+/**
+ * Support for gang scheduling in Dolphin.
+ */
+package edu.snu.reef.dolphin.scheduling;
