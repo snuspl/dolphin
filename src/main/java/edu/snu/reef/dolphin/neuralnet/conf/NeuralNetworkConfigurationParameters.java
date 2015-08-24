@@ -23,9 +23,9 @@ import java.util.Set;
 /**
  * Parameters for neural network configuration.
  */
-public final class NeuralNetworkParameters {
+public final class NeuralNetworkConfigurationParameters {
 
-  private NeuralNetworkParameters() {
+  private NeuralNetworkConfigurationParameters() {
   }
 
   @NamedParameter(doc = "a set of strings that are serializations of network layers")

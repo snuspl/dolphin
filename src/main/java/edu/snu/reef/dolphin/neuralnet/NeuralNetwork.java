@@ -15,7 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
-import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkParameters;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
@@ -47,9 +47,9 @@ public final class NeuralNetwork {
 
   @Inject
   public NeuralNetwork(final ConfigurationSerializer configurationSerializer,
-                       @Parameter(NeuralNetworkParameters.SerializedLayerConfigurationSet.class)
+                       @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
                          final Set<String> serializedLayerConfigurationSet,
-                       @Parameter(NeuralNetworkParameters.BatchSize.class) final int batchSize,
+                       @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
                        final ParameterProvider parameterProvider) {
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;

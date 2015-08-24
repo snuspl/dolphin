@@ -77,10 +77,10 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   @Override
   public synchronized Configuration build() {
     final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(NeuralNetworkParameters.BatchSize.class, String.valueOf(batchSize));
+        .bindNamedParameter(NeuralNetworkConfigurationParameters.BatchSize.class, String.valueOf(batchSize));
 
     for (final String layerConfiguration : layerConfigurations) {
-      jb.bindSetEntry(NeuralNetworkParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
+      jb.bindSetEntry(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
     }
 
     jb.bindImplementation(ParameterProvider.class, parameterProviderClass);

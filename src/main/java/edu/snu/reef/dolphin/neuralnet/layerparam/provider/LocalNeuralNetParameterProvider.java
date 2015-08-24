@@ -16,7 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
 import edu.snu.reef.dolphin.examples.ml.parameters.StepSize;
-import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkParameters;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.apache.reef.tang.Configuration;
@@ -47,10 +47,11 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   private int numUpdate = 0;
 
   @Inject
-  public LocalNeuralNetParameterProvider(@Parameter(NeuralNetworkParameters.SerializedLayerConfigurationSet.class)
-                                           final Set<String> serializedLayerConfigurationSet,
-                                         @Parameter(StepSize.class) final double stepSize,
-                                         final ConfigurationSerializer configurationSerializer) {
+  public LocalNeuralNetParameterProvider(
+      @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
+        final Set<String> serializedLayerConfigurationSet,
+      @Parameter(StepSize.class) final double stepSize,
+      final ConfigurationSerializer configurationSerializer) {
     layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepSize = stepSize;
