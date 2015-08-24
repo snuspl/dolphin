@@ -15,6 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
+import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
@@ -35,6 +36,7 @@ public final class NeuralNetworkDriverParameters {
 
   private final String serializedNeuralNetworkConfiguration;
   private final String delimiter;
+  private final int maxIterations;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -47,10 +49,12 @@ public final class NeuralNetworkDriverParameters {
   @Inject
   private NeuralNetworkDriverParameters(final ConfigurationSerializer configurationSerializer,
                                         @Parameter(ConfigurationPath.class) final String configurationPath,
-                                        @Parameter(Delimiter.class) final String delimiter) {
+                                        @Parameter(Delimiter.class) final String delimiter,
+                                        @Parameter(MaxIterations.class) final int maxIterations) {
     this.serializedNeuralNetworkConfiguration =
         configurationSerializer.toString(loadNeuralNetworkConfiguration(configurationPath));
     this.delimiter = delimiter;
+    this.maxIterations = maxIterations;
   }
 
   /**
@@ -90,6 +94,7 @@ public final class NeuralNetworkDriverParameters {
   public static void registerShortNameOfClass(final CommandLine cl) {
     cl.registerShortNameOfClass(ConfigurationPath.class);
     cl.registerShortNameOfClass(Delimiter.class);
+    cl.registerShortNameOfClass(MaxIterations.class);
   }
 
   /**
@@ -101,6 +106,7 @@ public final class NeuralNetworkDriverParameters {
             NeuralNetworkTaskParameters.SerializedNeuralNetworkConfiguration.class,
             serializedNeuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
+        .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .build();
   }
 }

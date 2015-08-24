@@ -16,8 +16,10 @@
 package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.core.DataParser;
+import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
+import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.task.Task;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
@@ -39,6 +41,7 @@ public final class NeuralNetworkTask implements Task {
   private final Evaluator evaluator;
   private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
+  private final int maxIterations;
 
   /**
    * Class for calculating the prediction accuracy for validation data set.
@@ -64,6 +67,14 @@ public final class NeuralNetworkTask implements Task {
     }
 
     /**
+     * Reset statistics.
+     */
+    public void reset() {
+      totalNum = 0;
+      correctNum = 0;
+    }
+
+    /**
      * @return the prediction accuracy of model.
      */
     public double getStats() {
@@ -80,10 +91,12 @@ public final class NeuralNetworkTask implements Task {
 
   @Inject
   NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
-                    final NeuralNetwork neuralNetwork) {
+                    final NeuralNetwork neuralNetwork,
+                    @Parameter(MaxIterations.class) final int maxIterations) {
     super();
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
+    this.maxIterations = maxIterations;
     this.evaluator = new Evaluator();
   }
 
@@ -93,22 +106,26 @@ public final class NeuralNetworkTask implements Task {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
     final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
-    for (final Pair<Pair<INDArray, Integer>, Boolean> data : dataSet) {
-      final INDArray input = data.getFirst().getFirst();
-      final int label = data.getFirst().getSecond();
-      final boolean isValidation = data.getSecond();
-      if (isValidation) {
-        final List<INDArray> activations = neuralNetwork.feedForward(input);
-        evaluator.evaluate(activations.get(activations.size() - 1), label);
-      } else {
-        neuralNetwork.train(input, label);
-      }
-    }
 
-    LOG.log(Level.INFO, "=========================================================");
-    LOG.log(Level.INFO, "Result: {0}", String.valueOf(evaluator.getStats()));
-    LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(evaluator.getTotalNum()));
-    LOG.log(Level.INFO, "=========================================================");
+    for (int i = 0; i < maxIterations; ++i) {
+      for (final Pair<Pair<INDArray, Integer>, Boolean> data : dataSet) {
+        final INDArray input = data.getFirst().getFirst();
+        final int label = data.getFirst().getSecond();
+        final boolean isValidation = data.getSecond();
+        if (isValidation) {
+          final List<INDArray> activations = neuralNetwork.feedForward(input);
+          evaluator.evaluate(activations.get(activations.size() - 1), label);
+        } else {
+          neuralNetwork.train(input, label);
+        }
+      }
+      LOG.log(Level.INFO, "=========================================================");
+      LOG.log(Level.INFO, "Iteration: {0}", String.valueOf(i));
+      LOG.log(Level.INFO, "Result: {0}", String.valueOf(evaluator.getStats()));
+      LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(evaluator.getTotalNum()));
+      LOG.log(Level.INFO, "=========================================================");
+      evaluator.reset();
+    }
 
     return null;
   }

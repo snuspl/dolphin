@@ -15,7 +15,10 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
+import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import org.apache.reef.tang.Configuration;
+import org.apache.reef.tang.Configurations;
+import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 import org.apache.reef.tang.annotations.Parameter;
@@ -30,6 +33,8 @@ import java.io.IOException;
 public final class NeuralNetworkTaskParameters {
 
   private final Configuration neuralNetworkConfiguration;
+  private final String delimiter;
+  private final int maxIterations;
 
   @NamedParameter(doc = "serialized neural network configuration")
   public static class SerializedNeuralNetworkConfiguration implements Name<String> {
@@ -38,14 +43,22 @@ public final class NeuralNetworkTaskParameters {
   @Inject
   private NeuralNetworkTaskParameters(final ConfigurationSerializer configurationSerializer,
                                       @Parameter(SerializedNeuralNetworkConfiguration.class)
-                                          final String serializedNeuralNetworkConfiguration) throws IOException {
+                                          final String serializedNeuralNetworkConfiguration,
+                                      @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter,
+                                      @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetworkConfiguration);
+    this.delimiter = delimiter;
+    this.maxIterations = maxIterations;
   }
 
   /**
    * @return the configuration for task.
    */
   public Configuration getTaskConfiguration() {
-    return neuralNetworkConfiguration;
+    return Configurations.merge(Tang.Factory.getTang().newConfigurationBuilder()
+        .bindNamedParameter(NeuralNetworkDriverParameters.Delimiter.class, delimiter)
+        .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
+        .build(),
+        neuralNetworkConfiguration);
   }
 }
