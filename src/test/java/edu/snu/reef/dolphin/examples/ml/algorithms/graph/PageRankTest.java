@@ -37,12 +37,14 @@ import java.io.File;
  * Launch the PageRank test.
  */
 public final class PageRankTest {
+  private static final String OUTPUT_PATH = "test_pagerank";
 
   /**
    * Set up the test environment.
    */
   @Before
   public void setUp() throws Exception {
+    FileUtils.deleteDirectory(new File(OUTPUT_PATH));
   }
 
   /**
@@ -50,6 +52,7 @@ public final class PageRankTest {
    */
   @After
   public void tearDown() throws Exception {
+    FileUtils.deleteDirectory(new File(OUTPUT_PATH));
   }
 
   /**
@@ -64,7 +67,7 @@ public final class PageRankTest {
         "-local", "true", 
         "-split", "1",
         "-input", ClassLoader.getSystemResource("data").getPath() + "/pagerank", 
-        "-output", "/tmp/output_pagerank"
+        "-output", OUTPUT_PATH
     };
 
     DolphinLauncher.run(
@@ -79,7 +82,7 @@ public final class PageRankTest {
     );
 
     final File expected = new File(ClassLoader.getSystemResource("result").getPath() + "/pagerank");
-    final File actual = new File("/tmp/output_pagerank/rank/CtrlTask-0");
+    final File actual = new File(OUTPUT_PATH + "/rank/CtrlTask-0");
 
     Assert.assertTrue(FileUtils.contentEquals(expected, actual));
   }
