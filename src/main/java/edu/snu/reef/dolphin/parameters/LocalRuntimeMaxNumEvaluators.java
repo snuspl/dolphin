@@ -13,24 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.simple;
+package edu.snu.reef.dolphin.parameters;
 
-import org.apache.reef.io.network.group.api.operators.Reduce;
+import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
 
-import javax.inject.Inject;
-
-public class SimpleReduceFunction implements Reduce.ReduceFunction<Integer> {
-
-  @Inject
-  public SimpleReduceFunction() {
-  }
-
-  @Override
-  public final Integer apply(final Iterable<Integer> dataList) {
-    Integer sum = 0;
-    for (final Integer data : dataList) {
-      sum += data;
-    }
-    return sum;
-  }
+@NamedParameter(doc = "Maximum number of local runtime evaluators, must be at least Data Loading Splits + 1",
+    short_name = "maxNumEvalLocal", default_value = "2")
+public final class LocalRuntimeMaxNumEvaluators implements Name<Integer> {
 }
