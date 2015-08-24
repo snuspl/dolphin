@@ -52,7 +52,6 @@ public final class PageRankTest {
    */
   @After
   public void tearDown() throws Exception {
-    FileUtils.deleteDirectory(new File(OUTPUT_PATH));
   }
 
   /**
