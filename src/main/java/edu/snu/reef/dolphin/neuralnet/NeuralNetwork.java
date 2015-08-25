@@ -52,7 +52,7 @@ public final class NeuralNetwork {
   private int trainedCount;
 
   @Inject
-  public NeuralNetwork(final ConfigurationSerializer configurationSerializer,
+  private NeuralNetwork(final ConfigurationSerializer configurationSerializer,
                        @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
                        @Parameter(BatchSize.class) final int batchSize,
                        final ParameterProvider parameterProvider) {
