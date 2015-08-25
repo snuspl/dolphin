@@ -36,7 +36,7 @@ public final class FullyConnectedLayer implements Layer {
   @Inject
   public FullyConnectedLayer(@Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
                              @Parameter(LayerConfigurationParameters.ActivationFunction.class)
-                               final String activationFunction,
+                                 final String activationFunction,
                              @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
                              final LayerParameterInitializer layerParameterInitializer) {
     this.index = index;
@@ -88,7 +88,7 @@ public final class FullyConnectedLayer implements Layer {
   /** {@inheritDoc} */
   @Override
   public INDArray backPropagate(final INDArray activation, final INDArray derivative,
-                                    final LayerParameter prevParam, final INDArray nextGradient) {
+                                final LayerParameter prevParam, final INDArray nextGradient) {
     return nextGradient.mmul(prevParam.getWeightParam().transpose()).muli(derivative);
   }
 

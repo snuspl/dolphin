@@ -107,7 +107,7 @@ public class NeuralNetworkTest {
               6.32980868345e-02, -3.33847090889e-02, 1.07187527879e-01, -2.10442219526e-01, -6.28627854949e-01})
               .reshape(numHiddenUnits, expectedOutput.length()))
           .setBiasParam(Nd4j.create(new double[]{2.94039980954e-01, 3.04456115561e-01, 2.95112339483e-01})
-                  .reshape(1, expectedOutput.length()))
+              .reshape(1, expectedOutput.length()))
           .build()};
 
   @Before
