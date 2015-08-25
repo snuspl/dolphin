@@ -150,7 +150,7 @@ public final class NeuralNetworkREEF {
       status = neuralNetworkREEF.run();
     } catch (final Exception e) {
       LOG.log(Level.SEVERE, "Fatal exception occurred: {0}", e);
-      status = LauncherStatus.FAILED(e);
+      status = LauncherStatus.failed(e);
     }
     LOG.log(Level.INFO, "REEF job completed: {0}", status);
   }
