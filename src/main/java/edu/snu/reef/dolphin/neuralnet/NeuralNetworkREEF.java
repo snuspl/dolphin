@@ -92,7 +92,7 @@ public final class NeuralNetworkREEF {
    * @return the configuration for running a neural network job.
    */
   private Configuration getRuntimeConfiguration() {
-    return onLocal ? getLocalConfiguration() : getYarnRuntimeConfiguration();
+    return onLocal ? getLocalRuntimeConfiguration() : getYarnRuntimeConfiguration();
   }
 
   /**
@@ -121,7 +121,7 @@ public final class NeuralNetworkREEF {
   /**
    * @return the configuration for running on local environment.
    */
-  private Configuration getLocalConfiguration() {
+  private Configuration getLocalRuntimeConfiguration() {
     return LocalRuntimeConfiguration.CONF
         .set(LocalRuntimeConfiguration.MAX_NUMBER_OF_EVALUATORS, 1)
         .build();
