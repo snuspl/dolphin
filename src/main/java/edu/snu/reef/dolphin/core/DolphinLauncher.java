@@ -21,8 +21,6 @@ import org.apache.reef.client.DriverLauncher;
 import org.apache.reef.client.LauncherStatus;
 import org.apache.reef.driver.evaluator.EvaluatorRequest;
 import org.apache.reef.io.data.loading.api.DataLoadingRequestBuilder;
-import org.apache.reef.io.data.loading.api.DistributedDataSet;
-import org.apache.reef.io.data.loading.impl.DistributedDataSetPartition;
 import org.apache.reef.io.network.group.impl.driver.GroupCommService;
 import org.apache.reef.runtime.local.client.LocalRuntimeConfiguration;
 import org.apache.reef.runtime.yarn.client.YarnClientConfiguration;
@@ -102,9 +100,9 @@ public final class DolphinLauncher {
     final Configuration driverConfWithDataLoad = new DataLoadingRequestBuilder()
         .setMemoryMB(dolphinParameters.getEvalSize())
         .setInputFormatClass(TextInputFormat.class)
-        .setDistributedDataSet(processInputDir(dolphinParameters.getInputDir()))
+        .setInputPath(processInputDir(dolphinParameters.getInputDir()))
         .setNumberOfDesiredSplits(dolphinParameters.getDesiredSplits())
-        .addComputeRequest(evalRequest)
+        .setComputeRequest(evalRequest)
         .setDriverConfigurationModule(driverConfiguration)
         .build();
 
@@ -113,17 +111,11 @@ public final class DolphinLauncher {
         dolphinParameters.getDriverConf());
   }
 
-  private DistributedDataSet processInputDir(final String inputDir) {
-    String inputPath = inputDir;
-    if (dolphinParameters.getOnLocal()) {
-      final File inputFile = new File(inputDir);
-      inputPath = "file:///" + inputFile.getAbsolutePath();
+  private String processInputDir(final String inputDir) {
+    if (!dolphinParameters.getOnLocal()) {
+      return inputDir;
     }
-
-    final DistributedDataSet dds = new DistributedDataSet();
-    dds.addPartition(DistributedDataSetPartition.newBuilder().setPath(inputPath)
-        .setLocation(DistributedDataSetPartition.LOAD_INTO_ANY_LOCATION)
-        .setDesiredSplits(dolphinParameters.getDesiredSplits()).build());
-    return dds;
+    final File inputFile = new File(inputDir);
+    return "file:///" + inputFile.getAbsolutePath();
   }
 }
