@@ -38,22 +38,31 @@ public final class NeuralNetworkTask implements Task {
 
   private static final Logger LOG = Logger.getLogger(NeuralNetworkTask.class.getName());
 
-  private final Evaluator evaluator;
+  private final Validator validator;
   private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
 
   /**
-   * Class for calculating the prediction accuracy for validation data set.
+   * Class for validation of neural network model.
+   * Calculates the prediction accuracy for validation data set.
    */
-  private static class Evaluator {
+  private static final class Validator {
+    private final NeuralNetwork network;
     private int totalNum;
     private int correctNum;
 
-    public void evaluate(final INDArray output, final int expected) {
-      ++totalNum;
+    @Inject
+    private Validator(final NeuralNetwork network) {
+      this.network = network;
+    }
 
+    public void validate(final INDArray input, final int label) {
+      final List<INDArray> activations = network.feedForward(input);
+      final INDArray output = activations.get(activations.size() - 1);
       float maxValue = output.getFloat(0);
+
+      // Find the index with highest probability.
       int maxIndex = 0;
       for (int i = 1; i < output.length(); ++i) {
         if (output.getFloat(i) > maxValue) {
@@ -61,7 +70,9 @@ public final class NeuralNetworkTask implements Task {
           maxIndex = i;
         }
       }
-      if (maxIndex == expected) {
+
+      ++totalNum;
+      if (maxIndex == label) {
         ++correctNum;
       }
     }
@@ -92,12 +103,13 @@ public final class NeuralNetworkTask implements Task {
   @Inject
   NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
                     final NeuralNetwork neuralNetwork,
-                    @Parameter(MaxIterations.class) final int maxIterations) {
+                    @Parameter(MaxIterations.class) final int maxIterations,
+                    final Validator validator) {
     super();
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
     this.maxIterations = maxIterations;
-    this.evaluator = new Evaluator();
+    this.validator = validator;
   }
 
   /** {@inheritDoc} */
@@ -113,18 +125,17 @@ public final class NeuralNetworkTask implements Task {
         final int label = data.getFirst().getSecond();
         final boolean isValidation = data.getSecond();
         if (isValidation) {
-          final List<INDArray> activations = neuralNetwork.feedForward(input);
-          evaluator.evaluate(activations.get(activations.size() - 1), label);
+          validator.validate(input, label);
         } else {
           neuralNetwork.train(input, label);
         }
       }
       LOG.log(Level.INFO, "=========================================================");
       LOG.log(Level.INFO, "Iteration: {0}", String.valueOf(i));
-      LOG.log(Level.INFO, "Result: {0}", String.valueOf(evaluator.getStats()));
-      LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(evaluator.getTotalNum()));
+      LOG.log(Level.INFO, "Result: {0}", String.valueOf(validator.getStats()));
+      LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(validator.getTotalNum()));
       LOG.log(Level.INFO, "=========================================================");
-      evaluator.reset();
+      validator.reset();
     }
 
     return null;
