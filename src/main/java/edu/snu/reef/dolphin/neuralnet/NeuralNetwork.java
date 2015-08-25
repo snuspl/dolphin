@@ -42,8 +42,20 @@ import java.util.Set;
  */
 public final class NeuralNetwork {
 
+  /**
+   * The size of a batch of training inputs.
+   * The parameters are only updated after a batch of inputs is processed.
+   */
   private final int batchSize;
+
+  /**
+   * A set of layers which a neural network comprises.
+   */
   private final Layer[] layers;
+
+  /**
+   * Manager that provides the updated parameters and gathers activations and error gradient vector for each input.
+   */
   private final ParameterProvider parameterProvider;
 
   /**

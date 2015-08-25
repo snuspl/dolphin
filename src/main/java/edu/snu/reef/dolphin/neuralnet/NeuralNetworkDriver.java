@@ -24,7 +24,6 @@ import org.apache.reef.driver.task.TaskConfiguration;
 import org.apache.reef.io.data.loading.api.DataLoadingService;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Configurations;
-import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Unit;
 import org.apache.reef.tang.exceptions.BindException;
 import org.apache.reef.wake.EventHandler;
@@ -68,18 +67,23 @@ public final class NeuralNetworkDriver {
       final String contextId = activeContext.getId();
       LOG.log(Level.FINER, "Context active: {0}", contextId);
 
+
+      // Case 1: Evaluator configured with a Data Loading context has been given.
+      // We need to add a neural network context above this context.
       if (dataLoadingService.isDataLoadedContext(activeContext)) {
         final String nnCtxtId = "nnCtxt-" + ctrlCtxIds.getAndIncrement();
         LOG.log(Level.FINEST, "Submit neural network context {0} to: {1}",
             new Object[]{nnCtxtId, contextId});
 
+        // Add a Data Parse service
         final Configuration dataParseConf = DataParseService.getServiceConfiguration(NeuralNetworkDataParser.class);
 
-        activeContext.submitContext(Tang.Factory.getTang()
-            .newConfigurationBuilder(dataParseConf,
-                ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build())
-            .build());
+        activeContext.submitContextAndService(
+            ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build(),
+            dataParseConf);
 
+        // Case 2: Evaluator configured with a neural network context.
+        // We can now place a neural network task on top of the contexts.
       } else if (activeContext.getId().startsWith("nnCtxt")) {
         final String taskId = "nnTask-" + taskIds.getAndIncrement();
         LOG.log(Level.FINEST, "Submit neural network task {0} to :{1}", new Object[]{taskId, contextId});
