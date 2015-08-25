@@ -15,7 +15,9 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layers;
 
-import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters;
+import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.LayerIndex;
+import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.ActivationFunction;
+import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.NumberOfOutput;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -34,10 +36,9 @@ public final class FullyConnectedLayer implements Layer {
   private LayerParameter layerParameter;
 
   @Inject
-  public FullyConnectedLayer(@Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
-                             @Parameter(LayerConfigurationParameters.ActivationFunction.class)
-                                 final String activationFunction,
-                             @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
+  public FullyConnectedLayer(@Parameter(LayerIndex.class) final int index,
+                             @Parameter(ActivationFunction.class) final String activationFunction,
+                             @Parameter(NumberOfOutput.class) final int numOutput,
                              final LayerParameterInitializer layerParameterInitializer) {
     this.index = index;
     this.activationFunction = activationFunction;

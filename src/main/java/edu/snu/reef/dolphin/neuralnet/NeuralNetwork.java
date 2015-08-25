@@ -15,7 +15,8 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
-import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
@@ -52,15 +53,14 @@ public final class NeuralNetwork {
 
   @Inject
   public NeuralNetwork(final ConfigurationSerializer configurationSerializer,
-                       @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
-                           final Set<String> serializedLayerConfigurationSet,
-                       @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
+                       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
+                       @Parameter(BatchSize.class) final int batchSize,
                        final ParameterProvider parameterProvider) {
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
-    this.layers = new Layer[serializedLayerConfigurationSet.size()];
+    this.layers = new Layer[serializedLayerConfSets.size()];
 
-    for (final String serializedLayerConfiguration : serializedLayerConfigurationSet) {
+    for (final String serializedLayerConfiguration : serializedLayerConfSets) {
       try {
         final Configuration layerConfiguration = configurationSerializer.fromString(serializedLayerConfiguration);
         final Injector injector = Tang.Factory.getTang().newInjector(layerConfiguration);

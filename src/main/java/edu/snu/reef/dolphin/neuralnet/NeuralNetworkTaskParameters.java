@@ -37,16 +37,15 @@ public final class NeuralNetworkTaskParameters {
   private final int maxIterations;
 
   @NamedParameter(doc = "serialized neural network configuration")
-  public static class SerializedNeuralNetworkConfiguration implements Name<String> {
+  public static class SerializedNeuralNetConf implements Name<String> {
   }
 
   @Inject
   private NeuralNetworkTaskParameters(final ConfigurationSerializer configurationSerializer,
-                                      @Parameter(SerializedNeuralNetworkConfiguration.class)
-                                          final String serializedNeuralNetworkConfiguration,
+                                      @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
                                       @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter,
                                       @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
-    this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetworkConfiguration);
+    this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetConf);
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
   }

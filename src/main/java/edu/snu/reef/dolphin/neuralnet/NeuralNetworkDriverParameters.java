@@ -103,7 +103,7 @@ public final class NeuralNetworkDriverParameters {
   public Configuration getDriverConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(
-            NeuralNetworkTaskParameters.SerializedNeuralNetworkConfiguration.class,
+            NeuralNetworkTaskParameters.SerializedNeuralNetConf.class,
             serializedNeuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
