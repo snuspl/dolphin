@@ -19,6 +19,7 @@ import edu.snu.reef.dolphin.neuralnet.conf.FullyConnectedLayerConfigurationBuild
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
+import edu.snu.reef.dolphin.neuralnet.util.Nd4jUtils;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
@@ -30,7 +31,6 @@ import org.junit.Test;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -116,33 +116,6 @@ public class NeuralNetworkTest {
     neuralNetwork = injector.getInstance(NeuralNetwork.class);
   }
 
-  private boolean compare(final INDArray a, final INDArray b) {
-    if (!Arrays.equals(a.shape(), b.shape())) {
-      return false;
-    }
-    for (int i = 0; i < a.rows(); ++i) {
-      for (int j = 0; j < a.columns(); ++j) {
-        if (Math.abs(a.getFloat(i, j) - b.getFloat(i, j)) > tolerance) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  private boolean compare(final List<INDArray> a, final List<INDArray> b) {
-    if (a.size() != b.size()) {
-      return false;
-    }
-    final Iterator bIter = b.iterator();
-    for (final INDArray m : a) {
-      if (!compare(m, (INDArray) bIter.next())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   private boolean compareParameters(final LayerParameter[] a, final LayerParameter[] b) {
     if (a.length != b.length) {
       return false;
@@ -150,8 +123,8 @@ public class NeuralNetworkTest {
     for (int i = 0; i < a.length; ++i) {
       final LayerParameter param = a[i];
       final LayerParameter other = b[i];
-      if (!compare(param.getBiasParam(), other.getBiasParam())
-          || !compare(param.getWeightParam(), other.getWeightParam())) {
+      if (!Nd4jUtils.equal(param.getBiasParam(), other.getBiasParam(), tolerance)
+          || !Nd4jUtils.equal(param.getWeightParam(), other.getWeightParam(), tolerance)) {
         return false;
       }
     }
@@ -174,7 +147,7 @@ public class NeuralNetworkTest {
   @Test
   public void feedForwardTest() {
     final List<INDArray> activations = neuralNetwork.feedForward(input);
-    assertTrue(compare(activations.get(activations.size() - 1), expectedOutput));
+    assertTrue(Nd4jUtils.equal(activations.get(activations.size() - 1), expectedOutput, tolerance));
   }
 
   /**
@@ -185,10 +158,10 @@ public class NeuralNetworkTest {
     final Pair<List<INDArray>, List<INDArray>> actAndDeriv = neuralNetwork.activationAndDerivative(input);
     final List<INDArray> activations = actAndDeriv.getFirst();
     final List<INDArray> derivatives = actAndDeriv.getSecond();
-    assertTrue(compare(activations, expectedActivations));
+    assertTrue(Nd4jUtils.equal(activations, expectedActivations, tolerance));
 
     final List<INDArray> gradients = neuralNetwork.backPropagate(activations, derivatives, label);
-    assertTrue(compare(gradients, expectedGradients));
+    assertTrue(Nd4jUtils.equal(gradients, expectedGradients, tolerance));
   }
 
   /**

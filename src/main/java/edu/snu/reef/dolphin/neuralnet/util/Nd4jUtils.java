@@ -20,6 +20,8 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -28,6 +30,33 @@ import java.util.List;
 public final class Nd4jUtils {
 
   private Nd4jUtils() {
+  }
+
+  public static boolean equal(final INDArray a, final INDArray b, final float tolerance) {
+    if (!Arrays.equals(a.shape(), b.shape())) {
+      return false;
+    }
+    for (int i = 0; i < a.rows(); ++i) {
+      for (int j = 0; j < a.columns(); ++j) {
+        if (Math.abs(a.getFloat(i, j) - b.getFloat(i, j)) > tolerance) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  public static boolean equal(final List<INDArray> a, final List<INDArray> b, final float tolerance) {
+    if (a.size() != b.size()) {
+      return false;
+    }
+    final Iterator bIter = b.iterator();
+    for (final INDArray m : a) {
+      if (!equal(m, (INDArray) bIter.next(), tolerance)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static INDArray readNumpy(final InputStream filePath, final String split) throws IOException {
