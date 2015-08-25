@@ -63,7 +63,7 @@ public final class NeuralNetworkDriverParameters {
    * @return the neural network configuration.
    */
   private static Configuration loadNeuralNetworkConfiguration(final String path) {
-    //TODO read configuration from file
+    //TODO #83: read neural network configuration from file.
     return NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
         .setBatchSize(10)
         .setStepSize(1e-2)
