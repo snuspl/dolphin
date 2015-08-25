@@ -21,6 +21,8 @@ import org.apache.reef.client.DriverLauncher;
 import org.apache.reef.client.LauncherStatus;
 import org.apache.reef.driver.evaluator.EvaluatorRequest;
 import org.apache.reef.io.data.loading.api.DataLoadingRequestBuilder;
+import org.apache.reef.io.data.loading.api.DistributedDataSet;
+import org.apache.reef.io.data.loading.impl.DistributedDataSetPartition;
 import org.apache.reef.io.network.group.impl.driver.GroupCommService;
 import org.apache.reef.runtime.local.client.LocalRuntimeConfiguration;
 import org.apache.reef.runtime.yarn.client.YarnClientConfiguration;
@@ -56,7 +58,7 @@ public final class DolphinLauncher {
           .getInstance(DolphinLauncher.class)
           .run();
     } catch (final Exception e) {
-      status = LauncherStatus.FAILED(e);
+      status = LauncherStatus.failed(e);
     }
 
     LOG.log(Level.INFO, "REEF job completed: {0}", status);
@@ -100,9 +102,9 @@ public final class DolphinLauncher {
     final Configuration driverConfWithDataLoad = new DataLoadingRequestBuilder()
         .setMemoryMB(dolphinParameters.getEvalSize())
         .setInputFormatClass(TextInputFormat.class)
-        .setInputPath(processInputDir(dolphinParameters.getInputDir()))
+        .setDistributedDataSet(processInputDir(dolphinParameters.getInputDir()))
         .setNumberOfDesiredSplits(dolphinParameters.getDesiredSplits())
-        .setComputeRequest(evalRequest)
+        .addComputeRequest(evalRequest)
         .setDriverConfigurationModule(driverConfiguration)
         .build();
 
@@ -111,11 +113,17 @@ public final class DolphinLauncher {
         dolphinParameters.getDriverConf());
   }
 
-  private String processInputDir(final String inputDir) {
-    if (!dolphinParameters.getOnLocal()) {
-      return inputDir;
+  private DistributedDataSet processInputDir(final String inputDir) {
+    String inputPath = inputDir;
+    if (dolphinParameters.getOnLocal()) {
+      final File inputFile = new File(inputDir);
+      inputPath = "file:///" + inputFile.getAbsolutePath();
     }
-    final File inputFile = new File(inputDir);
-    return "file:///" + inputFile.getAbsolutePath();
+
+    final DistributedDataSet dds = new DistributedDataSet();
+    dds.addPartition(DistributedDataSetPartition.newBuilder().setPath(inputPath)
+        .setLocation(DistributedDataSetPartition.LOAD_INTO_ANY_LOCATION)
+        .setDesiredSplits(dolphinParameters.getDesiredSplits()).build());
+    return dds;
   }
 }
