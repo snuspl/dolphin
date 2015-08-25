@@ -53,11 +53,11 @@ public final class NeuralNetworkTask implements Task {
     public void evaluate(final INDArray output, final int expected) {
       ++totalNum;
 
-      double maxValue = output.getDouble(0);
+      float maxValue = output.getFloat(0);
       int maxIndex = 0;
       for (int i = 1; i < output.length(); ++i) {
-        if (output.getDouble(i) > maxValue) {
-          maxValue = output.getDouble(i);
+        if (output.getFloat(i) > maxValue) {
+          maxValue = output.getFloat(i);
           maxIndex = i;
         }
       }
@@ -77,8 +77,8 @@ public final class NeuralNetworkTask implements Task {
     /**
      * @return the prediction accuracy of model.
      */
-    public double getStats() {
-      return correctNum / (double) totalNum;
+    public float getStats() {
+      return correctNum / (float) totalNum;
     }
 
     /**

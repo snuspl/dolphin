@@ -37,8 +37,8 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
   private int numInput;
   private int numOutput;
   private long randomSeed = System.currentTimeMillis();
-  private double initWeight;
-  private double initBias;
+  private float initWeight;
+  private float initBias;
   private String activationFunction;
 
   public synchronized FullyConnectedLayerConfigurationBuilder setNumInput(final int numInput) {
@@ -56,12 +56,12 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
     return this;
   }
 
-  public synchronized FullyConnectedLayerConfigurationBuilder setInitWeight(final double initWeight) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setInitWeight(final float initWeight) {
     this.initWeight = initWeight;
     return this;
   }
 
-  public synchronized FullyConnectedLayerConfigurationBuilder setInitBias(final double initBias) {
+  public synchronized FullyConnectedLayerConfigurationBuilder setInitBias(final float initBias) {
     this.initBias = initBias;
     return this;
   }

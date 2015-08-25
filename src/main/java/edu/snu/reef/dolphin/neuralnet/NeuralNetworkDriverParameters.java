@@ -66,22 +66,22 @@ public final class NeuralNetworkDriverParameters {
     //TODO #83: read neural network configuration from file.
     return NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
         .setBatchSize(10)
-        .setStepSize(1e-2)
+        .setLearningRate(1e-2f)
         .setParameterProviderClass(LocalNeuralNetParameterProvider.class)
         .addLayerConfiguration(
             FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
                 .setNumInput(28 * 28) //MNIST
                 .setNumOutput(50)
-                .setInitWeight(0.0001)
-                .setInitBias(0.0002)
+                .setInitWeight(0.0001f)
+                .setInitBias(0.0002f)
                 .setActivationFunction("sigmoid")
                 .build())
         .addLayerConfiguration(
             FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
                 .setNumInput(50)
                 .setNumOutput(10)
-                .setInitWeight(0.01)
-                .setInitBias(0.02)
+                .setInitWeight(0.01f)
+                .setInitBias(0.02f)
                 .setActivationFunction("sigmoid")
                 .build())
         .build();

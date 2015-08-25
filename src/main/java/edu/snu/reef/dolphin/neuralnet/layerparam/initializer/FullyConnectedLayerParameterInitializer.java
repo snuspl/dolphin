@@ -34,8 +34,8 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
   private final int index;
   private final int numInput;
   private final int numOutput;
-  private final double initWeight;
-  private final double initBias;
+  private final float initWeight;
+  private final float initBias;
   private final long randomSeed;
 
   @Inject
@@ -44,8 +44,8 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
       @Parameter(LayerConfigurationParameters.NumberOfInput.class) final int numInput,
       @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
       @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
-      @Parameter(LayerConfigurationParameters.InitialWeight.class) final double initWeight,
-      @Parameter(LayerConfigurationParameters.InitialBias.class) final double initBias) {
+      @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
+      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias) {
     this.index = index;
     this.randomSeed = randomSeed;
     this.numInput = numInput;

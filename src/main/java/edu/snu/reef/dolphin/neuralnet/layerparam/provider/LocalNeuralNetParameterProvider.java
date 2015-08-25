@@ -15,7 +15,6 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
-import edu.snu.reef.dolphin.examples.ml.parameters.StepSize;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
@@ -43,18 +42,18 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   private final LayerParameter[] layerParameters;
   private final LayerParameter[] deltaLayerParameters;
-  private final double stepSize;
+  private final float learningRate;
   private int numUpdate = 0;
 
   @Inject
   public LocalNeuralNetParameterProvider(
       @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
           final Set<String> serializedLayerConfigurationSet,
-      @Parameter(StepSize.class) final double stepSize,
+      @Parameter(NeuralNetworkConfigurationParameters.LearningRate.class) final float learningRate,
       final ConfigurationSerializer configurationSerializer) {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    this.stepSize = stepSize;
+    this.learningRate = learningRate;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
@@ -122,8 +121,8 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       for (int i = 0; i < deltaLayerParameters.length; ++i) {
         final LayerParameter layerParameter = layerParameters[i];
         final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
-        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepSize));
-        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepSize));
+        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(learningRate));
+        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(learningRate));
       }
       reset();
     }

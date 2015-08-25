@@ -15,7 +15,6 @@
  */
 package edu.snu.reef.dolphin.neuralnet.conf;
 
-import edu.snu.reef.dolphin.examples.ml.parameters.StepSize;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Configurations;
@@ -40,7 +39,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   private int index = 0;
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
-  private double stepSize = 1e-2;
+  private float learningRate = 1e-2f;
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
@@ -69,8 +68,8 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
-  public synchronized NeuralNetworkConfigurationBuilder setStepSize(final double stepSize) {
-    this.stepSize = stepSize;
+  public synchronized NeuralNetworkConfigurationBuilder setLearningRate(final float learningRate) {
+    this.learningRate = learningRate;
     return this;
   }
 
@@ -84,7 +83,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     }
 
     jb.bindImplementation(ParameterProvider.class, parameterProviderClass);
-    jb.bindNamedParameter(StepSize.class, String.valueOf(stepSize));
+    jb.bindNamedParameter(NeuralNetworkConfigurationParameters.LearningRate.class, String.valueOf(learningRate));
 
     return jb.build();
   }
