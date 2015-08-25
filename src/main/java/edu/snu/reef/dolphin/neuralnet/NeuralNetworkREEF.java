@@ -34,6 +34,7 @@ import org.apache.reef.tang.formats.ConfigurationModule;
 import org.apache.reef.util.EnvironmentUtils;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,7 +109,7 @@ public final class NeuralNetworkREEF {
     final Configuration neuralNetworkConfWithDataLoad = new DataLoadingRequestBuilder()
         .setMemoryMB(evalSize)
         .setInputFormatClass(TextInputFormat.class)
-        .setInputPath(inputDir)
+        .setInputPath(processInputDir(inputDir))
         .setNumberOfDesiredSplits(1)
         .setDriverConfigurationModule(neuralNetworkDriverConf)
         .build();
@@ -141,6 +142,19 @@ public final class NeuralNetworkREEF {
    */
   private LauncherStatus run() throws InjectionException {
     return DriverLauncher.getLauncher(getRuntimeConfiguration()).run(getDriverConfWithDataLoad(), timeout);
+  }
+
+  /**
+   * Changes the given path string to the string supported by REEF Data Loading service.
+   * @param inputPath the input path string given by user.
+   * @return the path string supported by REEF Data Loading service.
+   */
+  private String processInputDir(final String inputPath) {
+    if (!onLocal) {
+      return inputPath;
+    }
+    final File inputFile = new File(inputPath);
+    return "file:///" + (inputFile.getAbsolutePath());
   }
 
   public static void main(final String[] args) {
