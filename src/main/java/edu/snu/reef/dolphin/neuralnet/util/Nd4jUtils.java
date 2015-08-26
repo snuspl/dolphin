@@ -15,6 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet.util;
 
+import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -32,7 +33,14 @@ public final class Nd4jUtils {
   private Nd4jUtils() {
   }
 
-  public static boolean equal(final INDArray a, final INDArray b, final float tolerance) {
+  /**
+   * Returns true if each element of one matrix is equal to one of another within tolerance.
+   * @param a one matrix to be tested for equality.
+   * @param b another matrix to be tested for equality.
+   * @param tolerance the maximum difference for which both numbers are still considered equal.
+   * @return true if each element of one matrix is equal to one of another.
+   */
+  public static boolean equals(final INDArray a, final INDArray b, final float tolerance) {
     if (!Arrays.equals(a.shape(), b.shape())) {
       return false;
     }
@@ -46,13 +54,42 @@ public final class Nd4jUtils {
     return true;
   }
 
-  public static boolean equal(final List<INDArray> a, final List<INDArray> b, final float tolerance) {
+  /**
+   * Returns true if the two specified matrix lists are equal to one another within tolerance.
+   * @param a one matrix list to be tested for equality.
+   * @param b another matrix list to be tested for equality.
+   * @param tolerance the maximum difference for which both numbers are still considered equal.
+   * @return true if the two specified matrix lists are equal to one another.
+   */
+  public static boolean equals(final List<INDArray> a, final List<INDArray> b, final float tolerance) {
     if (a.size() != b.size()) {
       return false;
     }
     final Iterator bIter = b.iterator();
     for (final INDArray m : a) {
-      if (!equal(m, (INDArray) bIter.next(), tolerance)) {
+      if (!equals(m, (INDArray) bIter.next(), tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if each element of weight and bias of a layer parameter is equal to another within tolerance.
+   * @param a one layer parameter array to be tested for equality.
+   * @param b another layer parameter array to be tested for equality.
+   * @param tolerance the maximum difference for which both numbers are still considered equal.
+   * @return true if two layer parameter arrays are equal.
+   */
+  public static boolean equals(final LayerParameter[] a, final LayerParameter[] b, final float tolerance) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (int i = 0; i < a.length; ++i) {
+      final LayerParameter param = a[i];
+      final LayerParameter other = b[i];
+      if (!Nd4jUtils.equals(param.getBiasParam(), other.getBiasParam(), tolerance)
+          || !Nd4jUtils.equals(param.getWeightParam(), other.getWeightParam(), tolerance)) {
         return false;
       }
     }

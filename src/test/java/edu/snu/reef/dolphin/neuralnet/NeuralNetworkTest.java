@@ -116,21 +116,6 @@ public class NeuralNetworkTest {
     neuralNetwork = injector.getInstance(NeuralNetwork.class);
   }
 
-  private boolean compareParameters(final LayerParameter[] a, final LayerParameter[] b) {
-    if (a.length != b.length) {
-      return false;
-    }
-    for (int i = 0; i < a.length; ++i) {
-      final LayerParameter param = a[i];
-      final LayerParameter other = b[i];
-      if (!Nd4jUtils.equal(param.getBiasParam(), other.getBiasParam(), tolerance)
-          || !Nd4jUtils.equal(param.getWeightParam(), other.getWeightParam(), tolerance)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   private void print(final INDArray matrix) {
     final int[] shape = matrix.shape();
     for (int i = 0; i < shape[0]; ++i) {
@@ -147,7 +132,7 @@ public class NeuralNetworkTest {
   @Test
   public void feedForwardTest() {
     final List<INDArray> activations = neuralNetwork.feedForward(input);
-    assertTrue(Nd4jUtils.equal(activations.get(activations.size() - 1), expectedOutput, tolerance));
+    assertTrue(Nd4jUtils.equals(activations.get(activations.size() - 1), expectedOutput, tolerance));
   }
 
   /**
@@ -158,10 +143,10 @@ public class NeuralNetworkTest {
     final Pair<List<INDArray>, List<INDArray>> actAndDeriv = neuralNetwork.activationAndDerivative(input);
     final List<INDArray> activations = actAndDeriv.getFirst();
     final List<INDArray> derivatives = actAndDeriv.getSecond();
-    assertTrue(Nd4jUtils.equal(activations, expectedActivations, tolerance));
+    assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
 
     final List<INDArray> gradients = neuralNetwork.backPropagate(activations, derivatives, label);
-    assertTrue(Nd4jUtils.equal(gradients, expectedGradients, tolerance));
+    assertTrue(Nd4jUtils.equals(gradients, expectedGradients, tolerance));
   }
 
   /**
@@ -175,6 +160,6 @@ public class NeuralNetworkTest {
             .getInstance(LocalNeuralNetParameterProvider.class);
 
     localNeuralNetParameterProvider.push(expectedActivations, expectedGradients);
-    assertTrue(compareParameters(localNeuralNetParameterProvider.pull(), expectedParams));
+    assertTrue(Nd4jUtils.equals(localNeuralNetParameterProvider.pull(), expectedParams, tolerance));
   }
 }
