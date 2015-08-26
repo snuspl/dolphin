@@ -75,4 +75,21 @@ public final class LayerParameter {
   public String toString() {
     return "weight: " + weightParam.toString() + ", bias: " + biasParam.toString();
   }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (!(obj instanceof LayerParameter)) {
+      return false;
+    }
+
+    final LayerParameter other = (LayerParameter)obj;
+    return weightParam.equals(other.weightParam) && biasParam.equals(other.biasParam);
+  }
+
+  @Override
+  public int hashCode() {
+    final int weightParamHashCode = weightParam == null ? 0 : weightParam.hashCode();
+    final int biasParamHashCode = biasParam == null ? 0 : biasParam.hashCode();
+    return weightParamHashCode * 31 + biasParamHashCode;
+  }
 }
