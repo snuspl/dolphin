@@ -13,24 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.neuralnet.layerparam.initializer;
-
-import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
-
 /**
- * Interface for parameter initializer.
- *
- * The parameter initializer generates the initial parameter of the layer by the layer configuration.
+ * Data representation classes for neural network.
  */
-public interface LayerParameterInitializer {
-
-  /**
-   * @return the initial parameter of the layer.
-   */
-  LayerParameter generateInitialParameter();
-
-  /**
-   * @return the index of the layer.
-   */
-  int getIndex();
-}
+package edu.snu.reef.dolphin.neuralnet.data;

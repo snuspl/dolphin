@@ -26,11 +26,17 @@ import org.apache.reef.tang.annotations.NamedParameter;
 public final class LayerConfigurationParameters {
 
   @NamedParameter(doc = "initial bias of a parameter", short_name = "initB")
-  public static final class InitialBias implements Name<Double> {
+  public static final class InitialBias implements Name<Float> {
   }
 
-  @NamedParameter(doc = "initial weight of a parameter", short_name = "initW")
-  public static final class InitialWeight implements Name<Double> {
+  @NamedParameter(
+      doc = "standard deviation of a normal distribution that is used to generate initial weight of a parameter",
+      short_name = "initW")
+  public static final class InitialWeight implements Name<Float> {
+  }
+
+  @NamedParameter(doc = "random seed that is used to generate initial weight", short_name = "seed")
+  public static final class RandomSeed implements Name<Long> {
   }
 
   @NamedParameter(doc = "index of the layer", short_name = "index")

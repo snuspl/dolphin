@@ -25,24 +25,21 @@ public final class LayerParameter {
   private final INDArray biasParam;
 
   /**
-   * Returns the new LayerParameter builder.
-   * @return
+   * @return a new LayerParameter builder.
    */
   public static Builder newBuilder() {
     return new Builder();
   }
 
   /**
-   * Returns the weight matrix of the parameter.
-   * @return
+   * @return the weight matrix of the parameter.
    */
   public INDArray getWeightParam() {
     return weightParam;
   }
 
   /**
-   * Returns the bias vector of the parameter.
-   * @return
+   * @return the bias vector of the parameter.
    */
   public INDArray getBiasParam() {
     return biasParam;

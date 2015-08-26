@@ -23,9 +23,9 @@ import java.util.Set;
 /**
  * Parameters for neural network configuration.
  */
-public final class NeuralNetworkParameters {
+public final class NeuralNetworkConfigurationParameters {
 
-  private NeuralNetworkParameters() {
+  private NeuralNetworkConfigurationParameters() {
   }
 
   @NamedParameter(doc = "a set of strings that are serializations of network layers")
@@ -36,7 +36,7 @@ public final class NeuralNetworkParameters {
   public static final class BatchSize implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "the name of the ParameterProvider implementation class to use")
-  public static final class ParameterProviderClassName implements Name<String> {
+  @NamedParameter(doc = "learning rate")
+  public static final class LearningRate implements Name<Float> {
   }
 }

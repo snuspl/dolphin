@@ -39,6 +39,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   private int index = 0;
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
+  private float learningRate = 1e-2f;
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
@@ -67,17 +68,22 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
+  public synchronized NeuralNetworkConfigurationBuilder setLearningRate(final float learningRate) {
+    this.learningRate = learningRate;
+    return this;
+  }
+
   @Override
   public synchronized Configuration build() {
     final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(NeuralNetworkParameters.BatchSize.class, String.valueOf(batchSize));
+        .bindNamedParameter(NeuralNetworkConfigurationParameters.BatchSize.class, String.valueOf(batchSize));
 
     for (final String layerConfiguration : layerConfigurations) {
-      jb.bindSetEntry(NeuralNetworkParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
+      jb.bindSetEntry(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
     }
 
-    jb.bindNamedParameter(
-        NeuralNetworkParameters.ParameterProviderClassName.class, parameterProviderClass.getName());
+    jb.bindImplementation(ParameterProvider.class, parameterProviderClass);
+    jb.bindNamedParameter(NeuralNetworkConfigurationParameters.LearningRate.class, String.valueOf(learningRate));
 
     return jb.build();
   }
