@@ -116,16 +116,6 @@ public class NeuralNetworkTest {
     neuralNetwork = injector.getInstance(NeuralNetwork.class);
   }
 
-  private void print(final INDArray matrix) {
-    final int[] shape = matrix.shape();
-    for (int i = 0; i < shape[0]; ++i) {
-      for (int j = 0; j < shape[1]; ++j) {
-        System.out.print("\t" + matrix.getFloat(i, j));
-      }
-      System.out.println();
-    }
-  }
-
   /**
    * Unit test for feed forward of neural network.
    */

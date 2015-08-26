@@ -96,6 +96,20 @@ public final class Nd4jUtils {
     return true;
   }
 
+  /**
+   * Prints out the given matrix.
+   * @param matrix the matrix to be printed.
+   */
+  public static void print(final INDArray matrix) {
+    final int[] shape = matrix.shape();
+    for (int i = 0; i < shape[0]; ++i) {
+      for (int j = 0; j < shape[1]; ++j) {
+        System.out.print("\t" + matrix.getFloat(i, j));
+      }
+      System.out.println();
+    }
+  }
+
   public static INDArray readNumpy(final InputStream filePath, final String split) throws IOException {
     final BufferedReader reader = new BufferedReader(new InputStreamReader(filePath));
     String line;
