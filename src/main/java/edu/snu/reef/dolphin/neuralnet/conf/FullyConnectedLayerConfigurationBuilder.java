@@ -19,6 +19,7 @@ import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.FullyConnectedLayer
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.FullyConnectedLayer;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
+import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.util.Builder;
@@ -68,6 +69,20 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
 
   public synchronized FullyConnectedLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
     this.activationFunction = activationFunction;
+    return this;
+  }
+
+  public synchronized FullyConnectedLayerConfigurationBuilder fromProtoConfiguration(
+      final NeuralNetworkProtos.LayerConfiguration protoConf) {
+    numInput = protoConf.getNumInput();
+    numOutput = protoConf.getNumOutput();
+
+    if (protoConf.getFullyConnectedParam().hasRandomSeed()) {
+      randomSeed = protoConf.getFullyConnectedParam().getRandomSeed();
+    }
+    initWeight = protoConf.getFullyConnectedParam().getInitWeight();
+    initBias = protoConf.getFullyConnectedParam().getInitBias();
+    activationFunction = protoConf.getFullyConnectedParam().getActivationFunction();
     return this;
   }
 
