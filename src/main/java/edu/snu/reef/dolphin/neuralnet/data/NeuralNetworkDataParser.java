@@ -71,9 +71,13 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
     final List<Pair<Pair<INDArray, Integer>, Boolean>> trainingData = new ArrayList<>();
 
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
+      final String text = keyValue.getSecond().toString().trim();
+      if (text.startsWith("#") || 0 == text.length()) {
+        continue;
+      }
       try {
         final INDArray input = readNumpy(
-            new ByteArrayInputStream(keyValue.getSecond().toString().getBytes()), delimiter);
+            new ByteArrayInputStream(text.getBytes()), delimiter);
         final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2));
         final int label = (int) input.getFloat(input.columns() - 2);
         final boolean isValidation = ((int) input.getFloat(input.columns() - 1) == 1);
