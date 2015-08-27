@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# name: sample_classification
+# name: classification
 # description: syntactic data for classification (e.g., Logistic regression)
 # original model: 0.5 - 3x1 + 2x2 -1.5x3
 # original accuracy: 90%

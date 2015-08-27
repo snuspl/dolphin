@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run.sh -local true -split 4 -input sample -output output_simple
+# ./run.sh -local true -split 4 -input ../src/test/resources/data/sample -output output_simple
 
 # RUNTIME
 SELF_JAR=../target/dolphin-0.1-SNAPSHOT-shaded.jar

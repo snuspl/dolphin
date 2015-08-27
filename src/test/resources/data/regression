@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# name: sample_regression
+# name: regression
 # description: syntactic data for regression (e.g., Linear regression)
 # original model: 0.5 - 3x1 + 2x2 -1.5x3
 # original noise: random error with 1.0 standard deviation
