@@ -47,7 +47,7 @@ public final class NeuralNetworkDriverParameters {
   public static class ConfigurationPath implements Name<String> {
   }
 
-  @NamedParameter(doc = "delimiter that is used in input file", short_name = "delim", default_value = "   ")
+  @NamedParameter(doc = "delimiter that is used in input file", short_name = "delim", default_value = ",")
   public static class Delimiter implements Name<String> {
   }
 
