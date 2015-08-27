@@ -102,7 +102,7 @@ public final class NeuralNetworkDriverParameters {
     final NeuralNetworkConfigurationBuilder nnConfBuilder = NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
 
     nnConfBuilder.setBatchSize(nnConf.getBatchSize())
-        .setLearningRate(nnConf.getStepsize())
+        .setStepsize(nnConf.getStepsize())
         .setParameterProviderClass(getParameterProviderClass(nnConf.getParameterProvider().getType()));
 
     // Adds the configuration of each layer.

@@ -55,7 +55,7 @@ public class NeuralNetworkTest {
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
       .setBatchSize(1)
-      .setLearningRate(1e-2f)
+      .setStepsize(1e-2f)
       .setParameterProviderClass(LocalNeuralNetParameterProvider.class)
       .addLayerConfiguration(
           FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()

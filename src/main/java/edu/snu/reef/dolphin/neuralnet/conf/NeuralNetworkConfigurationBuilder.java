@@ -39,7 +39,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   private int index = 0;
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
-  private float learningRate = 1e-2f;
+  private float stepsize = 1e-2f;
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
@@ -68,8 +68,8 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
-  public synchronized NeuralNetworkConfigurationBuilder setLearningRate(final float learningRate) {
-    this.learningRate = learningRate;
+  public synchronized NeuralNetworkConfigurationBuilder setStepsize(final float stepsize) {
+    this.stepsize = stepsize;
     return this;
   }
 
@@ -83,7 +83,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     }
 
     jb.bindImplementation(ParameterProvider.class, parameterProviderClass);
-    jb.bindNamedParameter(NeuralNetworkConfigurationParameters.LearningRate.class, String.valueOf(learningRate));
+    jb.bindNamedParameter(NeuralNetworkConfigurationParameters.Stepsize.class, String.valueOf(stepsize));
 
     return jb.build();
   }

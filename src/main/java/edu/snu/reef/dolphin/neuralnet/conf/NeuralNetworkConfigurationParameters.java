@@ -36,7 +36,7 @@ public final class NeuralNetworkConfigurationParameters {
   public static final class BatchSize implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "learning rate")
-  public static final class LearningRate implements Name<Float> {
+  @NamedParameter(doc = "step size")
+  public static final class Stepsize implements Name<Float> {
   }
 }
