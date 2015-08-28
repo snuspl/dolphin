@@ -97,6 +97,7 @@ public final class NeuralNetworkDriverParameters {
    */
   private static Configuration loadNeuralNetworkConfiguration(final String path) throws IOException {
     final NeuralNetworkConfiguration.Builder nnProtoBuilder = NeuralNetworkConfiguration.newBuilder();
+    // Parse neural network builder protobuf message from the prototxt file.
     TextFormat.merge(new FileReader(path), nnProtoBuilder);
     final NeuralNetworkConfiguration nnConf = nnProtoBuilder.build();
     final NeuralNetworkConfigurationBuilder nnConfBuilder = NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
