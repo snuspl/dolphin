@@ -83,12 +83,12 @@ public final class LogisticRegTest {
     );
 
     final File expectedModel = new File(
-        ClassLoader.getSystemResource("result").getPath() + "/logisticreg/model/CtrlTask-0");
+        ClassLoader.getSystemResource("result").getPath() + "/logisticreg_model");
     final File actualModel = new File(OUTPUT_PATH + "/model/CtrlTask-0");
     Assert.assertTrue(FileUtils.contentEquals(expectedModel, actualModel));
 
     final File expectedAccuracy = new File(
-        ClassLoader.getSystemResource("result").getPath() + "/logisticreg/accuracy/CtrlTask-0");
+        ClassLoader.getSystemResource("result").getPath() + "/logisticreg_accuracy");
     final File actualAccuracy = new File(OUTPUT_PATH + "/accuracy/CtrlTask-0");
     Assert.assertTrue(FileUtils.contentEquals(expectedAccuracy, actualAccuracy));
   }
