@@ -60,13 +60,14 @@ public final class PageRankTest {
   @Test
   public void testPageRank() throws Exception {
     final String[] args = {
-        "-convThr", "0.01", 
-        "-maxIter", "10", 
-        "-dampingFactor", "0.85", 
-        "-local", "true", 
+        "-convThr", "0.01",
+        "-maxIter", "10",
+        "-dampingFactor", "0.85",
+        "-local", "true",
         "-split", "1",
-        "-input", ClassLoader.getSystemResource("data").getPath() + "/pagerank", 
-        "-output", OUTPUT_PATH
+        "-input", ClassLoader.getSystemResource("data").getPath() + "/pagerank",
+        "-output", OUTPUT_PATH,
+        "-maxNumEvalLocal", "2"
     };
 
     DolphinLauncher.run(

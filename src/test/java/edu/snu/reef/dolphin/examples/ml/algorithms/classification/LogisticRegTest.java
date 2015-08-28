@@ -67,7 +67,8 @@ public final class LogisticRegTest {
         "-local", "true",
         "-split", "4",
         "-input", ClassLoader.getSystemResource("data").getPath() + "/classification",
-        "-output", OUTPUT_PATH
+        "-output", OUTPUT_PATH,
+        "-maxNumEvalLocal", "5"
     };
 
     DolphinLauncher.run(

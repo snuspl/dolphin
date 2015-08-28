@@ -67,7 +67,8 @@ public final class LinearRegTest {
         "-local", "true",
         "-split", "4",
         "-input", ClassLoader.getSystemResource("data").getPath() + "/regression",
-        "-output", OUTPUT_PATH
+        "-output", OUTPUT_PATH,
+        "-maxNumEvalLocal", "5"
     };
 
     DolphinLauncher.run(
