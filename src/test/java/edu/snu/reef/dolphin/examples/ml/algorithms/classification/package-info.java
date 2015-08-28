@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.ml.algorithms.graph;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    PageRankTest.class
-    })
-public final class GraphTestSuite {
-}
+/**
+ * Tests for Graph.
+ */
+package edu.snu.reef.dolphin.examples.ml.algorithms.classification;

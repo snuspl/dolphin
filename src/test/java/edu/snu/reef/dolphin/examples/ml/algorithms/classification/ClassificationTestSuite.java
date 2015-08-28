@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.ml.algorithms.graph;
+package edu.snu.reef.dolphin.examples.ml.algorithms.classification;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    PageRankTest.class
+    LogisticRegTest.class
     })
-public final class GraphTestSuite {
+public final class ClassificationTestSuite {
 }

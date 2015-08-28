@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.examples.ml.algorithms.graph;
+package edu.snu.reef.dolphin.examples.ml.algorithms.regression;
 
 import edu.snu.reef.dolphin.core.DolphinConfiguration;
 import edu.snu.reef.dolphin.core.DolphinLauncher;
@@ -24,17 +24,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
 import java.io.File;
 
 /**
- * Launch the PageRank test.
+ * Launch the LinearRegTest test.
  */
-public final class PageRankTest {
-  private static final String OUTPUT_PATH = "target/test-pagerank";
+public final class LinearRegTest {
+  private static final String OUTPUT_PATH = "target/test-linear-reg";
 
   /**
    * Set up the test environment.
@@ -52,35 +52,41 @@ public final class PageRankTest {
   }
 
   /**
-   * Run PageRank test.
+   * Run LinearReg test.
    */
   @Test
-  public void testPageRank() throws Exception {
+  public void testLinearReg() throws Exception {
     final String[] args = {
-        "-convThr", "0.01",
-        "-maxIter", "10",
-        "-dampingFactor", "0.85",
+        "-dim", "3",
+        "-maxIter", "20",
+        "-stepSize", "0.001",
+        "-lambda", "0.1",
         "-local", "true",
-        "-split", "1",
-        "-input", ClassLoader.getSystemResource("data").getPath() + "/pagerank",
+        "-split", "4",
+        "-input", ClassLoader.getSystemResource("data").getPath() + "/regression",
         "-output", OUTPUT_PATH,
-        "-maxNumEvalLocal", "2"
+        "-maxNumEvalLocal", "5"
     };
 
     DolphinLauncher.run(
         Configurations.merge(
-            DolphinConfiguration.getConfiguration(args, PageRankParameters.getCommandLine()),
+            DolphinConfiguration.getConfiguration(args, LinearRegParameters.getCommandLine()),
             Tang.Factory.getTang().newConfigurationBuilder()
-                .bindNamedParameter(JobIdentifier.class, "PageRank")
-                .bindImplementation(UserJobInfo.class, PageRankJobInfo.class)
-                .bindImplementation(UserParameters.class, PageRankParameters.class)
+                .bindNamedParameter(JobIdentifier.class, "Linear Regression")
+                .bindImplementation(UserJobInfo.class, LinearRegJobInfo.class)
+                .bindImplementation(UserParameters.class, LinearRegParameters.class)
                 .build()
         )
     );
 
-    final File expected = new File(ClassLoader.getSystemResource("result").getPath() + "/pagerank");
-    final File actual = new File(OUTPUT_PATH + "/rank/CtrlTask-0");
+    final File expectedModel = new File(
+        ClassLoader.getSystemResource("result").getPath() + "/linearreg_model");
+    final File actualModel = new File(OUTPUT_PATH + "/model/CtrlTask-0");
+    Assert.assertTrue(FileUtils.contentEquals(expectedModel, actualModel));
 
-    Assert.assertTrue(FileUtils.contentEquals(expected, actual));
+    final File expectedAccuracy = new File(
+        ClassLoader.getSystemResource("result").getPath() + "/linearreg_loss");
+    final File actualAccuracy = new File(OUTPUT_PATH + "/loss/CtrlTask-0");
+    Assert.assertTrue(FileUtils.contentEquals(expectedAccuracy, actualAccuracy));
   }
 }
