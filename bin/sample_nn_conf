@@ -15,7 +15,7 @@
 # name: sample_nn_conf
 # description: neural network configuration for MNIST database
 batch_size: 10
-stepsize: 1e-2
+stepsize: 1e-3
 parameter_provider {
   type: "local"
 }
