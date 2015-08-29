@@ -238,24 +238,13 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>com.google.protobuf.tools</groupId>
+        <artifactId>maven-protoc-plugin</artifactId>
+        <version>0.4.2</version>
         <executions>
           <execution>
-            <id>generate-sources</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <tasks>
-                <mkdir dir="target/generated-sources/proto"/>
-                <exec executable="protoc">
-                  <arg value="--proto_path=src/main/proto/"/>
-                  <arg value="--java_out=target/generated-sources/proto"/>
-                  <arg value="src/main/proto/neural_network.proto"/>
-                </exec>
-              </tasks>
-              <sourceRoot>${project.basedir}/target/generated-sources/proto</sourceRoot>
-            </configuration>
             <goals>
-              <goal>run</goal>
+              <goal>compile</goal>
             </goals>
           </execution>
         </executions>
@@ -280,4 +269,10 @@
       </plugin>
     </plugins>
   </build>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>protoc-plugin</id>
+      <url>http://sergei-ivanov.github.com/maven-protoc-plugin/repo/releases/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
