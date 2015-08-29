@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# name: sample_nn_conf
+# name: neuralnet
 # description: neural network configuration for MNIST database
 batch_size: 10
 stepsize: 1e-3
