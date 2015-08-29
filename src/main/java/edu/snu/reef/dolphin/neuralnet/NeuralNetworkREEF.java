@@ -20,6 +20,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.reef.client.DriverConfiguration;
 import org.apache.reef.client.DriverLauncher;
 import org.apache.reef.client.LauncherStatus;
+import org.apache.reef.driver.evaluator.EvaluatorRequest;
 import org.apache.reef.io.data.loading.api.DataLoadingRequestBuilder;
 import org.apache.reef.runtime.local.client.LocalRuntimeConfiguration;
 import org.apache.reef.runtime.yarn.client.YarnClientConfiguration;
@@ -106,11 +107,24 @@ public final class NeuralNetworkREEF {
         .set(DriverConfiguration.DRIVER_IDENTIFIER, "Neural Network")
         .set(DriverConfiguration.ON_CONTEXT_ACTIVE, NeuralNetworkDriver.ActiveContextHandler.class);
 
+    final EvaluatorRequest computeRequest = EvaluatorRequest.newBuilder()
+        .setNumber(1)
+        .setNumberOfCores(1)
+        .setMemory(evalSize)
+        .build();
+
+    final EvaluatorRequest dataRequest = EvaluatorRequest.newBuilder()
+        .setNumber(1)
+        .setNumberOfCores(1)
+        .setMemory(evalSize)
+        .build();
+
     final Configuration neuralNetworkConfWithDataLoad = new DataLoadingRequestBuilder()
-        .setMemoryMB(evalSize)
         .setInputFormatClass(TextInputFormat.class)
         .setInputPath(processInputDir(inputDir))
         .setNumberOfDesiredSplits(1)
+        .addComputeRequest(computeRequest)
+        .addDataRequest(dataRequest)
         .setDriverConfigurationModule(neuralNetworkDriverConf)
         .build();
 
