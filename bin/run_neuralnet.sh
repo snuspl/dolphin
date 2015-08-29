@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run_nn.sh -local true -maxIter 100 -conf sample_nn_conf -input sample_nn_data -timeout 800000
+# ./run_neuralnet.sh -local true -maxIter 100 -conf ../src/test/resources/configuration/neuralnet -input ../src/test/resources/data/neuralnet  -timeout 800000
 
 # RUNTIME
 SELF_JAR=../target/dolphin-0.1-SNAPSHOT-shaded.jar
