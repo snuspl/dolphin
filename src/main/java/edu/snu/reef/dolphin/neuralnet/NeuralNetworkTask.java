@@ -111,15 +111,13 @@ public final class NeuralNetworkTask implements Task {
   @Inject
   NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
                     final NeuralNetwork neuralNetwork,
-                    @Parameter(MaxIterations.class) final int maxIterations,
-                    final Validator trainingValidator,
-                    final Validator crossValidator) {
+                    @Parameter(MaxIterations.class) final int maxIterations) {
     super();
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
     this.maxIterations = maxIterations;
-    this.trainingValidator = trainingValidator;
-    this.crossValidator = crossValidator;
+    this.trainingValidator = new Validator(neuralNetwork);
+    this.crossValidator = new Validator(neuralNetwork);
   }
 
   /** {@inheritDoc} */
