@@ -42,18 +42,18 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   private final LayerParameter[] layerParameters;
   private final LayerParameter[] deltaLayerParameters;
-  private final float learningRate;
+  private final float stepsize;
   private int numUpdate = 0;
 
   @Inject
   public LocalNeuralNetParameterProvider(
       @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
           final Set<String> serializedLayerConfigurationSet,
-      @Parameter(NeuralNetworkConfigurationParameters.LearningRate.class) final float learningRate,
+      @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer) {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    this.learningRate = learningRate;
+    this.stepsize = stepsize;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
@@ -121,8 +121,8 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       for (int i = 0; i < deltaLayerParameters.length; ++i) {
         final LayerParameter layerParameter = layerParameters[i];
         final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
-        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(learningRate));
-        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(learningRate));
+        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepsize));
+        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepsize));
       }
       reset();
     }
