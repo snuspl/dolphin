@@ -143,6 +143,7 @@ public final class NeuralNetworkTask implements Task {
       LOG.log(Level.INFO, "Iteration: {0}", String.valueOf(i));
       LOG.log(Level.INFO, "Training Error: {0}", String.valueOf(trainingValidator.getError()));
       LOG.log(Level.INFO, "Cross Validation Error: {0}", String.valueOf(crossValidator.getError()));
+      LOG.log(Level.INFO, "# of training inputs: {0}", String.valueOf(trainingValidator.getTotalNum()));
       LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(crossValidator.getTotalNum()));
       LOG.log(Level.INFO, "=========================================================");
       crossValidator.reset();
