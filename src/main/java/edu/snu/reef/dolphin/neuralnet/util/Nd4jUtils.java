@@ -45,11 +45,11 @@ public final class Nd4jUtils {
     if (!Arrays.equals(a.shape(), b.shape())) {
       return false;
     }
-    for (int i = 0; i < a.rows(); ++i) {
-      for (int j = 0; j < a.columns(); ++j) {
-        if (Math.abs(a.getFloat(i, j) - b.getFloat(i, j)) > tolerance) {
-          return false;
-        }
+    final INDArray al = a.linearView();
+    final INDArray bl = b.linearView();
+    for (int i = 0; i < al.length(); i++) {
+      if (Math.abs(al.getFloat(i) - bl.getFloat(i)) > tolerance) {
+        return false;
       }
     }
     return true;
