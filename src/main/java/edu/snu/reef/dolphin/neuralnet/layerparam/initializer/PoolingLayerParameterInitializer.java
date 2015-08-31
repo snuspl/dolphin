@@ -24,7 +24,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import javax.inject.Inject;
 
 /**
- * Parameter Initializer of pooling connected layer.
+ * Parameter Initializer of pooling layer.
  * <p/>
  * initializes the weight matrix with pseudo random normal distributed value with mean 0 and given standard deviation.
  * initializes the bias vector with the given value.
@@ -37,8 +37,6 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
   private final float initWeight;
   private final float initBias;
   private final long randomSeed;
-  private final int poolingSize;
-  private final String poolingFunc;
 
   @Inject
   public PoolingLayerParameterInitializer(
@@ -47,17 +45,13 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
       @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
       @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
       @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
-      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias,
-      @Parameter(LayerConfigurationParameters.PoolingSize.class) final int poolingSize,
-      @Parameter(LayerConfigurationParameters.PoolingFunction.class) final String poolingFunc) {
+      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias) {
     this.index = index;
     this.randomSeed = randomSeed;
     this.numInput = numInput;
     this.numOutput = numOutput;
     this.initWeight = initWeight;
     this.initBias = initBias;
-    this.poolingSize = poolingSize;
-    this.poolingFunc = poolingFunc;
   }
 
   /**

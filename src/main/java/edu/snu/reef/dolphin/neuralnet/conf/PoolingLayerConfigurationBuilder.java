@@ -27,7 +27,7 @@ import org.apache.reef.util.Builder;
 /**
  * Configuration builder for pooling layer.
  * <p/>
- * The configuration that this builder generates is used to create a fully connected layer instance.
+ * The configuration that this builder generates is used to create a pooling layer instance.
  */
 public final class PoolingLayerConfigurationBuilder implements Builder<Configuration> {
 

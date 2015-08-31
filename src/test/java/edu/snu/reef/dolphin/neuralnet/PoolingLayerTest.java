@@ -38,35 +38,35 @@ public class PoolingLayerTest {
 
   private final float tolerance = 1e-6f;
 
-  private INDArray input = Nd4j.create(new float[]{
+  private final INDArray input = Nd4j.create(new float[]{
       1, 2, 3, 4,
       5, 6, 7, 8,
       9, 10, 11, 12,
       13, 14, 15, 16
   }, new int[]{4, 4}).transposei();
 
-  private INDArray maxOutput = Nd4j.create(new float[]{
+  private final INDArray maxOutput = Nd4j.create(new float[]{
       6, 8,
       14, 16
   }, new int[]{2, 2}).transposei();
 
-  private INDArray maxDerivative = Nd4j.create(new float[]{
+  private final INDArray maxDerivative = Nd4j.create(new float[]{
       0, 0, 0, 0,
       0, 1, 0, 1,
       0, 0, 0, 0,
       0, 1, 0, 1
   }, new int[]{4, 4}).transposei();
 
-  private INDArray meanOutput = Nd4j.create(new float[]{
+  private final INDArray meanOutput = Nd4j.create(new float[]{
       3.5f, 5.5f,
       11.5f, 13.5f
   }, new int[]{2, 2}).transposei();
 
-  private INDArray meanDerivative = Nd4j.create(new float[]{
-      0.0625f, 0.0625f, 0.0625f, 0.0625f,
-      0.0625f, 0.0625f, 0.0625f, 0.0625f,
-      0.0625f, 0.0625f, 0.0625f, 0.0625f,
-      0.0625f, 0.0625f, 0.0625f, 0.0625f
+  private final INDArray meanDerivative = Nd4j.create(new float[]{
+      0.25f, 0.25f, 0.25f, 0.25f,
+      0.25f, 0.25f, 0.25f, 0.25f,
+      0.25f, 0.25f, 0.25f, 0.25f,
+      0.25f, 0.25f, 0.25f, 0.25f
   }, new int[]{4, 4}).transposei();
 
   private final Configuration maxPoolingLayerConf = PoolingLayerConfigurationBuilder.newConfigurationBuilder()

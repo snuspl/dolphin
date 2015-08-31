@@ -100,7 +100,7 @@ public final class PoolingLayer implements Layer {
     if (poolingFunction.equals("max")) {
       return maxDerivative.reshape(derivative.shape()[0], derivative.shape()[1]);
     } else if (poolingFunction.equals("mean")) {
-      derivative.addi(1.0f / (derivative.shape()[0] * derivative.shape()[1]));
+      derivative.addi(1.0f / (poolingSize * poolingSize));
     }
     return derivative;
   }
@@ -113,40 +113,33 @@ public final class PoolingLayer implements Layer {
     final int[] inputDim = input.shape();
     final int[] outputDim = new int[]{inputDim[0] / poolingSize, inputDim[1] / poolingSize};
     final INDArray output = Nd4j.zeros(outputDim);
+    maxDerivative.assign(0.0f);
 
     if (poolingFunction.equals("max")) {
-      //return Transforms.maxPool(input, new int[]{poolingSize, poolingSize}, false);
       for (int i = 0; i < inputDim[0]; i += poolingSize) {
         for (int j = 0; j < inputDim[1]; j += poolingSize) {
+          final int[] pos = new int[] {i, j};
           for (int k = 0; k < poolingSize; k++) {
             for (int l = 0; l < poolingSize; l++) {
               final float num = input.getFloat(i + k, j + l);
               final float current = output.getFloat(i / poolingSize, j / poolingSize);
               if (num > current) {
+                pos[0] = i + k;
+                pos[1] = j + l;
                 output.putScalar(new int[]{i / poolingSize, j / poolingSize}, num);
               }
             }
           }
-          final float max = output.getFloat(i / poolingSize, j / poolingSize);
-          for (int k = 0; k < poolingSize; k++) {
-            for (int l = 0; l < poolingSize; l++) {
-              final float value = input.getFloat(i + k, j + l);
-              if (value == max) {
-                maxDerivative.reshape(inputDim[0], inputDim[1]).putScalar(new int[] {i + k, j + l}, 1.0f);
-                break;
-              }
-            }
-          }
+          maxDerivative.reshape(inputDim[0], inputDim[1]).putScalar(new int[] {pos[0], pos[1]}, 1.0f);
         }
       }
     } else if (poolingFunction.equals("mean")) {
-      //return Transforms.avgPooling(input, new int[]{poolingSize, poolingSize});
       for (int i = 0; i < inputDim[0]; i += poolingSize) {
         for (int j = 0; j < inputDim[1]; j += poolingSize) {
           float sum = 0.0f;
           for (int k = 0; k < poolingSize; k++) {
             for (int l = 0; l < poolingSize; l++) {
-              sum += input.getDouble(i + k, j + l);
+              sum += input.getFloat(i + k, j + l);
             }
           }
           output.putScalar(new int[]{i / poolingSize, j / poolingSize}, sum);

@@ -62,16 +62,4 @@ public final class LayerConfigurationParameters {
   @NamedParameter(doc = "pooling function of pooling layer node", short_name = "poolingFunc")
   public static final class PoolingFunction implements Name<String> {
   }
-
-  @NamedParameter(doc = "number of kernels of convolution layer node", short_name = "numKernel")
-  public static final class NumberOfKernel implements Name<Integer> {
-  }
-
-  @NamedParameter(doc = "kernel size of convolution layer node", short_name = "kernelSize")
-  public static final class KernelSize implements Name<Integer> {
-  }
-
-  @NamedParameter(doc = "kernel function of convolution layer node", short_name = "kernelFunc")
-  public static final class KernelFunction implements Name<String> {
-  }
 }
