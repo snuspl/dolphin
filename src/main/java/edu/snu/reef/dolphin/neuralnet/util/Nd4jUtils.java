@@ -101,7 +101,9 @@ public final class Nd4jUtils {
   }
 
   /**
-   * Prints out the given matrix.
+   * Prints out the given 1D, 2D or 3D matrix.
+   * 
+   * For 4D or higher dimension matrix, return without printing.
    *
    * @param matrix the matrix to be printed.
    */
@@ -135,7 +137,7 @@ public final class Nd4jUtils {
       }
       break;
     default:
-      throw new NotImplementedException("Can't print 4-D or higher matrix");
+      // Do nothing.
     }
   }
 
