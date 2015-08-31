@@ -103,7 +103,7 @@ public final class Nd4jUtils {
   /**
    * Prints out the given 1D, 2D or 3D matrix.
    * 
-   * For 4D or higher dimension matrix, return without printing.
+   * For 4D or higher dimension matrices, returns without printing.
    *
    * @param matrix the matrix to be printed.
    */
