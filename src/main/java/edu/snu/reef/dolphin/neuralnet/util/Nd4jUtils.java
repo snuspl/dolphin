@@ -16,6 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet.util;
 
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import org.apache.commons.lang.NotImplementedException;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -106,19 +107,22 @@ public final class Nd4jUtils {
    */
   public static void print(final INDArray matrix) {
     final int[] shape = matrix.shape();
-    if (shape.length == 1) {
+    switch (shape.length) {
+    case 1:
       for (int i = 0; i < shape[0]; ++i) {
         System.out.print("\t" + matrix.getFloat(i));
       }
       System.out.println();
-    } else if (shape.length == 2) {
+      break;
+    case 2:
       for (int i = 0; i < shape[0]; ++i) {
         for (int j = 0; j < shape[1]; ++j) {
           System.out.print("\t" + matrix.getFloat(i, j));
         }
         System.out.println();
       }
-    } else if (shape.length == 3) {
+      break;
+    case 3:
       for (int k = 0; k < shape[2]; ++k) {
         System.out.println("[:,:," + k + "]");
         for (int i = 0; i < shape[0]; ++i) {
@@ -129,6 +133,9 @@ public final class Nd4jUtils {
         }
         System.out.println();
       }
+      break;
+    default:
+      throw new NotImplementedException("Can't print 4-D or higher matrix");
     }
   }
 
