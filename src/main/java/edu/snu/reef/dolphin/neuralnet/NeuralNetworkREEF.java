@@ -108,13 +108,11 @@ public final class NeuralNetworkREEF {
         .set(DriverConfiguration.ON_CONTEXT_ACTIVE, NeuralNetworkDriver.ActiveContextHandler.class);
 
     final EvaluatorRequest computeRequest = EvaluatorRequest.newBuilder()
-        .setNumber(1)
         .setNumberOfCores(1)
         .setMemory(evalSize)
         .build();
 
     final EvaluatorRequest dataRequest = EvaluatorRequest.newBuilder()
-        .setNumber(1)
         .setNumberOfCores(1)
         .setMemory(evalSize)
         .build();

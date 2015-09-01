@@ -93,13 +93,11 @@ public final class DolphinLauncher {
         .set(DriverConfiguration.ON_TASK_FAILED, DolphinDriver.TaskFailedHandler.class);
 
     final EvaluatorRequest evalRequest = EvaluatorRequest.newBuilder()
-        .setNumber(1)
         .setMemory(dolphinParameters.getEvalSize())
         .setNumberOfCores(1)
         .build();
 
     final EvaluatorRequest dataRequest = EvaluatorRequest.newBuilder()
-        .setNumber(1)
         .setMemory(dolphinParameters.getEvalSize())
         .setNumberOfCores(1)
         .build();
