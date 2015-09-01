@@ -16,6 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet.util;
 
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import org.apache.commons.lang.NotImplementedException;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -35,6 +36,7 @@ public final class Nd4jUtils {
 
   /**
    * Returns true if each element of one matrix is equal to one of another within tolerance.
+   *
    * @param a one matrix to be tested for equality.
    * @param b another matrix to be tested for equality.
    * @param tolerance the maximum difference for which both numbers are still considered equal.
@@ -44,11 +46,11 @@ public final class Nd4jUtils {
     if (!Arrays.equals(a.shape(), b.shape())) {
       return false;
     }
-    for (int i = 0; i < a.rows(); ++i) {
-      for (int j = 0; j < a.columns(); ++j) {
-        if (Math.abs(a.getFloat(i, j) - b.getFloat(i, j)) > tolerance) {
-          return false;
-        }
+    final INDArray al = a.linearView();
+    final INDArray bl = b.linearView();
+    for (int i = 0; i < al.length(); i++) {
+      if (Math.abs(al.getFloat(i) - bl.getFloat(i)) > tolerance) {
+        return false;
       }
     }
     return true;
@@ -56,6 +58,7 @@ public final class Nd4jUtils {
 
   /**
    * Returns true if the two specified matrix lists are equal to one another within tolerance.
+   *
    * @param a one matrix list to be tested for equality.
    * @param b another matrix list to be tested for equality.
    * @param tolerance the maximum difference for which both numbers are still considered equal.
@@ -76,6 +79,7 @@ public final class Nd4jUtils {
 
   /**
    * Returns true if each element of weight and bias of a layer parameter is equal to another within tolerance.
+   *
    * @param a one layer parameter array to be tested for equality.
    * @param b another layer parameter array to be tested for equality.
    * @param tolerance the maximum difference for which both numbers are still considered equal.
@@ -97,16 +101,43 @@ public final class Nd4jUtils {
   }
 
   /**
-   * Prints out the given matrix.
+   * Prints out the given 1D, 2D or 3D matrix.
+   * 
+   * For 4D or higher dimension matrices, returns without printing.
+   *
    * @param matrix the matrix to be printed.
    */
   public static void print(final INDArray matrix) {
     final int[] shape = matrix.shape();
-    for (int i = 0; i < shape[0]; ++i) {
-      for (int j = 0; j < shape[1]; ++j) {
-        System.out.print("\t" + matrix.getFloat(i, j));
+    switch (shape.length) {
+    case 1:
+      for (int i = 0; i < shape[0]; ++i) {
+        System.out.print("\t" + matrix.getFloat(i));
       }
       System.out.println();
+      break;
+    case 2:
+      for (int i = 0; i < shape[0]; ++i) {
+        for (int j = 0; j < shape[1]; ++j) {
+          System.out.print("\t" + matrix.getFloat(i, j));
+        }
+        System.out.println();
+      }
+      break;
+    case 3:
+      for (int k = 0; k < shape[2]; ++k) {
+        System.out.println("[:,:," + k + "]");
+        for (int i = 0; i < shape[0]; ++i) {
+          for (int j = 0; j < shape[1]; ++j) {
+            System.out.print("\t" + matrix.getFloat(new int[]{i, j, k}));
+          }
+          System.out.println();
+        }
+        System.out.println();
+      }
+      break;
+    default:
+      // Do nothing.
     }
   }
 
