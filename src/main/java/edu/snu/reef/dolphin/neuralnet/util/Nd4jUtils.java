@@ -16,7 +16,6 @@
 package edu.snu.reef.dolphin.neuralnet.util;
 
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
-import org.apache.commons.lang.NotImplementedException;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
