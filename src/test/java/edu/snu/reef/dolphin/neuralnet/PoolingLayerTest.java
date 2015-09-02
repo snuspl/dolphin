@@ -112,38 +112,76 @@ public class PoolingLayerTest {
   }
 
   /**
-   * Unit test for feed forward of max pooling layer.
+   * Unit test for feed forward of 1D max pooling layer.
    */
   @Test
-  public void maxPoolingFeedForwardTest() {
+  public void maxPoolingFeedForward1DTest() {
+    final INDArray actual = maxPoolingLayer.feedForward(Nd4j.create(new float[]{1f, 2f, 3f, 4f, 5f, 6f}));
+    assertTrue(Nd4jUtils.equals(actual, Nd4j.create(new float[]{2f, 4f, 6f}), tolerance));
+  }
+
+  /**
+   * Unit test for derivative of 1D max pooling layer.
+   */
+  @Test
+  public void maxPoolingDerivative1DTest() {
+    final INDArray activation = maxPoolingLayer.feedForward(Nd4j.create(new float[]{1f, 2f, 3f, 4f, 5f, 6f}));
+    final INDArray derivative = maxPoolingLayer.derivative(activation);
+    assertTrue(Nd4jUtils.equals(derivative, Nd4j.create(new float[]{0f, 1f, 0f, 1f, 0f, 1f}), tolerance));
+  }
+
+  /**
+   * Unit test for feed forward of 1D mean pooling layer.
+   */
+  @Test
+  public void meanPoolingFeedForward1DTest() {
+    final INDArray actual = meanPoolingLayer.feedForward(Nd4j.create(new float[]{1f, 2f, 3f, 4f, 5f, 6f}));
+    assertTrue(Nd4jUtils.equals(actual, Nd4j.create(new float[]{1.5f, 3.5f, 5.5f}), tolerance));
+  }
+
+  /**
+   * Unit test for derivative of 1D mean pooling layer.
+   */
+  @Test
+  public void meanPoolingDerivative1DTest() {
+    final INDArray activation = meanPoolingLayer.feedForward(Nd4j.create(new float[]{1f, 2f, 3f, 4f, 5f, 6f}));
+    final INDArray derivative = meanPoolingLayer.derivative(activation);
+    assertTrue(Nd4jUtils.equals(derivative, Nd4j.create(new float[]{.5f, .5f, .5f, .5f, .5f, .5f}), tolerance));
+  }
+
+  /**
+   * Unit test for feed forward of 2D max pooling layer.
+   */
+  @Test
+  public void maxPoolingFeedForward2DTest() {
     final INDArray actual = maxPoolingLayer.feedForward(input);
     assertTrue(Nd4jUtils.equals(actual, maxOutput, tolerance));
   }
 
   /**
-   * Unit test for derivative of max pooling layer.
+   * Unit test for derivative of 2D max pooling layer.
    */
   @Test
-  public void maxPoolingDerivativeTest() {
+  public void maxPoolingDerivative2DTest() {
     final INDArray activation = maxPoolingLayer.feedForward(input);
     final INDArray derivative = maxPoolingLayer.derivative(activation);
     assertTrue(Nd4jUtils.equals(derivative, maxDerivative, tolerance));
   }
 
   /**
-   * Unit test for feed forward of mean pooling layer.
+   * Unit test for feed forward of 2D mean pooling layer.
    */
   @Test
-  public void meanPoolingFeedForwardTest() {
+  public void meanPoolingFeedForward2DTest() {
     final INDArray actual = meanPoolingLayer.feedForward(input);
     assertTrue(Nd4jUtils.equals(actual, meanOutput, tolerance));
   }
 
   /**
-   * Unit test for derivative of mean pooling layer.
+   * Unit test for derivative of 2D mean pooling layer.
    */
   @Test
-  public void meanPoolingDerivativeTest() {
+  public void meanPoolingDerivative2DTest() {
     final INDArray activation = meanPoolingLayer.feedForward(input);
     final INDArray derivative = meanPoolingLayer.derivative(activation);
     assertTrue(Nd4jUtils.equals(derivative, meanDerivative, tolerance));
