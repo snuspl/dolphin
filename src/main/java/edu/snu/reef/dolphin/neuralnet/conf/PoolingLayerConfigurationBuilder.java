@@ -15,8 +15,6 @@
  */
 package edu.snu.reef.dolphin.neuralnet.conf;
 
-import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.PoolingLayerParameterInitializer;
-import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.PoolingLayer;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos;
@@ -42,7 +40,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   private float initBias;
   private int poolingSize;
   private String poolingFunction;
-  private String activationFunction;
 
   public synchronized PoolingLayerConfigurationBuilder setNumInput(final int numInput) {
     this.numInput = numInput;
@@ -79,11 +76,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return this;
   }
 
-  public synchronized PoolingLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
-    this.activationFunction = activationFunction;
-    return this;
-  }
-
   public synchronized PoolingLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
     numInput = protoConf.getNumInput();
@@ -96,7 +88,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     initBias = protoConf.getPoolingParam().getInitBias();
     poolingSize = protoConf.getPoolingParam().getPoolingSize();
     poolingFunction = protoConf.getPoolingParam().getPoolingFunction();
-    activationFunction = protoConf.getPoolingParam().getActivationFunction();
     return this;
   }
 
@@ -110,9 +101,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
         .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
         .bindNamedParameter(LayerConfigurationParameters.PoolingSize.class, String.valueOf(poolingSize))
         .bindNamedParameter(LayerConfigurationParameters.PoolingFunction.class, String.valueOf(poolingFunction))
-        .bindNamedParameter(LayerConfigurationParameters.ActivationFunction.class, String.valueOf(activationFunction))
         .bindImplementation(Layer.class, PoolingLayer.class)
-        .bindImplementation(LayerParameterInitializer.class, PoolingLayerParameterInitializer.class)
         .build();
   }
 }

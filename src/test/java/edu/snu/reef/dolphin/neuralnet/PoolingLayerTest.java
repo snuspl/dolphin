@@ -77,7 +77,6 @@ public class PoolingLayerTest {
       .setRandomSeed(10)
       .setPoolingSize(2)
       .setPoolingFunction("max")
-      .setActivationFunction("none")
       .build();
 
   private final Configuration meanPoolingLayerConf = PoolingLayerConfigurationBuilder.newConfigurationBuilder()
@@ -88,7 +87,6 @@ public class PoolingLayerTest {
       .setRandomSeed(10)
       .setPoolingSize(2)
       .setPoolingFunction("mean")
-      .setActivationFunction("none")
       .build();
 
   private final Configuration maxConf = Configurations.merge(maxPoolingLayerConf,

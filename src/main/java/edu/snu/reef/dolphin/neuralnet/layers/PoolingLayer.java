@@ -15,29 +15,28 @@
  */
 package edu.snu.reef.dolphin.neuralnet.layers;
 
-import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.ActivationFunction;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.LayerIndex;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.NumberOfOutput;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.PoolingSize;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.PoolingFunction;
-import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
+import com.google.common.base.Preconditions;
 
 /**
  * Pooling Layer.
+ *
+ * Implement 2D max/mean pooling.
  */
 public final class PoolingLayer implements Layer {
 
   protected final int index;
   private final int poolingSize;
   private final String poolingFunction;
-  private final String activationFunction;
   private final int numOutput;
-  private LayerParameter layerParameter;
 
   private final INDArray maxDerivative;
 
@@ -45,15 +44,13 @@ public final class PoolingLayer implements Layer {
   public PoolingLayer(@Parameter(LayerIndex.class) final int index,
                       @Parameter(PoolingSize.class) final int poolingSize,
                       @Parameter(PoolingFunction.class) final String poolingFunction,
-                      @Parameter(ActivationFunction.class) final String activationFunction,
-                      @Parameter(NumberOfOutput.class) final int numOutput,
-                      final LayerParameterInitializer layerParameterInitializer) {
+                      @Parameter(NumberOfOutput.class) final int numOutput) {
+    Preconditions.checkArgument(poolingFunction.equalsIgnoreCase("max") || poolingFunction.equalsIgnoreCase("mean"));
+
     this.index = index;
     this.poolingSize = poolingSize;
-    this.poolingFunction = poolingFunction;
-    this.activationFunction = activationFunction;
+    this.poolingFunction = poolingFunction.toLowerCase();
     this.numOutput = numOutput;
-    setLayerParameter(layerParameterInitializer.generateInitialParameter());
 
     this.maxDerivative = Nd4j.zeros(numOutput * poolingSize * poolingSize);
   }
@@ -76,19 +73,17 @@ public final class PoolingLayer implements Layer {
   }
 
   /**
-   * {@inheritDoc}
+   * Do nothing because pooling layer does not have weights and bias.
    */
   @Override
-  public void setLayerParameter(final LayerParameter layerParameter) {
-    this.layerParameter = layerParameter;
-  }
+  public void setLayerParameter(final LayerParameter layerParameter) { }
 
   /**
-   * {@inheritDoc}
+   * Return null because pooling layer does not have weights and bias.
    */
   @Override
   public LayerParameter getLayerParameter() {
-    return this.layerParameter;
+    return null;
   }
 
   /**
@@ -96,6 +91,8 @@ public final class PoolingLayer implements Layer {
    */
   @Override
   public INDArray derivative(final INDArray activation) {
+    Preconditions.checkArgument(activation.shape().length == 2);
+    Preconditions.checkArgument(poolingFunction.equals("max") || poolingFunction.equals("mean"));
     final INDArray derivative = Nd4j.zeros(poolingSize * activation.shape()[0], poolingSize * activation.shape()[1]);
     if (poolingFunction.equals("max")) {
       return maxDerivative.reshape(derivative.shape()[0], derivative.shape()[1]);
@@ -106,10 +103,16 @@ public final class PoolingLayer implements Layer {
   }
 
   /**
-   * {@inheritDoc}
+   * Implement max/mean pooling over 2D input.
+   *
+   * @param input a 2D matrix with X * Y
+   * @return a pooled matrix with (X/poolingSize * Y/poolingSize)
    */
   @Override
   public INDArray feedForward(final INDArray input) {
+    Preconditions.checkArgument(input.shape().length == 2);
+    Preconditions.checkArgument(input.shape()[0] % poolingSize == 0 && input.shape()[1] % poolingSize == 0);
+    Preconditions.checkArgument(poolingFunction.equals("max") || poolingFunction.equals("mean"));
     final int[] inputDim = input.shape();
     final int[] outputDim = new int[]{inputDim[0] / poolingSize, inputDim[1] / poolingSize};
     final INDArray output = Nd4j.zeros(outputDim);
