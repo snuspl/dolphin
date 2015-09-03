@@ -20,7 +20,7 @@ import org.apache.reef.tang.annotations.NamedParameter;
 
 /**
  * Parameters for layer configuration.
- *
+ * <p/>
  * When we need new parameters of new type of layer, we can add them as inner classes of this class.
  */
 public final class LayerConfigurationParameters {
@@ -53,5 +53,13 @@ public final class LayerConfigurationParameters {
 
   @NamedParameter(doc = "activation function of layer node", short_name = "activationFunc")
   public static final class ActivationFunction implements Name<String> {
+  }
+
+  @NamedParameter(doc = "kernel size of pooling layer node", short_name = "kernelSize")
+  public static final class KernelSize implements Name<Integer> {
+  }
+
+  @NamedParameter(doc = "pooling function of pooling layer node", short_name = "poolingFunc", default_value = "max")
+  public static final class PoolingFunction implements Name<String> {
   }
 }

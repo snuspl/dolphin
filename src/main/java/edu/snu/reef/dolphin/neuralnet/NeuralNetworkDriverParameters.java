@@ -19,6 +19,7 @@ import com.google.protobuf.TextFormat;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
+import edu.snu.reef.dolphin.neuralnet.conf.PoolingLayerConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos.*;
@@ -90,6 +91,9 @@ public final class NeuralNetworkDriverParameters {
     switch (layerConf.getType().toLowerCase()) {
     case "fullyconnected":
       return FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
+          .fromProtoConfiguration(layerConf).build();
+    case "pooling":
+      return PoolingLayerConfigurationBuilder.newConfigurationBuilder()
           .fromProtoConfiguration(layerConf).build();
     default:
       throw new IllegalArgumentException("Illegal layer type: " + layerConf.getType());

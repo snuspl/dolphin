@@ -82,11 +82,12 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
     for (int i = 0; i < layerParameters.length; ++i) {
       final INDArray biasParam = layerParameters[i].getBiasParam();
       final INDArray weightParam = layerParameters[i].getWeightParam();
-
-      deltaLayerParameters[i] = LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.zeros(weightParam.shape()))
-          .setBiasParam(Nd4j.zeros(biasParam.shape()))
-          .build();
+      if (biasParam != null && weightParam != null) {
+        deltaLayerParameters[i] = LayerParameter.newBuilder()
+            .setWeightParam(Nd4j.zeros(weightParam.shape()))
+            .setBiasParam(Nd4j.zeros(biasParam.shape()))
+            .build();
+      }
     }
   }
 
@@ -95,8 +96,10 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
    */
   private void reset() {
     for (final LayerParameter layerParameter : deltaLayerParameters) {
-      layerParameter.getWeightParam().assign(0.0);
-      layerParameter.getBiasParam().assign(0.0);
+      if (layerParameter != null) {
+        layerParameter.getWeightParam().assign(0.0);
+        layerParameter.getBiasParam().assign(0.0);
+      }
     }
     numUpdate = 0;
   }
@@ -107,8 +110,10 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
     for (int i = 0; i < deltaLayerParameters.length; ++i) {
       final INDArray activation = activations.get(i).transpose();
       assert activation.isColumnVector();
-      deltaLayerParameters[i].getWeightParam().addi(activation.mmul(gradients.get(i)));
-      deltaLayerParameters[i].getBiasParam().addi(gradients.get(i));
+      if (deltaLayerParameters[i] != null) {
+        deltaLayerParameters[i].getWeightParam().addi(activation.mmul(gradients.get(i)));
+        deltaLayerParameters[i].getBiasParam().addi(gradients.get(i));
+      }
     }
     ++numUpdate;
   }
@@ -119,10 +124,12 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
     if (numUpdate > 0) {
       for (int i = 0; i < deltaLayerParameters.length; ++i) {
-        final LayerParameter layerParameter = layerParameters[i];
-        final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
-        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepsize));
-        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepsize));
+        if (deltaLayerParameters[i] != null) {
+          final LayerParameter layerParameter = layerParameters[i];
+          final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
+          layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepsize));
+          layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepsize));
+        }
       }
       reset();
     }
