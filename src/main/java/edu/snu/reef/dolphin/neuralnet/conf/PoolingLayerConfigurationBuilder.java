@@ -15,6 +15,8 @@
  */
 package edu.snu.reef.dolphin.neuralnet.conf;
 
+import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.PoolingLayerParameterInitializer;
+import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.PoolingLayer;
 import edu.snu.reef.dolphin.neuralnet.layers.Layer;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos;
@@ -75,6 +77,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
         .bindNamedParameter(LayerConfigurationParameters.KernelSize.class, String.valueOf(kernelSize))
         .bindNamedParameter(LayerConfigurationParameters.PoolingFunction.class, String.valueOf(poolingFunction))
         .bindImplementation(Layer.class, PoolingLayer.class)
+        .bindImplementation(LayerParameterInitializer.class, PoolingLayerParameterInitializer.class)
         .build();
   }
 }
