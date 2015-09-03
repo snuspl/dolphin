@@ -24,12 +24,8 @@ message FullyConnectedLayerConfiguration {
 }
 
 message PoolingLayerConfiguration {
-  required float init_bias = 1;
-  required float init_weight = 2;
-  optional uint32 random_seed = 3;
-  required uint32 kernel_size = 4;
-  required string pooling_function = 5;
-  required string activation_function = 6;
+  required uint32 kernel_size = 1;
+  required string pooling_function = 2;
 }
 
 message LayerConfiguration {

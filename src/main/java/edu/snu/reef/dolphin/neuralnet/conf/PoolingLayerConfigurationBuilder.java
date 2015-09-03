@@ -35,9 +35,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
 
   private int numInput;
   private int numOutput;
-  private long randomSeed = System.currentTimeMillis();
-  private float initWeight;
-  private float initBias;
   private int kernelSize;
   private String poolingFunction;
 
@@ -48,21 +45,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
 
   public synchronized PoolingLayerConfigurationBuilder setNumOutput(final int numOutput) {
     this.numOutput = numOutput;
-    return this;
-  }
-
-  public synchronized PoolingLayerConfigurationBuilder setRandomSeed(final long randomSeed) {
-    this.randomSeed = randomSeed;
-    return this;
-  }
-
-  public synchronized PoolingLayerConfigurationBuilder setInitWeight(final float initWeight) {
-    this.initWeight = initWeight;
-    return this;
-  }
-
-  public synchronized PoolingLayerConfigurationBuilder setInitBias(final float initBias) {
-    this.initBias = initBias;
     return this;
   }
 
@@ -80,12 +62,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
     numInput = protoConf.getNumInput();
     numOutput = protoConf.getNumOutput();
-
-    if (protoConf.getPoolingParam().hasRandomSeed()) {
-      randomSeed = protoConf.getPoolingParam().getRandomSeed();
-    }
-    initWeight = protoConf.getPoolingParam().getInitWeight();
-    initBias = protoConf.getPoolingParam().getInitBias();
     kernelSize = protoConf.getPoolingParam().getKernelSize();
     poolingFunction = protoConf.getPoolingParam().getPoolingFunction();
     return this;
@@ -96,9 +72,6 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerConfigurationParameters.NumberOfInput.class, String.valueOf(numInput))
         .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
-        .bindNamedParameter(LayerConfigurationParameters.RandomSeed.class, String.valueOf(randomSeed))
-        .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))
-        .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
         .bindNamedParameter(LayerConfigurationParameters.KernelSize.class, String.valueOf(kernelSize))
         .bindNamedParameter(LayerConfigurationParameters.PoolingFunction.class, String.valueOf(poolingFunction))
         .bindImplementation(Layer.class, PoolingLayer.class)

@@ -72,9 +72,6 @@ public class PoolingLayerTest {
   private final Configuration maxPoolingLayerConf = PoolingLayerConfigurationBuilder.newConfigurationBuilder()
       .setNumInput(input.length())
       .setNumOutput(maxOutput.length())
-      .setInitWeight(0.0001f)
-      .setInitBias(0.0002f)
-      .setRandomSeed(10)
       .setKernelSize(2)
       .setPoolingFunction("max")
       .build();
@@ -82,9 +79,6 @@ public class PoolingLayerTest {
   private final Configuration meanPoolingLayerConf = PoolingLayerConfigurationBuilder.newConfigurationBuilder()
       .setNumInput(input.length())
       .setNumOutput(meanOutput.length())
-      .setInitWeight(0.0001f)
-      .setInitBias(0.0002f)
-      .setRandomSeed(10)
       .setKernelSize(2)
       .setPoolingFunction("mean")
       .build();
