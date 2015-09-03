@@ -84,7 +84,7 @@ public class LogisticRegCtrlTask extends UserControllerTask
     try (final DataOutputStream modelStream = outputStreamProvider.create("model");
          final DataOutputStream accuracyStream = outputStreamProvider.create("accuracy")) {
       modelStream.writeBytes(model.toString());
-      accuracyStream.writeBytes(String.valueOf(accuracy));
+      accuracyStream.writeBytes(String.format("%e", accuracy));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }

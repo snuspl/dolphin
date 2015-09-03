@@ -82,9 +82,9 @@ public class LinearRegCtrlTask extends UserControllerTask
 
     //output the learned model and its accuracy
     try (final DataOutputStream modelStream = outputStreamProvider.create("model");
-         final DataOutputStream accuracyStream = outputStreamProvider.create("loss")) {
+         final DataOutputStream lossStream = outputStreamProvider.create("loss")) {
       modelStream.writeBytes(model.toString());
-      accuracyStream.writeBytes(String.valueOf(lossSum));
+      lossStream.writeBytes(String.format("%e", lossSum));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
