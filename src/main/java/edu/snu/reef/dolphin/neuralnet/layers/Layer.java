@@ -78,4 +78,9 @@ public interface Layer {
    */
   INDArray backPropagate(final INDArray activation,
                          final INDArray label);
+
+  /**
+   * @return true if the layer is learnable.
+   */
+  boolean isLearnable();
 }

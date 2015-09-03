@@ -98,4 +98,11 @@ public abstract class LayerBase implements Layer {
    * {@inheritDoc}
    */
   public abstract INDArray backPropagate(final INDArray activation, final INDArray label);
+
+  /**
+   * {@inheritDoc}
+   */
+  public boolean isLearnable() {
+    return true;
+  }
 }
