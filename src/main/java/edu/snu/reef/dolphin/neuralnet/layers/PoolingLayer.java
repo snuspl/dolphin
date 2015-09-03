@@ -31,6 +31,16 @@ import com.google.common.base.Preconditions;
  * Pooling Layer.
  * <p/>
  * Implement 1D and 2D max/mean pooling.
+ * Pooling is a way of taking the most responsive node of the given interest region.
+ * e.g. Max-pooling with kernel_size 2 gets of 4 x 4 input matrix and
+ * returns the maximum value for each disjoint sliding window with kernel_size * kernel_size.
+ * The derivatives of max-pooling are defined 1 for the node having maximum value and 0 for the others.
+ * Mean-pooling works the same way, but returns mean(=average) values for that region.
+ * The derivatives of mean-pooling are uniformly 1/(kernel_size * kernel_size) for all.
+ * <p/>
+ * Reference
+ * - http://ufldl.stanford.edu/wiki/index.php/Pooling
+ * - http://caffe.berkeleyvision.org/tutorial/layers.html
  */
 public final class PoolingLayer implements Layer {
 
