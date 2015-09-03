@@ -22,6 +22,10 @@ import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos.*;
+import edu.snu.reef.dolphin.parameters.OnLocal;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
@@ -33,6 +37,7 @@ import org.apache.reef.tang.formats.ConfigurationSerializer;
 import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Class that manages command line parameters specific to the neural network for driver.
@@ -55,9 +60,10 @@ public final class NeuralNetworkDriverParameters {
   private NeuralNetworkDriverParameters(final ConfigurationSerializer configurationSerializer,
                                         @Parameter(ConfigurationPath.class) final String configurationPath,
                                         @Parameter(Delimiter.class) final String delimiter,
-                                        @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
-    this.serializedNeuralNetworkConfiguration =
-        configurationSerializer.toString(loadNeuralNetworkConfiguration(configurationPath));
+                                        @Parameter(MaxIterations.class) final int maxIterations,
+                                        @Parameter(OnLocal.class) final boolean onLocal) throws IOException {
+    this.serializedNeuralNetworkConfiguration = configurationSerializer.toString(
+        buildNeuralNetworkConfiguration(loadNeuralNetworkConfiguration(configurationPath, onLocal)));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
   }
@@ -91,27 +97,49 @@ public final class NeuralNetworkDriverParameters {
   }
 
   /**
-   * Loads neural network configuration from the configuration file and parses the configuration.
+   * Loads the protocol buffer text formatted neural network configuration.
+   * <p/>
+   * Loads the file from the local filesystem or HDFS depending on {@code onLocal}.
    * @param path the path for the neural network configuration.
+   * @param onLocal the flag for the local runtime environment.
+   * @return the neural network configuration protocol buffer message.
+   * @throws IOException
+   */
+  private static NeuralNetworkConfiguration loadNeuralNetworkConfiguration(final String path, final boolean onLocal)
+      throws IOException {
+    final NeuralNetworkConfiguration.Builder neuralNetProtoBuilder = NeuralNetworkConfiguration.newBuilder();
+
+    // Parses neural network builder protobuf message from the prototxt file.
+    // Reads from the local filesystem.
+    if (onLocal) {
+      TextFormat.merge(new FileReader(path), neuralNetProtoBuilder);
+    // Reads from HDFS.
+    } else {
+      final FileSystem fs = FileSystem.get(new JobConf());
+      TextFormat.merge(new InputStreamReader(fs.open(new Path(path))), neuralNetProtoBuilder);
+    }
+    return neuralNetProtoBuilder.build();
+  }
+
+  /**
+   * Parses the protobuf message and builds neural network configuration.
+   * @param neuralNetConf neural network configuration protobuf message.
    * @return the neural network configuration.
    */
-  private static Configuration loadNeuralNetworkConfiguration(final String path) throws IOException {
-    final NeuralNetworkConfiguration.Builder nnProtoBuilder = NeuralNetworkConfiguration.newBuilder();
-    // Parse neural network builder protobuf message from the prototxt file.
-    TextFormat.merge(new FileReader(path), nnProtoBuilder);
-    final NeuralNetworkConfiguration nnConf = nnProtoBuilder.build();
-    final NeuralNetworkConfigurationBuilder nnConfBuilder = NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
+  private static Configuration buildNeuralNetworkConfiguration(final NeuralNetworkConfiguration neuralNetConf) {
+    final NeuralNetworkConfigurationBuilder neuralNetConfBuilder =
+        NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
 
-    nnConfBuilder.setBatchSize(nnConf.getBatchSize())
-        .setStepsize(nnConf.getStepsize())
-        .setParameterProviderClass(getParameterProviderClass(nnConf.getParameterProvider().getType()));
+    neuralNetConfBuilder.setBatchSize(neuralNetConf.getBatchSize())
+        .setStepsize(neuralNetConf.getStepsize())
+        .setParameterProviderClass(getParameterProviderClass(neuralNetConf.getParameterProvider().getType()));
 
     // Adds the configuration of each layer.
-    for (final LayerConfiguration layerConf : nnConf.getLayerList()) {
-      nnConfBuilder.addLayerConfiguration(createLayerConfiguration(layerConf));
+    for (final LayerConfiguration layerConf : neuralNetConf.getLayerList()) {
+      neuralNetConfBuilder.addLayerConfiguration(createLayerConfiguration(layerConf));
     }
 
-    return nnConfBuilder.build();
+    return neuralNetConfBuilder.build();
   }
 
   /**
