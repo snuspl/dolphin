@@ -75,7 +75,7 @@ public class PoolingLayerTest {
       .setInitWeight(0.0001f)
       .setInitBias(0.0002f)
       .setRandomSeed(10)
-      .setPoolingSize(2)
+      .setKernelSize(2)
       .setPoolingFunction("max")
       .build();
 
@@ -85,7 +85,7 @@ public class PoolingLayerTest {
       .setInitWeight(0.0001f)
       .setInitBias(0.0002f)
       .setRandomSeed(10)
-      .setPoolingSize(2)
+      .setKernelSize(2)
       .setPoolingFunction("mean")
       .build();
 

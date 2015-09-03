@@ -55,8 +55,8 @@ public final class LayerConfigurationParameters {
   public static final class ActivationFunction implements Name<String> {
   }
 
-  @NamedParameter(doc = "pooling size of pooling layer node", short_name = "poolingSize")
-  public static final class PoolingSize implements Name<Integer> {
+  @NamedParameter(doc = "kernel size of pooling layer node", short_name = "kernelSize")
+  public static final class KernelSize implements Name<Integer> {
   }
 
   @NamedParameter(doc = "pooling function of pooling layer node", short_name = "poolingFunc")

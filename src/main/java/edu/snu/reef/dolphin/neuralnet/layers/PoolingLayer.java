@@ -17,7 +17,7 @@ package edu.snu.reef.dolphin.neuralnet.layers;
 
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.LayerIndex;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.NumberOfOutput;
-import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.PoolingSize;
+import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.KernelSize;
 import edu.snu.reef.dolphin.neuralnet.conf.LayerConfigurationParameters.PoolingFunction;
 import org.apache.reef.tang.annotations.Parameter;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
 public final class PoolingLayer implements Layer {
 
   protected final int index;
-  private final int poolingSize;
+  private final int kernelSize;
   private final String poolingFunction;
   private final int numOutput;
 
@@ -43,17 +43,17 @@ public final class PoolingLayer implements Layer {
 
   @Inject
   public PoolingLayer(@Parameter(LayerIndex.class) final int index,
-                      @Parameter(PoolingSize.class) final int poolingSize,
+                      @Parameter(KernelSize.class) final int kernelSize,
                       @Parameter(PoolingFunction.class) final String poolingFunction,
                       @Parameter(NumberOfOutput.class) final int numOutput) {
     Preconditions.checkArgument(poolingFunction.equalsIgnoreCase("max") || poolingFunction.equalsIgnoreCase("mean"));
 
     this.index = index;
-    this.poolingSize = poolingSize;
+    this.kernelSize = kernelSize;
     this.poolingFunction = poolingFunction.toLowerCase();
     this.numOutput = numOutput;
 
-    this.maxDerivative = Nd4j.zeros(numOutput * poolingSize * poolingSize);
+    this.maxDerivative = Nd4j.zeros(numOutput * kernelSize * kernelSize);
   }
 
 
@@ -102,18 +102,18 @@ public final class PoolingLayer implements Layer {
     case 1:
       // 1D
       if (poolingFunction.equals("max")) {
-        return maxDerivative.subArray(new int[]{0, 0}, new int[]{1, poolingSize * dim[1]}, new int[]{1, 1});
+        return maxDerivative.subArray(new int[]{0, 0}, new int[]{1, kernelSize * dim[1]}, new int[]{1, 1});
       } else if (poolingFunction.equals("mean")) {
-        return Nd4j.valueArrayOf(poolingSize * dim[1], 1.0f / poolingSize);
+        return Nd4j.valueArrayOf(kernelSize * dim[1], 1.0f / kernelSize);
       }
       break;
     default:
       // 2D
       if (poolingFunction.equals("max")) {
-        return maxDerivative.reshape(poolingSize * dim[0], poolingSize * dim[0]);
+        return maxDerivative.reshape(kernelSize * dim[0], kernelSize * dim[0]);
       } else if (poolingFunction.equals("mean")) {
-        return Nd4j.valueArrayOf(poolingSize * dim[0], poolingSize * dim[1],
-            1.0f / (poolingSize * poolingSize));
+        return Nd4j.valueArrayOf(kernelSize * dim[0], kernelSize * dim[1],
+            1.0f / (kernelSize * kernelSize));
       }
       break;
     }
@@ -124,61 +124,61 @@ public final class PoolingLayer implements Layer {
    * Implement max/mean pooling over 2D input.
    *
    * @param input a 1D or 2D matrix with 1 * cols or rows * cols
-   * @return a pooled matrix with X/poolingSize or (X/poolingSize * Y/poolingSize) dimension
+   * @return a pooled matrix with X/kernelSize or (X/kernelSize * Y/kernelSize) dimension
    */
   @Override
   public INDArray feedForward(final INDArray input) {
     Preconditions.checkArgument(input.shape().length == 2);
-    Preconditions.checkArgument(input.shape()[0] == 1 || input.shape()[0] % poolingSize == 0);
-    Preconditions.checkArgument(input.shape()[1] % poolingSize == 0);
+    Preconditions.checkArgument(input.shape()[0] == 1 || input.shape()[0] % kernelSize == 0);
+    Preconditions.checkArgument(input.shape()[1] % kernelSize == 0);
     Preconditions.checkArgument(poolingFunction.equals("max") || poolingFunction.equals("mean"));
 
     final int[] inputDim = input.shape();
-    final INDArray output = Nd4j.zeros(inputDim[0] == 1 ? new int[]{1, inputDim[1] / poolingSize} :
-        new int[]{inputDim[0] / poolingSize, inputDim[1] / poolingSize});
+    final INDArray output = Nd4j.zeros(inputDim[0] == 1 ? new int[]{1, inputDim[1] / kernelSize} :
+        new int[]{inputDim[0] / kernelSize, inputDim[1] / kernelSize});
 
     maxDerivative.assign(0.0f);
     switch (input.shape()[0]) {
     case 1:
       // 1D input
       if (poolingFunction.equals("max")) {
-        for (int i = 0; i < inputDim[1]; i += poolingSize) {
+        for (int i = 0; i < inputDim[1]; i += kernelSize) {
           int pos = i;
-          for (int k = 0; k < poolingSize; k++) {
+          for (int k = 0; k < kernelSize; k++) {
             final float num = input.getFloat(0, i + k);
-            final float current = output.getFloat(0, i / poolingSize);
+            final float current = output.getFloat(0, i / kernelSize);
             if (num > current) {
               pos = i + k;
-              output.putScalar(new int[]{0, i / poolingSize}, num);
+              output.putScalar(new int[]{0, i / kernelSize}, num);
             }
           }
           maxDerivative.linearView().putScalar(pos, 1.0f);
         }
       } else if (poolingFunction.equals("mean")) {
-        for (int i = 0; i < inputDim[1]; i += poolingSize) {
+        for (int i = 0; i < inputDim[1]; i += kernelSize) {
           float sum = 0.0f;
-          for (int k = 0; k < poolingSize; k++) {
+          for (int k = 0; k < kernelSize; k++) {
             sum += input.getFloat(0, i + k);
           }
-          output.putScalar(new int[]{0, i / poolingSize}, sum);
+          output.putScalar(new int[]{0, i / kernelSize}, sum);
         }
-        output.divi(poolingSize);
+        output.divi(kernelSize);
       }
       break;
     default:
       // 2D input
       if (poolingFunction.equals("max")) {
-        for (int i = 0; i < inputDim[0]; i += poolingSize) {
-          for (int j = 0; j < inputDim[1]; j += poolingSize) {
+        for (int i = 0; i < inputDim[0]; i += kernelSize) {
+          for (int j = 0; j < inputDim[1]; j += kernelSize) {
             final int[] pos = new int[]{i, j};
-            for (int k = 0; k < poolingSize; k++) {
-              for (int l = 0; l < poolingSize; l++) {
+            for (int k = 0; k < kernelSize; k++) {
+              for (int l = 0; l < kernelSize; l++) {
                 final float num = input.getFloat(i + k, j + l);
-                final float current = output.getFloat(i / poolingSize, j / poolingSize);
+                final float current = output.getFloat(i / kernelSize, j / kernelSize);
                 if (num > current) {
                   pos[0] = i + k;
                   pos[1] = j + l;
-                  output.putScalar(new int[]{i / poolingSize, j / poolingSize}, num);
+                  output.putScalar(new int[]{i / kernelSize, j / kernelSize}, num);
                 }
               }
             }
@@ -186,18 +186,18 @@ public final class PoolingLayer implements Layer {
           }
         }
       } else if (poolingFunction.equals("mean")) {
-        for (int i = 0; i < inputDim[0]; i += poolingSize) {
-          for (int j = 0; j < inputDim[1]; j += poolingSize) {
+        for (int i = 0; i < inputDim[0]; i += kernelSize) {
+          for (int j = 0; j < inputDim[1]; j += kernelSize) {
             float sum = 0.0f;
-            for (int k = 0; k < poolingSize; k++) {
-              for (int l = 0; l < poolingSize; l++) {
+            for (int k = 0; k < kernelSize; k++) {
+              for (int l = 0; l < kernelSize; l++) {
                 sum += input.getFloat(i + k, j + l);
               }
             }
-            output.putScalar(new int[]{i / poolingSize, j / poolingSize}, sum);
+            output.putScalar(new int[]{i / kernelSize, j / kernelSize}, sum);
           }
         }
-        output.divi(poolingSize * poolingSize);
+        output.divi(kernelSize * kernelSize);
       }
       break;
     }

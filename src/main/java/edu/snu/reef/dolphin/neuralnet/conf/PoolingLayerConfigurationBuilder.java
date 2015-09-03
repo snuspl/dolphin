@@ -38,7 +38,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   private long randomSeed = System.currentTimeMillis();
   private float initWeight;
   private float initBias;
-  private int poolingSize;
+  private int kernelSize;
   private String poolingFunction;
 
   public synchronized PoolingLayerConfigurationBuilder setNumInput(final int numInput) {
@@ -66,8 +66,8 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return this;
   }
 
-  public synchronized PoolingLayerConfigurationBuilder setPoolingSize(final int poolingSize) {
-    this.poolingSize = poolingSize;
+  public synchronized PoolingLayerConfigurationBuilder setKernelSize(final int kernelSize) {
+    this.kernelSize = kernelSize;
     return this;
   }
 
@@ -86,7 +86,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     }
     initWeight = protoConf.getPoolingParam().getInitWeight();
     initBias = protoConf.getPoolingParam().getInitBias();
-    poolingSize = protoConf.getPoolingParam().getPoolingSize();
+    kernelSize = protoConf.getPoolingParam().getKernelSize();
     poolingFunction = protoConf.getPoolingParam().getPoolingFunction();
     return this;
   }
@@ -99,7 +99,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
         .bindNamedParameter(LayerConfigurationParameters.RandomSeed.class, String.valueOf(randomSeed))
         .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))
         .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
-        .bindNamedParameter(LayerConfigurationParameters.PoolingSize.class, String.valueOf(poolingSize))
+        .bindNamedParameter(LayerConfigurationParameters.KernelSize.class, String.valueOf(kernelSize))
         .bindNamedParameter(LayerConfigurationParameters.PoolingFunction.class, String.valueOf(poolingFunction))
         .bindImplementation(Layer.class, PoolingLayer.class)
         .build();
