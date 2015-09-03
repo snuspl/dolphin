@@ -98,6 +98,8 @@ public final class NeuralNetworkDriverParameters {
 
   /**
    * Loads the protocol buffer text formatted neural network configuration.
+   * <p/>
+   * Loads the file from the local filesystem or HDFS depending on {@code onLocal}.
    * @param path the path for the neural network configuration.
    * @param onLocal the flag for the local runtime environment.
    * @return the neural network configuration protocol buffer message.
@@ -108,8 +110,10 @@ public final class NeuralNetworkDriverParameters {
     final NeuralNetworkConfiguration.Builder neuralNetProtoBuilder = NeuralNetworkConfiguration.newBuilder();
 
     // Parses neural network builder protobuf message from the prototxt file.
+    // Reads from the local filesystem.
     if (onLocal) {
       TextFormat.merge(new FileReader(path), neuralNetProtoBuilder);
+    // Reads from HDFS.
     } else {
       final FileSystem fs = FileSystem.get(new JobConf());
       TextFormat.merge(new InputStreamReader(fs.open(new Path(path))), neuralNetProtoBuilder);
