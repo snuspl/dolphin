@@ -93,7 +93,9 @@ public final class NeuralNetwork {
   public LayerParameter[] getParameters() {
     final LayerParameter[] parameters = new LayerParameter[layers.length];
     for (int i = 0; i < layers.length; ++i) {
-      parameters[i] = layers[i].getLayerParameter();
+      if (layers[i].isLearnable()) {
+        parameters[i] = layers[i].getLayerParameter();
+      }
     }
     return parameters;
   }
@@ -115,7 +117,9 @@ public final class NeuralNetwork {
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
       for (int i = 0; i < layers.length; ++i) {
-        layers[i].setLayerParameter(updatedParameters[i]);
+        if (layers[i].isLearnable()) {
+          layers[i].setLayerParameter(updatedParameters[i]);
+        }
       }
       trainedCount = 0;
     }
