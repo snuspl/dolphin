@@ -15,57 +15,86 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
+import edu.snu.reef.dolphin.core.DataParser;
+import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.apache.reef.annotations.audience.TaskSide;
+import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.task.Task;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.snu.reef.dolphin.neuralnet.NeuralNetworkTask.*;
+
 /**
- * A wrapper Task for `NeuralNetworkTask` when REEF Group Communication is used.
- * Instead of `NeuralNetworkTask` which terminates right after it finished its iterations,
- * this Task waits and sends dummy messages to the parameter server until all Tasks participating have finished.
+ * Task for training a neural network when REEF Group Communication is used.
+ * Compared to `NeuralNetworkTask` which terminates right after it finishes its iterations,
+ * this Task waits if it finishes its iteration early and sends dummy messages to the parameter server until
+ * all Tasks participating have finished the current iteration.
  * This behavior is needed due to the synchronous nature of REEF Group Communication.
  */
 @TaskSide
-public final class GroupCommNeuralNetworkTask implements Task {
+final class GroupCommNeuralNetworkTask implements Task {
   private static final Logger LOG = Logger.getLogger(GroupCommNeuralNetworkTask.class.getName());
 
+  private final Validator crossValidator;
+  private final Validator trainingValidator;
+  private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
+  private final NeuralNetwork neuralNetwork;
+  private final int maxIterations;
   private final int batchSize;
   private final ParameterProvider parameterProvider;
-  private final NeuralNetworkTask neuralNetworkTask;
 
   @Inject
-  GroupCommNeuralNetworkTask(@Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
-                             final GroupCommParameterProvider parameterProvider,
-                             final NeuralNetworkTask neuralNetworkTask) {
+  GroupCommNeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
+                             final NeuralNetwork neuralNetwork,
+                             @Parameter(MaxIterations.class) final int maxIterations,
+                             @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
+                             final GroupCommParameterProvider parameterProvider) {
+    this.dataParser = dataParser;
+    this.neuralNetwork = neuralNetwork;
+    this.maxIterations = maxIterations;
+    this.trainingValidator = new Validator(neuralNetwork);
+    this.crossValidator = new Validator(neuralNetwork);
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
-    this.neuralNetworkTask = neuralNetworkTask;
   }
 
   @Override
   public byte[] call(final byte[] bytes) throws Exception {
-    neuralNetworkTask.call(bytes);
+    LOG.log(Level.INFO, "GroupCommNeuralNetworkTask.call() commencing....");
 
-    // Send dummy messages until the parameter server sends an empty message,
-    // which means all Tasks have finished their iterations.
-    while (true) {
-      for (int index = 0; index < batchSize; index++) {
-        parameterProvider.push(null, null);
-      }
+    final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
+    for (int i = 0; i < maxIterations; ++i) {
+      runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
+      LOG.log(Level.INFO, generateIterationLog(trainingValidator, crossValidator, i));
 
-      final LayerParameter[] layerParameters = parameterProvider.pull();
-      if (layerParameters.length == 0) {
-        break;
+      crossValidator.reset();
+      trainingValidator.reset();
+
+      // Send dummy messages until the parameter server sends an empty message,
+      // which means all Tasks have finished their iterations.
+      while (true) {
+        for (int index = 0; index < batchSize; index++) {
+          parameterProvider.push(null, null);
+        }
+
+        final LayerParameter[] layerParameters = parameterProvider.pull();
+        if (layerParameters.length == 0) {
+          break;
+        }
       }
     }
 
+    LOG.log(Level.INFO, "GroupCommNeuralNetworkTask.call() terminating....");
     return null;
   }
 }

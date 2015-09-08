@@ -15,6 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
+import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
@@ -53,6 +54,7 @@ public final class GroupCommParameterServerTask implements Task {
   private final LayerParameter[] layerParameters;
   private final LayerParameter[] deltaLayerParameters;
   private final float stepsize;
+  private final int maxIterations;
   private final Broadcast.Sender<LayerParameter[]> layerParamBroadcastSender;
   private final Reduce.Receiver<List<Pair<List<INDArray>, List<INDArray>>>> activationGradientReduceReceiver;
 
@@ -60,6 +62,7 @@ public final class GroupCommParameterServerTask implements Task {
   private GroupCommParameterServerTask(
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
+      @Parameter(MaxIterations.class) final int maxIterations,
       final ConfigurationSerializer configurationSerializer,
       final GroupCommClient groupCommClient) {
 
@@ -73,6 +76,7 @@ public final class GroupCommParameterServerTask implements Task {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
+    this.maxIterations = maxIterations;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
@@ -123,16 +127,19 @@ public final class GroupCommParameterServerTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "GroupCommParameterServerTask.call() commencing....");
     long loopIndex = 0;
+    int iteration = 0;
 
-    // run continuously until all Tasks have finished
-    while (true) {
+    // The variable `iteration` does not indicate the number of times this while loop has ran.
+    // Rather, `iteration` tracks the number of iterations `GroupCommNeuralNetworkTask`s have finished up until now.
+    while (iteration < maxIterations) {
       LOG.log(Level.INFO, "GroupCommParameterServerTask.call() loop {0}....", loopIndex++);
       final List<Pair<List<INDArray>, List<INDArray>>> result = activationGradientReduceReceiver.reduce();
 
       if (result.size() == 0) {
-        // All Tasks have finished their iterations. Let's end the job.
+        // All Tasks have finished this iteration. Let's end the iteration.
         layerParamBroadcastSender.send(new LayerParameter[0]);
-        break;
+        iteration++;
+        continue;
       }
 
       // generate parameter updates using each pair of activations and gradients
@@ -160,6 +167,7 @@ public final class GroupCommParameterServerTask implements Task {
       layerParamBroadcastSender.send(layerParameters);
     }
 
+    LOG.log(Level.INFO, "GroupCommParameterServerTask.call() terminating....");
     return null;
   }
 }

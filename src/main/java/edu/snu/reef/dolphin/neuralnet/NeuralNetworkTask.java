@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 public final class NeuralNetworkTask implements Task {
 
   private static final Logger LOG = Logger.getLogger(NeuralNetworkTask.class.getName());
+  private static final String NEWLINE = System.getProperty("line.separator");
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
@@ -44,69 +45,7 @@ public final class NeuralNetworkTask implements Task {
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
 
-  /**
-   * Class for validation of neural network model.
-   * Calculates the prediction accuracy for validation data set.
-   */
-  private static final class Validator {
-    private final NeuralNetwork network;
-    private int totalNum;
-    private int correctNum;
 
-    @Inject
-    private Validator(final NeuralNetwork network) {
-      this.network = network;
-    }
-
-    public void validate(final INDArray input, final int label) {
-      final List<INDArray> activations = network.feedForward(input);
-      final INDArray output = activations.get(activations.size() - 1);
-      float maxValue = output.getFloat(0);
-
-      // Find the index with highest probability.
-      int maxIndex = 0;
-      for (int i = 1; i < output.length(); ++i) {
-        if (output.getFloat(i) > maxValue) {
-          maxValue = output.getFloat(i);
-          maxIndex = i;
-        }
-      }
-
-      ++totalNum;
-      if (maxIndex == label) {
-        ++correctNum;
-      }
-    }
-
-    /**
-     * Reset statistics.
-     */
-    public void reset() {
-      totalNum = 0;
-      correctNum = 0;
-    }
-
-    /**
-     * @return the prediction accuracy of model.
-     */
-    public float getAccuracy() {
-      return correctNum / (float) totalNum;
-    }
-
-    /**
-     * @return the prediction error of model.
-     */
-    public float getError() {
-      return 1 - getAccuracy();
-    }
-
-    /**
-     * @return the total number of samples that are used for evaluation.
-     */
-    public int getTotalNum() {
-      return totalNum;
-    }
-  }
 
   @Inject
   NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
@@ -126,30 +65,59 @@ public final class NeuralNetworkTask implements Task {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
     final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
-
     for (int i = 0; i < maxIterations; ++i) {
-      for (final Pair<Pair<INDArray, Integer>, Boolean> data : dataSet) {
-        final INDArray input = data.getFirst().getFirst();
-        final int label = data.getFirst().getSecond();
-        final boolean isValidation = data.getSecond();
-        if (isValidation) {
-          crossValidator.validate(input, label);
-        } else {
-          neuralNetwork.train(input, label);
-          trainingValidator.validate(input, label);
-        }
-      }
-      LOG.log(Level.INFO, "=========================================================");
-      LOG.log(Level.INFO, "Iteration: {0}", String.valueOf(i));
-      LOG.log(Level.INFO, "Training Error: {0}", String.valueOf(trainingValidator.getError()));
-      LOG.log(Level.INFO, "Cross Validation Error: {0}", String.valueOf(crossValidator.getError()));
-      LOG.log(Level.INFO, "# of training inputs: {0}", String.valueOf(trainingValidator.getTotalNum()));
-      LOG.log(Level.INFO, "# of validation inputs: {0}", String.valueOf(crossValidator.getTotalNum()));
-      LOG.log(Level.INFO, "=========================================================");
+      runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
+      LOG.log(Level.INFO, generateIterationLog(trainingValidator, crossValidator, i));
+
       crossValidator.reset();
       trainingValidator.reset();
     }
 
     return null;
+  }
+
+  public static void runIteration(final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet,
+                                  final NeuralNetwork neuralNetwork,
+                                  final Validator trainingValidator,
+                                  final Validator crossValidator) {
+    for (final Pair<Pair<INDArray, Integer>, Boolean> data : dataSet) {
+      final INDArray input = data.getFirst().getFirst();
+      final int label = data.getFirst().getSecond();
+      final boolean isValidation = data.getSecond();
+      if (isValidation) {
+        crossValidator.validate(input, label);
+      } else {
+        neuralNetwork.train(input, label);
+        trainingValidator.validate(input, label);
+      }
+    }
+  }
+
+  public static String generateIterationLog(final Validator trainingValidator,
+                                            final Validator crossValidator,
+                                            final int iteration) {
+    return new StringBuilder()
+        .append(NEWLINE)
+        .append("=========================================================")
+        .append(NEWLINE)
+        .append("Iteration: ")
+        .append(iteration)
+        .append(NEWLINE)
+        .append("Training Error: ")
+        .append(trainingValidator.getError())
+        .append(NEWLINE)
+        .append("Cross Validation Error: ")
+        .append(crossValidator.getError())
+        .append(NEWLINE)
+        .append("# of training inputs: ")
+        .append(trainingValidator.getTotalNum())
+        .append(NEWLINE)
+        .append("# of validation inputs: ")
+        .append(crossValidator.getTotalNum())
+        .append(NEWLINE)
+        .append("=========================================================")
+        .append(NEWLINE)
+        .toString();
+
   }
 }
