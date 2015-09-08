@@ -15,7 +15,8 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
-import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
+import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.apache.reef.io.network.group.api.operators.Broadcast;
@@ -57,9 +58,8 @@ public final class GroupCommParameterServerTask implements Task {
 
   @Inject
   private GroupCommParameterServerTask(
-      @Parameter(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class)
-          final Set<String> serializedLayerConfigurationSet,
-      @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
+      @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
+      @Parameter(Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
       final GroupCommClient groupCommClient) {
 

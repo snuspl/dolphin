@@ -113,7 +113,8 @@ public final class NeuralNetworkREEF {
     final boolean usesGroupComm = neuralNetworkDriverParameters.isGroupComm();
 
     final ConfigurationModule neuralNetworkDriverConf = DriverConfiguration.CONF
-        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(NeuralNetworkDriver.class))
+        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(
+            usesGroupComm ? NeuralNetworkGroupCommDriver.class : NeuralNetworkDriver.class))
         .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(TextInputFormat.class))
         .set(DriverConfiguration.DRIVER_IDENTIFIER, "Neural Network")
         .set(DriverConfiguration.ON_CONTEXT_ACTIVE,

@@ -179,7 +179,7 @@ public final class NeuralNetworkGroupCommDriver {
     }
   }
 
-  @NamedParameter(doc = "Name of the commuication group used for the Neural Network application")
+  @NamedParameter(doc = "Name of the communication group used for the Neural Network application")
   public final class NeuralNetworkCommGroup implements Name<String> {
   }
 
