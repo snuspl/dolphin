@@ -17,45 +17,76 @@ package edu.snu.reef.dolphin.neuralnet.layers;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 
+
 /**
- * Interface for the layer of a neural network.
+ * Abstract class for the layer of a neural network.
  */
-public interface Layer {
+public abstract class LayerBase {
+
+  private final int index;
+  private final int numOutput;
+  private LayerParameter layerParameter;
+
+  protected LayerBase(final int index, final int numOutput) {
+    this.index = index;
+    this.numOutput = numOutput;
+  }
 
   /**
    * @return the index of the layer.
    */
-  int getIndex();
+  public final int getIndex() {
+    return this.index;
+  }
 
   /**
    * @return the number of layer output nodes.
    */
-  int getNumOutput();
+  public final int getNumOutput() {
+    return this.numOutput;
+  }
 
   /**
    * Replaces the parameter of the layer.
    * @param layerParameter a new parameter of the layer.
    */
-  void setLayerParameter(final LayerParameter layerParameter);
+  public final void setLayerParameter(final LayerParameter layerParameter) {
+    if (!isLearnable()) {
+      throw new RuntimeException(this + " is not a learnable layer. setLayerParameter() should not be called.");
+    }
+
+    this.layerParameter = layerParameter;
+  }
 
   /**
    * @return the parameter of the layer.
    */
-  LayerParameter getLayerParameter();
+  public final LayerParameter getLayerParameter() {
+    if (!isLearnable()) {
+      throw new RuntimeException(this + " is not a learnable layer. getLayerParameter() should not be called.");
+    }
+
+    return this.layerParameter;
+  }
+
+  /**
+   * @return whether this layer can learn from training data or not.
+   */
+  public abstract boolean isLearnable();
 
   /**
    * Applies the derivative of the activation function of the layer to each element of matrix.
    * @param activation the activations of the layer.
    * @return the derivatives for the given activation.
    */
-  INDArray derivative(final INDArray activation);
+  public abstract INDArray derivative(final INDArray activation);
 
   /**
    * Computes the activations.
    * @param input the input vector for the layer.
    * @return the activations.
    */
-  INDArray feedForward(final INDArray input);
+  public abstract INDArray feedForward(final INDArray input);
 
   /**
    * Computes the gradients.
@@ -65,10 +96,10 @@ public interface Layer {
    * @param nextGradient the gradients of the next layer.
    * @return the gradients for the specified activations and derivatives.
    */
-  INDArray backPropagate(final INDArray activation,
-                         final INDArray derivative,
-                         final LayerParameter prevParam,
-                         final INDArray nextGradient);
+  public abstract INDArray backPropagate(final INDArray activation,
+                                         final INDArray derivative,
+                                         final LayerParameter prevParam,
+                                         final INDArray nextGradient);
 
   /**
    * Computes the gradients. (only for output layer)
@@ -76,6 +107,7 @@ public interface Layer {
    * @param label the expected output.
    * @return the gradients for output layer.
    */
-  INDArray backPropagate(final INDArray activation,
-                         final INDArray label);
+  public abstract INDArray backPropagate(final INDArray activation,
+                                         final INDArray label);
+
 }

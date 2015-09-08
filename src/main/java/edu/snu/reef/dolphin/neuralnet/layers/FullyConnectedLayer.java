@@ -28,47 +28,24 @@ import javax.inject.Inject;
 /**
  * Fully connected Layer.
  */
-public final class FullyConnectedLayer implements Layer {
+public final class FullyConnectedLayer extends LayerBase {
 
-  protected final int index;
   private final String activationFunction;
-  private final int numOutput;
-  private LayerParameter layerParameter;
 
   @Inject
   public FullyConnectedLayer(@Parameter(LayerIndex.class) final int index,
                              @Parameter(ActivationFunction.class) final String activationFunction,
                              @Parameter(NumberOfOutput.class) final int numOutput,
                              final LayerParameterInitializer layerParameterInitializer) {
-    this.index = index;
+    super(index, numOutput);
     this.activationFunction = activationFunction;
-    this.numOutput = numOutput;
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
   }
 
-
   /** {@inheritDoc} */
   @Override
-  public int getIndex() {
-    return index;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int getNumOutput() {
-    return numOutput;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public void setLayerParameter(final LayerParameter layerParameter) {
-    this.layerParameter = layerParameter;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public LayerParameter getLayerParameter() {
-    return this.layerParameter;
+  public boolean isLearnable() {
+    return true;
   }
 
   /** {@inheritDoc} */

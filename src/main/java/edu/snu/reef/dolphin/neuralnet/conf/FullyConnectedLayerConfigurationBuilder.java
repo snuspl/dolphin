@@ -18,7 +18,7 @@ package edu.snu.reef.dolphin.neuralnet.conf;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.FullyConnectedLayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.FullyConnectedLayer;
-import edu.snu.reef.dolphin.neuralnet.layers.Layer;
+import edu.snu.reef.dolphin.neuralnet.layers.LayerBase;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
@@ -95,7 +95,7 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
         .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))
         .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
         .bindNamedParameter(LayerConfigurationParameters.ActivationFunction.class, String.valueOf(activationFunction))
-        .bindImplementation(Layer.class, FullyConnectedLayer.class)
+        .bindImplementation(LayerBase.class, FullyConnectedLayer.class)
         .bindImplementation(LayerParameterInitializer.class, FullyConnectedLayerParameterInitializer.class)
         .build();
   }

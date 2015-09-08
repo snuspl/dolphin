@@ -17,7 +17,7 @@ package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.BatchSize;
-import edu.snu.reef.dolphin.neuralnet.layers.Layer;
+import edu.snu.reef.dolphin.neuralnet.layers.LayerBase;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import org.apache.reef.io.network.util.Pair;
@@ -51,7 +51,7 @@ public final class NeuralNetwork {
   /**
    * A set of layers which a neural network comprises.
    */
-  private final Layer[] layers;
+  private final LayerBase[] layers;
 
   /**
    * Manager that provides the updated parameters and gathers activations and error gradient vector for each input.
@@ -70,13 +70,13 @@ public final class NeuralNetwork {
                        final ParameterProvider parameterProvider) {
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
-    this.layers = new Layer[serializedLayerConfSets.size()];
+    this.layers = new LayerBase[serializedLayerConfSets.size()];
 
     for (final String serializedLayerConfiguration : serializedLayerConfSets) {
       try {
         final Configuration layerConfiguration = configurationSerializer.fromString(serializedLayerConfiguration);
         final Injector injector = Tang.Factory.getTang().newInjector(layerConfiguration);
-        final Layer layer = injector.getInstance(Layer.class);
+        final LayerBase layer = injector.getInstance(LayerBase.class);
         this.layers[layer.getIndex()] = layer;
 
       } catch (final IOException exception) {
@@ -93,7 +93,9 @@ public final class NeuralNetwork {
   public LayerParameter[] getParameters() {
     final LayerParameter[] parameters = new LayerParameter[layers.length];
     for (int i = 0; i < layers.length; ++i) {
-      parameters[i] = layers[i].getLayerParameter();
+      if (layers[i].isLearnable()) {
+        parameters[i] = layers[i].getLayerParameter();
+      }
     }
     return parameters;
   }
@@ -115,7 +117,9 @@ public final class NeuralNetwork {
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
       for (int i = 0; i < layers.length; ++i) {
-        layers[i].setLayerParameter(updatedParameters[i]);
+        if (layers[i].isLearnable()) {
+          layers[i].setLayerParameter(updatedParameters[i]);
+        }
       }
       trainedCount = 0;
     }
