@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.neuralnet;
+package edu.snu.reef.dolphin.neuralnet.util;
 
+import edu.snu.reef.dolphin.neuralnet.NeuralNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
-import javax.inject.Inject;
 import java.util.List;
 
 /**
  * Class for validating a neural network model using a given data input.
  * Calculates the prediction accuracy for the given validation data set.
  */
-final class Validator {
+public final class Validator {
   private final NeuralNetwork network;
-  private int totalNum;
-  private int correctNum;
+  private final ValidationStats validationStats;
 
-  @Inject
-  Validator(final NeuralNetwork network) {
+  public Validator(final NeuralNetwork network) {
     this.network = network;
+    this.validationStats = new ValidationStats();
   }
 
   public void validate(final INDArray input, final int label) {
@@ -48,38 +47,14 @@ final class Validator {
       }
     }
 
-    ++totalNum;
     if (maxIndex == label) {
-      ++correctNum;
+      validationStats.validationCorrect();
+    } else {
+      validationStats.validationIncorrect();
     }
   }
 
-  /**
-   * Reset statistics.
-   */
-  public void reset() {
-    totalNum = 0;
-    correctNum = 0;
-  }
-
-  /**
-   * @return the prediction accuracy of model.
-   */
-  public float getAccuracy() {
-    return correctNum / (float) totalNum;
-  }
-
-  /**
-   * @return the prediction error of model.
-   */
-  public float getError() {
-    return 1 - getAccuracy();
-  }
-
-  /**
-   * @return the total number of samples that are used for evaluation.
-   */
-  public int getTotalNum() {
-    return totalNum;
+  public ValidationStats getValidationStats() {
+    return validationStats;
   }
 }

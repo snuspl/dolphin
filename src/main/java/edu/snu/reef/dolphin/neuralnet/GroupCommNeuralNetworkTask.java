@@ -19,8 +19,8 @@ import edu.snu.reef.dolphin.core.DataParser;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.GroupCommParameterProvider;
-import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import edu.snu.reef.dolphin.neuralnet.util.Validator;
 import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
@@ -51,7 +51,7 @@ final class GroupCommNeuralNetworkTask implements Task {
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
   private final int batchSize;
-  private final ParameterProvider parameterProvider;
+  private final GroupCommParameterProvider parameterProvider;
 
   @Inject
   GroupCommNeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
@@ -75,10 +75,6 @@ final class GroupCommNeuralNetworkTask implements Task {
     final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
-      LOG.log(Level.INFO, generateIterationLog(trainingValidator, crossValidator, i));
-
-      crossValidator.reset();
-      trainingValidator.reset();
 
       // Send dummy messages until the parameter server sends an empty message,
       // which means all Tasks have finished their iterations.
@@ -92,6 +88,12 @@ final class GroupCommNeuralNetworkTask implements Task {
           break;
         }
       }
+
+      // Aggregate validation results at the parameter server.
+      parameterProvider.pushValidationStats(trainingValidator.getValidationStats(),
+          crossValidator.getValidationStats());
+      crossValidator.getValidationStats().reset();
+      trainingValidator.getValidationStats().reset();
     }
 
     LOG.log(Level.INFO, "GroupCommNeuralNetworkTask.call() terminating....");

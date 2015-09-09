@@ -17,6 +17,8 @@ package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.core.DataParser;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
+import edu.snu.reef.dolphin.neuralnet.util.ValidationStats;
+import edu.snu.reef.dolphin.neuralnet.util.Validator;
 import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
@@ -67,10 +69,11 @@ public final class NeuralNetworkTask implements Task {
     final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
-      LOG.log(Level.INFO, generateIterationLog(trainingValidator, crossValidator, i));
+      LOG.log(Level.INFO, generateIterationLog(trainingValidator.getValidationStats(),
+          crossValidator.getValidationStats(), i));
 
-      crossValidator.reset();
-      trainingValidator.reset();
+      crossValidator.getValidationStats().reset();
+      trainingValidator.getValidationStats().reset();
     }
 
     return null;
@@ -93,8 +96,8 @@ public final class NeuralNetworkTask implements Task {
     }
   }
 
-  public static String generateIterationLog(final Validator trainingValidator,
-                                            final Validator crossValidator,
+  public static String generateIterationLog(final ValidationStats trainingValidationStats,
+                                            final ValidationStats crossValidationStats,
                                             final int iteration) {
     return new StringBuilder()
         .append(NEWLINE)
@@ -104,16 +107,16 @@ public final class NeuralNetworkTask implements Task {
         .append(iteration)
         .append(NEWLINE)
         .append("Training Error: ")
-        .append(trainingValidator.getError())
+        .append(trainingValidationStats.getError())
         .append(NEWLINE)
         .append("Cross Validation Error: ")
-        .append(crossValidator.getError())
+        .append(crossValidationStats.getError())
         .append(NEWLINE)
         .append("# of training inputs: ")
-        .append(trainingValidator.getTotalNum())
+        .append(trainingValidationStats.getTotalNum())
         .append(NEWLINE)
         .append("# of validation inputs: ")
-        .append(crossValidator.getTotalNum())
+        .append(crossValidationStats.getTotalNum())
         .append(NEWLINE)
         .append("=========================================================")
         .append(NEWLINE)

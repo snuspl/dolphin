@@ -18,6 +18,7 @@ package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 import edu.snu.reef.dolphin.neuralnet.NeuralNetworkGroupCommDriver;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import edu.snu.reef.dolphin.neuralnet.util.ValidationStats;
 import org.apache.reef.exception.evaluator.NetworkException;
 import org.apache.reef.io.network.group.api.operators.Broadcast;
 import org.apache.reef.io.network.group.api.operators.Reduce;
@@ -44,6 +45,7 @@ public final class GroupCommParameterProvider implements ParameterProvider {
   private final int batchSize;
   private final Broadcast.Receiver<LayerParameter[]> layerParamBroadcastReceiver;
   private final Reduce.Sender<List<Pair<List<INDArray>, List<INDArray>>>> activationGradientReduceSender;
+  private final Reduce.Sender<Pair<ValidationStats, ValidationStats>> validationStatsReduceSender;
   private int pushCount;
 
   @Inject
@@ -62,6 +64,8 @@ public final class GroupCommParameterProvider implements ParameterProvider {
         commGroup.getBroadcastReceiver(NeuralNetworkGroupCommDriver.LayerParamBroadcast.class);
     this.activationGradientReduceSender =
         commGroup.getReduceSender(NeuralNetworkGroupCommDriver.ActivationGradientReduce.class);
+    this.validationStatsReduceSender =
+        commGroup.getReduceSender(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
   }
 
   @Override
@@ -95,6 +99,17 @@ public final class GroupCommParameterProvider implements ParameterProvider {
       throw new RuntimeException("NetworkException while trying to receive broadcast", e);
     } catch (final InterruptedException e) {
       throw new RuntimeException("InterruptedException while trying to receive broadcast", e);
+    }
+  }
+
+  public synchronized void pushValidationStats(final ValidationStats trainingValidationStats,
+                                               final ValidationStats crossValidationStats) {
+    try {
+      validationStatsReduceSender.send(new Pair<>(trainingValidationStats, crossValidationStats));
+    } catch (final NetworkException e) {
+      throw new RuntimeException("NetworkException while trying to send reduce", e);
+    } catch (final InterruptedException e) {
+      throw new RuntimeException("InterruptedException while trying to send reduce", e);
     }
   }
 }

@@ -16,10 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.core.DataParseService;
-import edu.snu.reef.dolphin.neuralnet.data.ActivationGradientListCodec;
-import edu.snu.reef.dolphin.neuralnet.data.LayerParameterArrayCodec;
-import edu.snu.reef.dolphin.neuralnet.data.ListReduceFunction;
-import edu.snu.reef.dolphin.neuralnet.data.NeuralNetworkDataParser;
+import edu.snu.reef.dolphin.neuralnet.data.*;
 import org.apache.reef.annotations.audience.DriverSide;
 import org.apache.reef.driver.context.ActiveContext;
 import org.apache.reef.driver.task.TaskConfiguration;
@@ -93,6 +90,12 @@ public final class NeuralNetworkGroupCommDriver {
             ReduceOperatorSpec.newBuilder()
                 .setDataCodecClass(ActivationGradientListCodec.class)
                 .setReduceFunctionClass(ListReduceFunction.class)
+                .setReceiverId(GroupCommParameterServerTask.TASK_ID)
+                .build())
+        .addReduce(ValidationStatsPairReduce.class,
+            ReduceOperatorSpec.newBuilder()
+                .setDataCodecClass(ValidationStatsPairCodec.class)
+                .setReduceFunctionClass(ValidationStatsPairReduceFunction.class)
                 .setReceiverId(GroupCommParameterServerTask.TASK_ID)
                 .build())
         .finalise();
@@ -187,7 +190,11 @@ public final class NeuralNetworkGroupCommDriver {
   public final class LayerParamBroadcast implements Name<String> {
   }
 
-  @NamedParameter(doc = "Name of the Reduce operator used in the Neural Network application")
+  @NamedParameter(doc = "Name of the Reduce operator used for aggregating network activations and gradients")
   public final class ActivationGradientReduce implements Name<String> {
+  }
+
+  @NamedParameter(doc = "Name of the Reduce operator used for aggregating validation results")
+  public final class ValidationStatsPairReduce implements Name<String> {
   }
 }

@@ -20,6 +20,7 @@ import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.reef.dolphin.neuralnet.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import edu.snu.reef.dolphin.neuralnet.util.ValidationStats;
 import org.apache.reef.io.network.group.api.operators.Broadcast;
 import org.apache.reef.io.network.group.api.operators.Reduce;
 import org.apache.reef.io.network.group.api.task.CommunicationGroupClient;
@@ -41,6 +42,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.snu.reef.dolphin.neuralnet.NeuralNetworkTask.*;
+
 /**
  * Task that acts as a parameter server for {@link GroupCommNeuralNetworkTask}s using REEF Group Communication.
  *
@@ -57,6 +60,7 @@ public final class GroupCommParameterServerTask implements Task {
   private final int maxIterations;
   private final Broadcast.Sender<LayerParameter[]> layerParamBroadcastSender;
   private final Reduce.Receiver<List<Pair<List<INDArray>, List<INDArray>>>> activationGradientReduceReceiver;
+  private final Reduce.Receiver<Pair<ValidationStats, ValidationStats>> validationStatsPairReduceReceiver;
 
   @Inject
   private GroupCommParameterServerTask(
@@ -72,6 +76,8 @@ public final class GroupCommParameterServerTask implements Task {
         commGroup.getBroadcastSender(NeuralNetworkGroupCommDriver.LayerParamBroadcast.class);
     this.activationGradientReduceReceiver =
         commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ActivationGradientReduce.class);
+    this.validationStatsPairReduceReceiver =
+        commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
 
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
@@ -138,6 +144,9 @@ public final class GroupCommParameterServerTask implements Task {
       if (result.size() == 0) {
         // All Tasks have finished this iteration. Let's end the iteration.
         layerParamBroadcastSender.send(new LayerParameter[0]);
+        final Pair<ValidationStats, ValidationStats> validationStatsPair = validationStatsPairReduceReceiver.reduce();
+        LOG.log(Level.INFO,
+            generateIterationLog(validationStatsPair.getFirst(), validationStatsPair.getSecond(), iteration));
         iteration++;
         continue;
       }
