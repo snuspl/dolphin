@@ -43,14 +43,24 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
 
   private final DataSet<LongWritable, Text> dataSet;
   private final String delimiter;
+  private final int[] inputShape;
   private List<Pair<Pair<INDArray, Integer>, Boolean>> result;
   private ParseException parseException;
 
   @Inject
-  public NeuralNetworkDataParser(final DataSet<LongWritable, Text> dataSet,
-                                 @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter) {
+  private NeuralNetworkDataParser(
+      final DataSet<LongWritable, Text> dataSet,
+      @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter,
+      @Parameter(NeuralNetworkDriverParameters.InputShape.class) final String inputShape) {
     this.dataSet = dataSet;
     this.delimiter = delimiter;
+
+    // Converts a string to an array of integers.
+    final String[] inputShapeStrings = inputShape.split(NeuralNetworkDriverParameters.SHAPE_DELIMITER);
+    this.inputShape = new int[inputShapeStrings.length];
+    for (int i = 0; i < inputShapeStrings.length; ++i) {
+      this.inputShape[i] = Integer.parseInt(inputShapeStrings[i]);
+    }
   }
 
   /** {@inheritDoc} */
@@ -78,7 +88,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       try {
         final INDArray input = readNumpy(
             new ByteArrayInputStream(text.getBytes()), delimiter);
-        final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2));
+        final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2)).reshape(inputShape);
         final int label = (int) input.getFloat(input.columns() - 2);
         final boolean isValidation = ((int) input.getFloat(input.columns() - 1) == 1);
         trainingData.add(new Pair<>(new Pair<>(data, label), isValidation));

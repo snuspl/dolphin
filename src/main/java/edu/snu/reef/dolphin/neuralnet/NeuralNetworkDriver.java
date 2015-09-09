@@ -80,7 +80,7 @@ public final class NeuralNetworkDriver {
 
         activeContext.submitContextAndService(
             ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build(),
-            dataParseConf);
+            Configurations.merge(dataParseConf, neuralNetworkTaskParameters.getServiceConfiguration()));
 
         // Case 2: Evaluator configured with a neural network context.
         // We can now place a neural network task on top of the contexts.

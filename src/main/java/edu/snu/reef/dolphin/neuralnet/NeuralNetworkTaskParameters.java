@@ -16,6 +16,8 @@
 package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.Delimiter;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.InputShape;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
@@ -35,6 +37,7 @@ public final class NeuralNetworkTaskParameters {
   private final Configuration neuralNetworkConfiguration;
   private final String delimiter;
   private final int maxIterations;
+  private final String inputShape;
 
   @NamedParameter(doc = "serialized neural network configuration")
   public static class SerializedNeuralNetConf implements Name<String> {
@@ -43,21 +46,33 @@ public final class NeuralNetworkTaskParameters {
   @Inject
   private NeuralNetworkTaskParameters(final ConfigurationSerializer configurationSerializer,
                                       @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
-                                      @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter,
-                                      @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
+                                      @Parameter(Delimiter.class) final String delimiter,
+                                      @Parameter(MaxIterations.class) final int maxIterations,
+                                      @Parameter(InputShape.class) final String inputShape) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetConf);
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+    this.inputShape = inputShape;
+  }
+
+  /**
+   * @return the configuration for service.
+   */
+  public Configuration getServiceConfiguration() {
+    return Tang.Factory.getTang().newConfigurationBuilder()
+        .bindNamedParameter(Delimiter.class, delimiter)
+        .bindNamedParameter(InputShape.class, inputShape)
+        .build();
   }
 
   /**
    * @return the configuration for task.
    */
   public Configuration getTaskConfiguration() {
-    return Configurations.merge(Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(NeuralNetworkDriverParameters.Delimiter.class, delimiter)
-        .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
-        .build(),
+    return Configurations.merge(
+        Tang.Factory.getTang().newConfigurationBuilder()
+            .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
+            .build(),
         neuralNetworkConfiguration);
   }
 }

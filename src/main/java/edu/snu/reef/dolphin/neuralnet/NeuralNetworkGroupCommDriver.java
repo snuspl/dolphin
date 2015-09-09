@@ -147,7 +147,8 @@ public final class NeuralNetworkGroupCommDriver {
         final Configuration dataParseConf = DataParseService.getServiceConfiguration(NeuralNetworkDataParser.class);
 
         activeContext.submitContextAndService(groupCommContextConf,
-            Configurations.merge(groupCommServiceConf, dataParseConf));
+            Configurations.merge(groupCommServiceConf, dataParseConf,
+                neuralNetworkTaskParameters.getServiceConfiguration()));
 
       // Case 3: Evaluator configured with a group comm parameter server context.
       // We can now place a group comm parameter server task on top of this context.

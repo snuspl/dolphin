@@ -34,9 +34,14 @@ message ParameterProviderConfiguration {
   required string type = 1;
 }
 
+message Shape {
+  repeated uint32 dim = 1 [packed = true];
+}
+
 message NeuralNetworkConfiguration {
   repeated LayerConfiguration layer = 1;
   optional uint32 batch_size = 2;
   optional float stepsize = 3;
   required ParameterProviderConfiguration parameter_provider = 4;
+  required Shape input_shape = 5;
 }

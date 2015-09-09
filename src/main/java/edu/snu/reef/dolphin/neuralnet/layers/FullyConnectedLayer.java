@@ -59,7 +59,7 @@ public final class FullyConnectedLayer extends LayerBase {
   @Override
   public INDArray feedForward(final INDArray input) {
     final INDArray output =
-        input.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
+        input.linearView().mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
     return Nd4j.getExecutioner().execAndReturn(Nd4j.getOpFactory().createTransform(activationFunction, output));
   }
 
@@ -68,7 +68,7 @@ public final class FullyConnectedLayer extends LayerBase {
   public INDArray backPropagate(final INDArray activation,
                                 final LayerParameter nextParameter,
                                 final INDArray nextError) {
-    return nextError.mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
+    return nextError.linearView().mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
   }
 
   /** {@inheritDoc} */
@@ -81,7 +81,7 @@ public final class FullyConnectedLayer extends LayerBase {
   @Override
   public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
     return LayerParameter.newBuilder()
-        .setWeightParam(input.transpose().mmul(error))
+        .setWeightParam(input.linearView().transpose().mmul(error))
         .setBiasParam(error)
         .build();
   }

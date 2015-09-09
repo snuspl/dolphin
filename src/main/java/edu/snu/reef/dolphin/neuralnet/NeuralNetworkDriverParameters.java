@@ -24,6 +24,7 @@ import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParamete
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos.*;
 import edu.snu.reef.dolphin.parameters.OnLocal;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -49,6 +50,7 @@ public final class NeuralNetworkDriverParameters {
   private final String delimiter;
   private final int maxIterations;
   private final boolean groupComm;
+  private final String inputShape;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -57,6 +59,15 @@ public final class NeuralNetworkDriverParameters {
   @NamedParameter(doc = "delimiter that is used in input file", short_name = "delim", default_value = ",")
   public static class Delimiter implements Name<String> {
   }
+
+  @NamedParameter(doc = "the shape of input data")
+  public static class InputShape implements Name<String> {
+  }
+
+  /**
+   * Delimiter that is used for distinguishing dimensions of input shape.
+   */
+  public static final String SHAPE_DELIMITER = ",";
 
   @Inject
   private NeuralNetworkDriverParameters(final ConfigurationSerializer configurationSerializer,
@@ -73,6 +84,10 @@ public final class NeuralNetworkDriverParameters {
         buildNeuralNetworkConfiguration(neuralNetConf));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+
+    // Converts a list of integers to a string
+    // because Tang configuration serializer does not support List serialization.
+    this.inputShape = StringUtils.join(neuralNetConf.getInputShape().getDimList(), SHAPE_DELIMITER);
   }
 
   /**
@@ -171,6 +186,7 @@ public final class NeuralNetworkDriverParameters {
             serializedNeuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
+        .bindNamedParameter(InputShape.class, inputShape)
         .build();
   }
 
