@@ -122,9 +122,21 @@ public final class NeuralNetworkGroupCommDriver {
       final String contextId = activeContext.getId();
       LOG.log(Level.FINER, "Context active: {0}", contextId);
 
-      // Case 1: Evaluator configured with a Data Loading context has been given.
+      // Case 1: Evaluator configured with no input data.
+      // We need to add a group comm context for the group comm parameter server above this context.
+      if (dataLoadingService.isComputeContext(activeContext)) {
+        final Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
+        final Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
+        final String nnCtrlCtxtId = getContextId(groupCommContextConf);
+        ctrlTaskCtxtId = nnCtrlCtxtId;
+        LOG.log(Level.FINEST, "Submit group comm parameter server context {0} to {1}",
+            new Object[]{nnCtrlCtxtId, contextId});
+
+        activeContext.submitContextAndService(groupCommContextConf, groupCommServiceConf);
+
+      // Case 2: Evaluator configured with a Data Loading context has been given.
       // We need to add a group comm context for training neural networks above this context.
-      if (dataLoadingService.isDataLoadedContext(activeContext)) {
+      } else if (dataLoadingService.isDataLoadedContext(activeContext)) {
         final Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
         final Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
         final String nnCmpCtxtId = getContextId(groupCommContextConf);
@@ -137,36 +149,9 @@ public final class NeuralNetworkGroupCommDriver {
         activeContext.submitContextAndService(groupCommContextConf,
             Configurations.merge(groupCommServiceConf, dataParseConf));
 
-      // Case 2: Evaluator configured with no input data.
-      // We need to add a group comm context for the group comm parameter server above this context.
-      } else if (dataLoadingService.isComputeContext(activeContext)) {
-        final Configuration groupCommContextConf = groupCommDriver.getContextConfiguration();
-        final Configuration groupCommServiceConf = groupCommDriver.getServiceConfiguration();
-        final String nnCtrlCtxtId = getContextId(groupCommContextConf);
-        ctrlTaskCtxtId = nnCtrlCtxtId;
-        LOG.log(Level.FINEST, "Submit group comm parameter server context {0} to {1}",
-            new Object[]{nnCtrlCtxtId, contextId});
-
-        activeContext.submitContextAndService(groupCommContextConf, groupCommServiceConf);
-
-      // Case 3: Evaluator configured with a group comm neural network context.
-      // We can now place a neural network task on top of this context.
-      } else if (!contextId.equals(ctrlTaskCtxtId)) {
-        final String taskId = "nnTask-" + taskIds.getAndIncrement();
-        LOG.log(Level.FINEST, "Submit neural network task {0} to {1}", new Object[]{taskId, contextId});
-
-        final Configuration partialTaskConf = Configurations.merge(
-            TaskConfiguration.CONF
-                .set(TaskConfiguration.IDENTIFIER, taskId)
-                .set(TaskConfiguration.TASK, GroupCommNeuralNetworkTask.class)
-                .build(),
-            neuralNetworkTaskParameters.getTaskConfiguration());
-        commGroup.addTask(partialTaskConf);
-        activeContext.submitTask(groupCommDriver.getTaskConfiguration(partialTaskConf));
-
-      // Case 4: Evaluator configured with a group comm parameter server context.
+      // Case 3: Evaluator configured with a group comm parameter server context.
       // We can now place a group comm parameter server task on top of this context.
-      } else {
+      } else if (contextId.equals(ctrlTaskCtxtId)) {
         final String taskId = GroupCommParameterServerTask.TASK_ID;
         LOG.log(Level.FINEST, "Submit group comm parameter server task {0} to {1}", new Object[]{taskId, contextId});
 
@@ -174,6 +159,21 @@ public final class NeuralNetworkGroupCommDriver {
             TaskConfiguration.CONF
                 .set(TaskConfiguration.IDENTIFIER, taskId)
                 .set(TaskConfiguration.TASK, GroupCommParameterServerTask.class)
+                .build(),
+            neuralNetworkTaskParameters.getTaskConfiguration());
+        commGroup.addTask(partialTaskConf);
+        activeContext.submitTask(groupCommDriver.getTaskConfiguration(partialTaskConf));
+
+      // Case 4: Evaluator configured with a group comm neural network context.
+      // We can now place a neural network task on top of this context.
+      } else {
+        final String taskId = "nnTask-" + taskIds.getAndIncrement();
+        LOG.log(Level.FINEST, "Submit neural network task {0} to {1}", new Object[]{taskId, contextId});
+
+        final Configuration partialTaskConf = Configurations.merge(
+            TaskConfiguration.CONF
+                .set(TaskConfiguration.IDENTIFIER, taskId)
+                .set(TaskConfiguration.TASK, GroupCommNeuralNetworkTask.class)
                 .build(),
             neuralNetworkTaskParameters.getTaskConfiguration());
         commGroup.addTask(partialTaskConf);
