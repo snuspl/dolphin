@@ -20,7 +20,6 @@ import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.util.Nd4jUtils;
-import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -30,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,9 +48,8 @@ public class NeuralNetworkTest {
   private final INDArray label = Nd4j.create(new float[]{0, 1, 0});
   private final int numHiddenUnits = 5;
 
-  private final List<INDArray> expectedActivations = Arrays.asList(input,
-      Nd4j.create(new float[]{
-          5.03440834992e-01f, 5.05097234769e-01f, 5.02210400594e-01f, 5.07340068629e-01f, 4.98231862363e-01f}),
+  private final List<INDArray> expectedActivations = Arrays.asList(Nd4j.create(new float[]{
+      5.03440834992e-01f, 5.05097234769e-01f, 5.02210400594e-01f, 5.07340068629e-01f, 4.98231862363e-01f}),
       expectedOutput);
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
@@ -79,7 +78,7 @@ public class NeuralNetworkTest {
 
   private NeuralNetwork neuralNetwork;
 
-  private final List<INDArray> expectedGradients = Arrays.asList(
+  private final List<INDArray> expectedErrorGradients = Arrays.asList(
       Nd4j.create(new float[]{
           -1.10814514935e-02f, 4.75458113254e-02f, 2.79511566851e-02f, -3.76325218465e-02f, -6.66430042946e-02f}),
       Nd4j.create(new float[]{5.96001904648e-01f, -4.45611556065e-01f, 4.88766051729e-01f}));
@@ -130,17 +129,16 @@ public class NeuralNetworkTest {
    */
   @Test
   public void backPropagateTest() {
-    final Pair<List<INDArray>, List<INDArray>> actAndDeriv = neuralNetwork.activationAndDerivative(input);
-    final List<INDArray> activations = actAndDeriv.getFirst();
-    final List<INDArray> derivatives = actAndDeriv.getSecond();
+    final List<INDArray> activations = neuralNetwork.feedForward(input);
     assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
+    activations.add(0, input);
 
-    final List<INDArray> gradients = neuralNetwork.backPropagate(activations, derivatives, label);
-    assertTrue(Nd4jUtils.equals(gradients, expectedGradients, tolerance));
+    final List<INDArray> errorGradients = neuralNetwork.backPropagate(activations, label);
+    assertTrue(Nd4jUtils.equals(errorGradients, expectedErrorGradients, tolerance));
   }
 
   /**
-   * Unit test for local neural network paramter provider.
+   * Unit test for local neural network parameter provider.
    * @throws InjectionException
    */
   @Test
@@ -149,7 +147,11 @@ public class NeuralNetworkTest {
         Tang.Factory.getTang().newInjector(neuralNetworkConfiguration)
             .getInstance(LocalNeuralNetParameterProvider.class);
 
-    localNeuralNetParameterProvider.push(expectedActivations, expectedGradients);
+    final List<INDArray> activations = new ArrayList<>();
+    activations.add(input);
+    activations.addAll(expectedActivations);
+
+    localNeuralNetParameterProvider.push(activations, expectedErrorGradients);
     assertTrue(Nd4jUtils.equals(localNeuralNetParameterProvider.pull(), expectedParams, tolerance));
   }
 }

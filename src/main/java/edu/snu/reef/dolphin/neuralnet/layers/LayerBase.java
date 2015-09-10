@@ -17,7 +17,6 @@ package edu.snu.reef.dolphin.neuralnet.layers;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 
-
 /**
  * Abstract class for the layer of a neural network.
  */
@@ -89,23 +88,21 @@ public abstract class LayerBase {
   public abstract INDArray feedForward(final INDArray input);
 
   /**
-   * Computes the gradients.
+   * Computes the error gradient.
    * @param activation the activation values.
-   * @param derivative the derivatives of activation function.
-   * @param prevParam the parameter of the previous layer.
-   * @param nextGradient the gradients of the next layer.
-   * @return the gradients for the specified activations and derivatives.
+   * @param nextParam the parameter of the next layer.
+   * @param nextErrorGradient the error gradient of the next layer.
+   * @return the error gradient for the specified activation values.
    */
   public abstract INDArray backPropagate(final INDArray activation,
-                                         final INDArray derivative,
-                                         final LayerParameter prevParam,
-                                         final INDArray nextGradient);
+                                         final LayerParameter nextParam,
+                                         final INDArray nextErrorGradient);
 
   /**
-   * Computes the gradients. (only for output layer)
+   * Computes the error gradient. (only for output layer)
    * @param activation the activations for output layer.
    * @param label the expected output.
-   * @return the gradients for output layer.
+   * @return the error gradient for output layer.
    */
   public abstract INDArray backPropagate(final INDArray activation,
                                          final INDArray label);
