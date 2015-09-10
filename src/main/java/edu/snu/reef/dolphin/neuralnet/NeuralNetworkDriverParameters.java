@@ -19,6 +19,7 @@ import com.google.protobuf.TextFormat;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
 import edu.snu.reef.dolphin.neuralnet.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
+import edu.snu.reef.dolphin.neuralnet.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos.*;
@@ -47,6 +48,7 @@ public final class NeuralNetworkDriverParameters {
   private final String serializedNeuralNetworkConfiguration;
   private final String delimiter;
   private final int maxIterations;
+  private final boolean groupComm;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -62,8 +64,13 @@ public final class NeuralNetworkDriverParameters {
                                         @Parameter(Delimiter.class) final String delimiter,
                                         @Parameter(MaxIterations.class) final int maxIterations,
                                         @Parameter(OnLocal.class) final boolean onLocal) throws IOException {
+    final NeuralNetworkConfiguration neuralNetConf = loadNeuralNetworkConfiguration(configurationPath, onLocal);
+
+    // the method is being called twice: here and in `buildNeuralNetworkConfiguration`
+    // this could be made to once by refactoring the code
+    this.groupComm = neuralNetConf.getParameterProvider().getType().equals("groupcomm");
     this.serializedNeuralNetworkConfiguration = configurationSerializer.toString(
-        buildNeuralNetworkConfiguration(loadNeuralNetworkConfiguration(configurationPath, onLocal)));
+        buildNeuralNetworkConfiguration(neuralNetConf));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
   }
@@ -76,6 +83,8 @@ public final class NeuralNetworkDriverParameters {
     switch (parameterProvider.toLowerCase()) {
     case "local":
       return LocalNeuralNetParameterProvider.class;
+    case "groupcomm":
+      return GroupCommParameterProvider.class;
     default:
       throw new IllegalArgumentException("Illegal parameter provider: " + parameterProvider);
     }
@@ -163,5 +172,12 @@ public final class NeuralNetworkDriverParameters {
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .build();
+  }
+
+  /**
+   * @return {@code true} if this Neural Network application uses REEF Group Communication, {@code false} otherwise
+   */
+  public boolean isGroupComm() {
+    return this.groupComm;
   }
 }

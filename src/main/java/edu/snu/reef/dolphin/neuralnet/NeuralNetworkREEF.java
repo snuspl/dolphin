@@ -22,6 +22,7 @@ import org.apache.reef.client.DriverLauncher;
 import org.apache.reef.client.LauncherStatus;
 import org.apache.reef.driver.evaluator.EvaluatorRequest;
 import org.apache.reef.io.data.loading.api.DataLoadingRequestBuilder;
+import org.apache.reef.io.network.group.impl.driver.GroupCommService;
 import org.apache.reef.runtime.local.client.LocalRuntimeConfiguration;
 import org.apache.reef.runtime.yarn.client.YarnClientConfiguration;
 import org.apache.reef.tang.Configuration;
@@ -51,6 +52,7 @@ public final class NeuralNetworkREEF {
   private final boolean onLocal;
   private final int timeout;
   private final String inputDir;
+  private final int desiredSplits;
   private final NeuralNetworkDriverParameters neuralNetworkDriverParameters;
 
   @Inject
@@ -58,11 +60,13 @@ public final class NeuralNetworkREEF {
                             @Parameter(OnLocal.class) final boolean onLocal,
                             @Parameter(Timeout.class) final int timeout,
                             @Parameter(InputDir.class) final String inputDir,
+                            @Parameter(DesiredSplits.class) final int desiredSplits,
                             final NeuralNetworkDriverParameters neuralNetworkDriverParameters) {
     this.evalSize = evalSize;
     this.onLocal = onLocal;
     this.timeout = timeout;
     this.inputDir = inputDir;
+    this.desiredSplits = desiredSplits;
     this.neuralNetworkDriverParameters = neuralNetworkDriverParameters;
   }
 
@@ -81,6 +85,7 @@ public final class NeuralNetworkREEF {
     cl.registerShortNameOfClass(OnLocal.class);
     cl.registerShortNameOfClass(Timeout.class);
     cl.registerShortNameOfClass(InputDir.class);
+    cl.registerShortNameOfClass(DesiredSplits.class);
     NeuralNetworkDriverParameters.registerShortNameOfClass(cl);
 
     cl.processCommandLine(args);
@@ -98,37 +103,53 @@ public final class NeuralNetworkREEF {
   }
 
   /**
+   * Builds and returns the configuration for the Driver.
+   * The configuration changes depending on whether we use REEF Group Communication or not.
+   * TODO #68: This code may change when asynchronous Parameter Server is introduced.
+   *
    * @return the configuration for driver with data loading.
    */
   private Configuration getDriverConfWithDataLoad() {
+    final boolean usesGroupComm = neuralNetworkDriverParameters.isGroupComm();
+
     final ConfigurationModule neuralNetworkDriverConf = DriverConfiguration.CONF
-        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(NeuralNetworkDriver.class))
+        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(
+            usesGroupComm ? NeuralNetworkGroupCommDriver.class : NeuralNetworkDriver.class))
         .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(TextInputFormat.class))
         .set(DriverConfiguration.DRIVER_IDENTIFIER, "Neural Network")
-        .set(DriverConfiguration.ON_CONTEXT_ACTIVE, NeuralNetworkDriver.ActiveContextHandler.class);
-
-    final EvaluatorRequest computeRequest = EvaluatorRequest.newBuilder()
-        .setNumberOfCores(1)
-        .setMemory(evalSize)
-        .build();
+        .set(DriverConfiguration.ON_CONTEXT_ACTIVE,
+            usesGroupComm ?
+                NeuralNetworkGroupCommDriver.ActiveContextHandler.class :
+                NeuralNetworkDriver.ActiveContextHandler.class);
 
     final EvaluatorRequest dataRequest = EvaluatorRequest.newBuilder()
         .setNumberOfCores(1)
         .setMemory(evalSize)
         .build();
 
-    final Configuration neuralNetworkConfWithDataLoad = new DataLoadingRequestBuilder()
+    final DataLoadingRequestBuilder dataLoadingRequestBuilder = new DataLoadingRequestBuilder()
         .setInputFormatClass(TextInputFormat.class)
         .setInputPath(processInputDir(inputDir))
-        .setNumberOfDesiredSplits(1)
-        .addComputeRequest(computeRequest)
+        .setNumberOfDesiredSplits(desiredSplits)
         .addDataRequest(dataRequest)
-        .setDriverConfigurationModule(neuralNetworkDriverConf)
-        .build();
+        .setDriverConfigurationModule(neuralNetworkDriverConf);
 
-    return Configurations.merge(
-        neuralNetworkConfWithDataLoad,
-        neuralNetworkDriverParameters.getDriverConfiguration());
+    if (usesGroupComm) {
+      dataLoadingRequestBuilder.addComputeRequest(EvaluatorRequest.newBuilder()
+          .setNumberOfCores(1)
+          .setMemory(evalSize)
+          .build());
+
+      return Configurations.merge(
+          dataLoadingRequestBuilder.build(),
+          neuralNetworkDriverParameters.getDriverConfiguration(),
+          GroupCommService.getConfiguration());
+
+    } else {
+      return Configurations.merge(
+          dataLoadingRequestBuilder.build(),
+          neuralNetworkDriverParameters.getDriverConfiguration());
+    }
   }
 
   /**
@@ -136,7 +157,7 @@ public final class NeuralNetworkREEF {
    */
   private Configuration getLocalRuntimeConfiguration() {
     return LocalRuntimeConfiguration.CONF
-        .set(LocalRuntimeConfiguration.MAX_NUMBER_OF_EVALUATORS, 1)
+        .set(LocalRuntimeConfiguration.MAX_NUMBER_OF_EVALUATORS, desiredSplits + 1)
         .build();
   }
 

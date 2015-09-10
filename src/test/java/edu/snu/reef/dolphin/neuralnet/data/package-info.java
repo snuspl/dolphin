@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.reef.dolphin.parameters;
-
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
-
-@NamedParameter(doc = "Number of evaluators to run job with",
-                short_name = "split",
-                default_value = "1")
-public final class DesiredSplits implements Name<Integer> {
-}
+/**
+ * Classes for neural network tests related to data serialization and parsing.
+ */
+package edu.snu.reef.dolphin.neuralnet.data;
