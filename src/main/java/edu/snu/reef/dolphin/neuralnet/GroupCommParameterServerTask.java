@@ -47,7 +47,7 @@ import static edu.snu.reef.dolphin.neuralnet.NeuralNetworkTask.*;
 /**
  * Task that acts as a parameter server for {@link GroupCommNeuralNetworkTask}s using REEF Group Communication.
  *
- * Receives activations and gradients from Tasks, computes parameter updates using those values,
+ * Receives activations and errors from Tasks, computes parameter gradients using those values,
  * and finally sends the updates back to the Tasks.
  */
 public final class GroupCommParameterServerTask implements Task {
@@ -59,7 +59,7 @@ public final class GroupCommParameterServerTask implements Task {
   private final float stepsize;
   private final int maxIterations;
   private final Broadcast.Sender<LayerParameter[]> layerParamBroadcastSender;
-  private final Reduce.Receiver<List<Pair<List<INDArray>, List<INDArray>>>> activationGradientReduceReceiver;
+  private final Reduce.Receiver<List<Pair<List<INDArray>, List<INDArray>>>> activationErrorReduceReceiver;
   private final Reduce.Receiver<Pair<ValidationStats, ValidationStats>> validationStatsPairReduceReceiver;
 
   @Inject
@@ -74,8 +74,8 @@ public final class GroupCommParameterServerTask implements Task {
         groupCommClient.getCommunicationGroup(NeuralNetworkGroupCommDriver.NeuralNetworkCommGroup.class);
     this.layerParamBroadcastSender =
         commGroup.getBroadcastSender(NeuralNetworkGroupCommDriver.LayerParamBroadcast.class);
-    this.activationGradientReduceReceiver =
-        commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ActivationGradientReduce.class);
+    this.activationErrorReduceReceiver =
+        commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ActivationErrorReduce.class);
     this.validationStatsPairReduceReceiver =
         commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
 
@@ -139,7 +139,7 @@ public final class GroupCommParameterServerTask implements Task {
     // Rather, `iteration` tracks the number of iterations `GroupCommNeuralNetworkTask`s have finished up until now.
     while (iteration < maxIterations) {
       LOG.log(Level.INFO, "GroupCommParameterServerTask.call() loop {0}....", loopIndex++);
-      final List<Pair<List<INDArray>, List<INDArray>>> result = activationGradientReduceReceiver.reduce();
+      final List<Pair<List<INDArray>, List<INDArray>>> result = activationErrorReduceReceiver.reduce();
 
       if (result.size() == 0) {
         // All Tasks have finished this iteration. Let's end the iteration.
@@ -151,16 +151,16 @@ public final class GroupCommParameterServerTask implements Task {
         continue;
       }
 
-      // generate parameter updates using each pair of activations and gradients
+      // generate gradients using each pair of activations and errors
       for (final Pair<List<INDArray>, List<INDArray>> pair : result) {
         final List<INDArray> activations = pair.getFirst();
-        final List<INDArray> gradients = pair.getSecond();
+        final List<INDArray> errors = pair.getSecond();
 
         for (int index = 0; index < deltaLayerParameters.length; index++) {
           final INDArray activation = activations.get(index).transpose();
-          final INDArray gradient = gradients.get(index);
-          deltaLayerParameters[index].getWeightParam().addi(activation.mmul(gradient));
-          deltaLayerParameters[index].getBiasParam().addi(gradient);
+          final INDArray error = errors.get(index);
+          deltaLayerParameters[index].getWeightParam().addi(activation.mmul(error));
+          deltaLayerParameters[index].getBiasParam().addi(error);
         }
       }
 

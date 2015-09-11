@@ -35,8 +35,8 @@ import java.util.Set;
 /**
  * Parameter provider for a neural network on the local environment.
  *
- * Computes parameter updates from activation values and gradients
- * and calculates the updated parameters by adding the average of parameter updates.
+ * Computes parameter updates from activation values and errors
+ * and calculates the updated parameters by adding the average of parameter gradients.
  */
 public final class LocalNeuralNetParameterProvider implements ParameterProvider {
 
@@ -103,12 +103,12 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   /** {@inheritDoc} */
   @Override
-  public void push(final List<INDArray> activations, final List<INDArray> gradients) {
+  public void push(final List<INDArray> activations, final List<INDArray> errors) {
     for (int i = 0; i < deltaLayerParameters.length; ++i) {
       final INDArray activation = activations.get(i).transpose();
       assert activation.isColumnVector();
-      deltaLayerParameters[i].getWeightParam().addi(activation.mmul(gradients.get(i)));
-      deltaLayerParameters[i].getBiasParam().addi(gradients.get(i));
+      deltaLayerParameters[i].getWeightParam().addi(activation.mmul(errors.get(i)));
+      deltaLayerParameters[i].getBiasParam().addi(errors.get(i));
     }
     ++numUpdate;
   }

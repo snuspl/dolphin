@@ -35,16 +35,16 @@ import java.util.*;
 /**
  * Parameter provider for a neural network that uses REEF Group Communication.
  *
- * Sends activation values and gradients to the server with a certain batch size.
- * Receives parameter updates from the server.
+ * Sends activation values and errors to the server with a certain batch size.
+ * Receives updated parameters from the server.
  */
 @ThreadSafe
 public final class GroupCommParameterProvider implements ParameterProvider {
 
-  private final List<Pair<List<INDArray>, List<INDArray>>> activationGradientList;
+  private final List<Pair<List<INDArray>, List<INDArray>>> activationErrorList;
   private final int batchSize;
   private final Broadcast.Receiver<LayerParameter[]> layerParamBroadcastReceiver;
-  private final Reduce.Sender<List<Pair<List<INDArray>, List<INDArray>>>> activationGradientReduceSender;
+  private final Reduce.Sender<List<Pair<List<INDArray>, List<INDArray>>>> activationErrorReduceSender;
   private final Reduce.Sender<Pair<ValidationStats, ValidationStats>> validationStatsReduceSender;
   private int pushCount;
 
@@ -53,7 +53,7 @@ public final class GroupCommParameterProvider implements ParameterProvider {
       @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
       final GroupCommClient groupCommClient) {
 
-    this.activationGradientList = Collections.synchronizedList(
+    this.activationErrorList = Collections.synchronizedList(
         new ArrayList<Pair<List<INDArray>, List<INDArray>>>(batchSize));
     this.batchSize = batchSize;
     this.pushCount = 0;
@@ -62,30 +62,30 @@ public final class GroupCommParameterProvider implements ParameterProvider {
         groupCommClient.getCommunicationGroup(NeuralNetworkGroupCommDriver.NeuralNetworkCommGroup.class);
     this.layerParamBroadcastReceiver =
         commGroup.getBroadcastReceiver(NeuralNetworkGroupCommDriver.LayerParamBroadcast.class);
-    this.activationGradientReduceSender =
-        commGroup.getReduceSender(NeuralNetworkGroupCommDriver.ActivationGradientReduce.class);
+    this.activationErrorReduceSender =
+        commGroup.getReduceSender(NeuralNetworkGroupCommDriver.ActivationErrorReduce.class);
     this.validationStatsReduceSender =
         commGroup.getReduceSender(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
   }
 
   @Override
-  public synchronized void push(final List<INDArray> activations, final List<INDArray> gradients) {
+  public synchronized void push(final List<INDArray> activations, final List<INDArray> errors) {
     // do not store the input if it is not valid
-    if (!(activations == null || activations.size() == 0 || gradients == null || gradients.size() == 0)) {
-      activationGradientList.add(new Pair<>(activations, gradients));
+    if (!(activations == null || activations.size() == 0 || errors == null || errors.size() == 0)) {
+      activationErrorList.add(new Pair<>(activations, errors));
     }
 
     if (++pushCount >= batchSize) {
       pushCount = 0;
 
       try {
-        activationGradientReduceSender.send(activationGradientList);
+        activationErrorReduceSender.send(activationErrorList);
       } catch (final NetworkException e) {
         throw new RuntimeException("NetworkException while trying to send reduce", e);
       } catch (final InterruptedException e) {
         throw new RuntimeException("InterruptedException while trying to send reduce", e);
       }
-      activationGradientList.clear();
+      activationErrorList.clear();
     }
 
   }

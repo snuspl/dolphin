@@ -21,16 +21,16 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import java.util.List;
 
 /**
- * Interface for parameter provider that gathers activation values and gradients and provides updated parameters.
+ * Interface for parameter provider that gathers activation values and errors and provides updated parameters.
  */
 public interface ParameterProvider {
 
   /**
-   * Pushes activation values and gradients for each training input.
+   * Pushes activation values and errors for each training input.
    * @param activations activation values of the training input.
-   * @param gradients error gradient vectors of the training input.
+   * @param errors errors of the training input.
    */
-  void push(final List<INDArray> activations, final List<INDArray> gradients);
+  void push(final List<INDArray> activations, final List<INDArray> errors);
 
   /**
    * @return the updated parameters of the whole network.

@@ -90,9 +90,7 @@ public final class NeuralNetworkREEF {
 
     cl.processCommandLine(args);
 
-    return Tang.Factory.getTang().newInjector(
-        cb.build()
-    ).getInstance(NeuralNetworkREEF.class);
+    return Tang.Factory.getTang().newInjector(cb.build()).getInstance(NeuralNetworkREEF.class);
   }
 
   /**

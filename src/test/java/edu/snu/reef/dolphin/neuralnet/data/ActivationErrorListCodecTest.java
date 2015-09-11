@@ -29,25 +29,25 @@ import java.util.Random;
 import static org.junit.Assert.*;
 
 /**
- * Test class for testing {@link ActivationGradientListCodec}'s encoding and decoding functions.
+ * Test class for testing {@link ActivationErrorListCodec}'s encoding and decoding functions.
  */
-public final class ActivationGradientListCodecTest {
+public final class ActivationErrorListCodecTest {
 
-  private ActivationGradientListCodec activationGradientListCodec;
+  private ActivationErrorListCodec activationErrorListCodec;
   private Random random;
 
   @Before
   public void setUp() throws InjectionException {
-    this.activationGradientListCodec =
-        Tang.Factory.getTang().newInjector().getInstance(ActivationGradientListCodec.class);
+    this.activationErrorListCodec =
+        Tang.Factory.getTang().newInjector().getInstance(ActivationErrorListCodec.class);
     this.random = new Random();
   }
 
   /**
-   * Checks that a random set of activations and gradients does not change after encoding and decoding it, sequentially.
+   * Checks that a random set of activations and errors does not change after encoding and decoding it, sequentially.
    */
   @Test
-  public void testEncodeDecodeActivationGradient() {
+  public void testEncodeDecodeActivationError() {
     final List<Pair<List<INDArray>, List<INDArray>>> inputList = new ArrayList<>(10);
     for (int index = 0; index < inputList.size(); index++) {
       final List<INDArray> activation = new ArrayList<>(10);
@@ -55,16 +55,16 @@ public final class ActivationGradientListCodecTest {
         activation.add(NDArrayGenerator.generateRandomNDArray(random, 2));
       }
 
-      final List<INDArray> gradient = new ArrayList<>(10);
-      for (int gradientIndex = 0; gradientIndex < gradient.size(); gradientIndex++) {
-        gradient.add(NDArrayGenerator.generateRandomNDArray(random, 2));
+      final List<INDArray> error = new ArrayList<>(10);
+      for (int errorIndex = 0; errorIndex < error.size(); errorIndex++) {
+        error.add(NDArrayGenerator.generateRandomNDArray(random, 2));
       }
 
-      inputList.add(new Pair<>(activation, gradient));
+      inputList.add(new Pair<>(activation, error));
     }
 
     final List<Pair<List<INDArray>, List<INDArray>>> retList =
-        activationGradientListCodec.decode(activationGradientListCodec.encode(inputList));
+        activationErrorListCodec.decode(activationErrorListCodec.encode(inputList));
 
     assertEquals("Encode-decode result is different from expected list", inputList, retList);
   }

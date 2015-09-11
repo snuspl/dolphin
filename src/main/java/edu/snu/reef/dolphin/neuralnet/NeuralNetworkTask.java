@@ -47,8 +47,6 @@ public final class NeuralNetworkTask implements Task {
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
 
-
-
   @Inject
   NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
                     final NeuralNetwork neuralNetwork,

@@ -20,7 +20,6 @@ import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.
 import edu.snu.reef.dolphin.neuralnet.layers.LayerBase;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
-import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -54,7 +53,7 @@ public final class NeuralNetwork {
   private final LayerBase[] layers;
 
   /**
-   * Manager that provides the updated parameters and gathers activations and error gradient vector for each input.
+   * Manager that provides the updated parameters and gathers activations and errors for each input.
    */
   private final ParameterProvider parameterProvider;
 
@@ -106,13 +105,13 @@ public final class NeuralNetwork {
    * @param label the label vector.
    */
   public void train(final INDArray input, final INDArray label) {
-    final Pair<List<INDArray>, List<INDArray>> actAndDeriv = activationAndDerivative(input);
-    final List<INDArray> activations = actAndDeriv.getFirst();
-    final List<INDArray> derivatives = actAndDeriv.getSecond();
+    final List<INDArray> activations = new ArrayList<>();
+    activations.add(input);
+    activations.addAll(feedForward(input));
 
-    final List<INDArray> gradients = backPropagate(activations, derivatives, label);
+    final List<INDArray> errors = backPropagate(activations, label);
 
-    parameterProvider.push(activations, gradients);
+    parameterProvider.push(activations, errors);
     
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
@@ -140,13 +139,13 @@ public final class NeuralNetwork {
    * @return a list of activations for each layer.
    */
   public List<INDArray> feedForward(final INDArray input) {
-    return feedForward(0, layers.length, input);
+    return feedForward(0, layers.length - 1, input);
   }
 
   /**
    * Computes activations from the specified beginning layer to the specified ending layer.
-   * @param begin the index of beginning layer.
-   * @param end the index of ending layer.
+   * @param begin the index of beginning layer, inclusive.
+   * @param end the index of ending layer, inclusive.
    * @param input the input matrix.
    * @return a list of activations for each layer.
    */
@@ -154,9 +153,7 @@ public final class NeuralNetwork {
     final List<INDArray> activations = new ArrayList<>();
 
     INDArray activation = input;
-    activations.add(activation);
-
-    for (int i = begin; i < end; ++i) {
+    for (int i = begin; i <= end; ++i) {
       activation = layers[i].feedForward(activation);
       activations.add(activation);
     }
@@ -165,100 +162,63 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Computes activations and derivatives from input layer to output layer.
-   * @param input the input matrix.
-   * @return a pair of a list of activations for each layer and a list of derivatives for each layer.
-   */
-  public Pair<List<INDArray>, List<INDArray>> activationAndDerivative(final INDArray input) {
-    return activationAndDerivative(0, layers.length, input);
-  }
-
-  /**
-   * Computes activations and derivatives from the specified beginning layer and the specified ending layer.
-   * @param begin the index of beginning layer.
-   * @param end the index of ending layer.
-   * @param input the input matrix for beginning layer.
-   * @return a pair of a list of activations for each layer and a list of derivatives for each layer.
-   */
-  public Pair<List<INDArray>, List<INDArray>> activationAndDerivative(final int begin,
-                                                                      final int end,
-                                                                      final INDArray input) {
-    final List<INDArray> activations = new ArrayList<>();
-    final List<INDArray> derivatives = new ArrayList<>();
-
-    INDArray activation = input;
-    activations.add(activation);
-    derivatives.add(activation); // Dummy derivative to match index of activation and derivative lists.
-
-    for (int i = begin; i < end; ++i) {
-      activation = layers[i].feedForward(activation);
-      activations.add(activation);
-      derivatives.add(layers[i].derivative(activation));
-    }
-
-    return new Pair<>(activations, derivatives);
-  }
-
-  /**
-   * Computes gradients from output layer to input layer.
+   * Computes errors from output layer to input layer.
    * @param activations a list of activations for each layer.
-   * @param derivatives a list of derivatives for each layer.
    * @param label the expected output.
-   * @return a list of gradients for each layer.
+   * @return a list of errors for each layer.
    */
   public List<INDArray> backPropagate(final List<INDArray> activations,
-                                      final List<INDArray> derivatives,
                                       final INDArray label) {
-    return backPropagateTo(0, activations, derivatives, label);
+    return backPropagateTo(0, activations, label);
   }
 
   /**
-   * Computes gradients from output layer and the specified ending layer.
-   * @param to the index of ending layer.
-   * @param activations a list of activations of each layer.
-   * @param derivatives a list of derivatives of each layer.
+   * Computes errors from output layer to the specified ending layer.
+   * @param end the index of ending layer, inclusive.
+   * @param activations an array of activations of each layer.
    * @param label the expected output.
-   * @return a list of gradients for each layer.
+   * @return a list of errors for each layer.
    */
-  public List<INDArray> backPropagateTo(final int to,
+  public List<INDArray> backPropagateTo(final int end,
                                         final List<INDArray> activations,
-                                        final List<INDArray> derivatives,
                                         final INDArray label) {
     final int lastLayerIndex = layers.length - 1;
-    final INDArray gradient = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
-    final List<INDArray> gradients =
-        backPropagateFromTo(lastLayerIndex - 1, to, activations, derivatives, gradient);
-    gradients.add(gradient);
-    return gradients;
+    
+    // The first element of activations is input data.
+    // So, (i + 1)-th element of activations refers to the activation of i-th layer.
+    final INDArray error = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
+    final List<INDArray> errors = backPropagateFromTo(lastLayerIndex - 1, end, activations, error);
+    errors.add(error);
+    return errors;
   }
 
   /**
-   * Computes gradients from the specified beginning layer and the specified ending layer.
-   * @param begin the index of beginning layer.
-   * @param end the index of ending layer.
-   * @param activations a list of activations of each layer.
-   * @param derivatives a list of derivatives of each layer.
-   * @param nextGradient the gradient vector for next layer.
-   * @return a list of gradients for each layer.
+   * Computes errors from the specified beginning layer to the specified ending layer.
+   * @param begin the index of beginning layer, inclusive.
+   * @param end the index of ending layer, inclusive.
+   * @param activations an array of activations of each layer.
+   * @param nextError the error for next layer - the one closer to the output layer.
+   * @return a list of errors for each layer.
    */
   public List<INDArray> backPropagateFromTo(final int begin, final int end,
                                             final List<INDArray> activations,
-                                            final List<INDArray> derivatives,
-                                            final INDArray nextGradient) {
+                                            final INDArray nextError) {
     if (begin == layers.length - 1) {
       throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
     }
-
-    final List<INDArray> gradients = new ArrayList<>();
-    INDArray gradient = nextGradient;
-
-    for (int i = begin; i >= end; --i) {
-      gradient = layers[i].backPropagate(
-          activations.get(i + 1), derivatives.get(i + 1), layers[i + 1].getLayerParameter(), gradient);
-      gradients.add(gradient);
+    if (begin < end) {
+      throw new RuntimeException("The beginning index must be greater than or equal to the ending index.");
     }
 
-    Collections.reverse(gradients);
-    return gradients;
+    final List<INDArray> errors = new ArrayList<>();
+    INDArray error = nextError;
+
+    for (int i = begin; i >= end; --i) {
+      error = layers[i].backPropagate(activations.get(i + 1), layers[i + 1].getLayerParameter(), error);
+      errors.add(error);
+    }
+
+    Collections.reverse(errors);
+    return errors;
   }
 }
