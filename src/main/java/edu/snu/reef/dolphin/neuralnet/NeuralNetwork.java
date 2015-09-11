@@ -20,6 +20,7 @@ import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.
 import edu.snu.reef.dolphin.neuralnet.layers.LayerBase;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -31,9 +32,6 @@ import org.nd4j.linalg.util.FeatureUtil;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -64,9 +62,9 @@ public final class NeuralNetwork {
 
   @Inject
   private NeuralNetwork(final ConfigurationSerializer configurationSerializer,
-                       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
-                       @Parameter(BatchSize.class) final int batchSize,
-                       final ParameterProvider parameterProvider) {
+                        @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
+                        @Parameter(BatchSize.class) final int batchSize,
+                        final ParameterProvider parameterProvider) {
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
     this.layers = new LayerBase[serializedLayerConfSets.size()];
@@ -105,11 +103,8 @@ public final class NeuralNetwork {
    * @param label the label vector.
    */
   public void train(final INDArray input, final INDArray label) {
-    final List<INDArray> activations = new ArrayList<>();
-    activations.add(input);
-    activations.addAll(feedForward(input));
-
-    final List<INDArray> errors = backPropagate(activations, label);
+    final INDArray[] activations = ArrayUtils.add(feedForward(input), 0, input); // inserts input at the beginning.
+    final INDArray[] errors = backPropagate(activations, label);
     final LayerParameter[] parameterGradients = generateParameterGradients(activations, errors);
 
     parameterProvider.push(parameterGradients);
@@ -137,9 +132,9 @@ public final class NeuralNetwork {
   /**
    * Computes activations from input layer to output layer.
    * @param input the input matrix for input layer.
-   * @return a list of activations for each layer.
+   * @return an array of activations for each layer.
    */
-  public List<INDArray> feedForward(final INDArray input) {
+  public INDArray[] feedForward(final INDArray input) {
     return feedForward(0, layers.length - 1, input);
   }
 
@@ -148,20 +143,26 @@ public final class NeuralNetwork {
    * @param begin the index of beginning layer, inclusive.
    * @param end the index of ending layer, inclusive.
    * @param input the input matrix.
-   * @return a list of activations for each layer.
+   * @return an array of activations for each layer.
    */
-  public List<INDArray> feedForward(final int begin, final int end, final INDArray input) {
+  public INDArray[] feedForward(final int begin, final int end, final INDArray input) {
+    if (begin < 0) {
+      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
+    }
+    if (end >= layers.length) {
+      throw new RuntimeException(String.format(
+          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
+    }
     if (begin > end) {
       throw new RuntimeException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
-
-    final List<INDArray> activations = new ArrayList<>();
-
+    final INDArray[] activations = new INDArray[end - begin + 1];
     INDArray activation = input;
+
     for (int i = begin; i <= end; ++i) {
       activation = layers[i].feedForward(activation);
-      activations.add(activation);
+      activations[i - begin] = activation;
     }
 
     return activations;
@@ -169,12 +170,12 @@ public final class NeuralNetwork {
 
   /**
    * Computes errors from output layer to input layer.
-   * @param activations a list of activations for each layer.
+   * @param activations an array of activations for each layer.
    * @param label the expected output.
-   * @return a list of errors for each layer.
+   * @return an array of errors for each layer.
    */
-  public List<INDArray> backPropagate(final List<INDArray> activations,
-                                      final INDArray label) {
+  public INDArray[] backPropagate(final INDArray[] activations,
+                                  final INDArray label) {
     return backPropagateTo(0, activations, label);
   }
 
@@ -183,19 +184,17 @@ public final class NeuralNetwork {
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
    * @param label the expected output.
-   * @return a list of errors for each layer.
+   * @return an array of errors for each layer.
    */
-  public List<INDArray> backPropagateTo(final int end,
-                                        final List<INDArray> activations,
-                                        final INDArray label) {
+  public INDArray[] backPropagateTo(final int end,
+                                    final INDArray[] activations,
+                                    final INDArray label) {
     final int lastLayerIndex = layers.length - 1;
-    
+
     // The first element of activations is input data.
     // So, (i + 1)-th element of activations refers to the activation of i-th layer.
-    final INDArray error = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
-    final List<INDArray> errors = backPropagateFromTo(lastLayerIndex - 1, end, activations, error);
-    errors.add(error);
-    return errors;
+    final INDArray error = layers[lastLayerIndex].backPropagate(activations[lastLayerIndex + 1], label);
+    return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
   }
 
   /**
@@ -204,11 +203,11 @@ public final class NeuralNetwork {
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
    * @param nextError the error for next layer - the one closer to the output layer.
-   * @return a list of errors for each layer.
+   * @return an array of errors for each layer.
    */
-  public List<INDArray> backPropagateFromTo(final int begin, final int end,
-                                            final List<INDArray> activations,
-                                            final INDArray nextError) {
+  public INDArray[] backPropagateFromTo(final int begin, final int end,
+                                        final INDArray[] activations,
+                                        final INDArray nextError) {
     if (begin == layers.length - 1) {
       throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
     }
@@ -216,16 +215,20 @@ public final class NeuralNetwork {
       throw new RuntimeException(String.format(
           "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
-
-    final List<INDArray> errors = new ArrayList<>();
+    if (begin < 0) {
+      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
+    }
+    if (end >= layers.length) {
+      throw new RuntimeException(String.format(
+          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
+    }
+    final INDArray[] errors = new INDArray[end - begin + 1];
     INDArray error = nextError;
 
     for (int i = begin; i >= end; --i) {
-      error = layers[i].backPropagate(activations.get(i + 1), layers[i + 1].getLayerParameter(), error);
-      errors.add(error);
+      error = layers[i].backPropagate(activations[i + 1], layers[i + 1].getLayerParameter(), error);
+      errors[i - begin] = error;
     }
-
-    Collections.reverse(errors);
     return errors;
   }
 
@@ -235,8 +238,8 @@ public final class NeuralNetwork {
    * @param errors errors for each layer.
    * @return an array of parameter gradients for each layer.
    */
-  public LayerParameter[] generateParameterGradients(final List<INDArray> activations,
-                                                     final List<INDArray> errors) {
+  public LayerParameter[] generateParameterGradients(final INDArray[] activations,
+                                                     final INDArray[] errors) {
     return generateParameterGradients(0, layers.length - 1, activations, errors);
   }
 
@@ -249,8 +252,8 @@ public final class NeuralNetwork {
    * @return an array of parameter gradients for each layer.
    */
   public LayerParameter[] generateParameterGradients(final int begin, final int end,
-                                                     final List<INDArray> activations,
-                                                     final List<INDArray> errors) {
+                                                     final INDArray[] activations,
+                                                     final INDArray[] errors) {
     if (begin < 0) {
       throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
     }
@@ -265,7 +268,7 @@ public final class NeuralNetwork {
 
     final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
     for (int i = begin; i <= end; ++i) {
-      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations.get(i), errors.get(i));
+      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
     }
     return parameterGradients;
   }

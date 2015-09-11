@@ -34,12 +34,12 @@ public final class Nd4jUtils {
   }
 
   /**
-   * Returns true if each element of one matrix is equal to one of another within tolerance.
+   * Returns true if each element of one ndarray is equal to one of another within tolerance.
    *
-   * @param a one matrix to be tested for equality.
-   * @param b another matrix to be tested for equality.
+   * @param a one ndarray to be tested for equality.
+   * @param b another ndarray to be tested for equality.
    * @param tolerance the maximum difference for which both numbers are still considered equal.
-   * @return true if each element of one matrix is equal to one of another.
+   * @return true if each element of one ndarray is equal to one of another.
    */
   public static boolean equals(final INDArray a, final INDArray b, final float tolerance) {
     if (!Arrays.equals(a.shape(), b.shape())) {
@@ -56,12 +56,24 @@ public final class Nd4jUtils {
   }
 
   /**
-   * Returns true if the two specified matrix lists are equal to one another within tolerance.
+   * Returns true if the two specified arrays of ndarrays are equal to one another within tolerance.
    *
-   * @param a one matrix list to be tested for equality.
-   * @param b another matrix list to be tested for equality.
+   * @param a one array of ndarrays to be tested for equality.
+   * @param b another array of ndarrays to be tested for equality.
    * @param tolerance the maximum difference for which both numbers are still considered equal.
-   * @return true if the two specified matrix lists are equal to one another.
+   * @return true if the two specified arrays of ndarrays are equal to one another.
+   */
+  public static boolean equals(final INDArray[] a, final INDArray[] b, final float tolerance) {
+    return equals(Arrays.asList(a), Arrays.asList(b), tolerance);
+  }
+
+  /**
+   * Returns true if the two specified ndarray lists are equal to one another within tolerance.
+   *
+   * @param a one list of ndarrays to be tested for equality.
+   * @param b another list of ndarrays to be tested for equality.
+   * @param tolerance the maximum difference for which both numbers are still considered equal.
+   * @return true if the two specified lists of ndarrays are equal to one another.
    */
   public static boolean equals(final List<INDArray> a, final List<INDArray> b, final float tolerance) {
     if (a.size() != b.size()) {
