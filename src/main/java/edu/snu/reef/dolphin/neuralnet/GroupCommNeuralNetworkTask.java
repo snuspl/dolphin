@@ -80,7 +80,7 @@ final class GroupCommNeuralNetworkTask implements Task {
       // which means all Tasks have finished their iterations.
       while (true) {
         for (int index = 0; index < batchSize; index++) {
-          parameterProvider.push(null, null);
+          parameterProvider.push(null);
         }
 
         final LayerParameter[] layerParameters = parameterProvider.pull();

@@ -76,4 +76,13 @@ public final class FullyConnectedLayer extends LayerBase {
   public INDArray backPropagate(final INDArray activation, final INDArray label) {
     return activation.sub(label);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
+    return LayerParameter.newBuilder()
+        .setWeightParam(input.transpose().mmul(error))
+        .setBiasParam(error)
+        .build();
+  }
 }

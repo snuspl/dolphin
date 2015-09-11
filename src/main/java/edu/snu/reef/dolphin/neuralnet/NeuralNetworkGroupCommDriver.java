@@ -86,9 +86,9 @@ public final class NeuralNetworkGroupCommDriver {
                 .setDataCodecClass(LayerParameterArrayCodec.class)
                 .setSenderId(GroupCommParameterServerTask.TASK_ID)
                 .build())
-        .addReduce(ActivationErrorReduce.class,
+        .addReduce(ParameterGradientReduce.class,
             ReduceOperatorSpec.newBuilder()
-                .setDataCodecClass(ActivationErrorListCodec.class)
+                .setDataCodecClass(LayerParameterArrayListCodec.class)
                 .setReduceFunctionClass(ListReduceFunction.class)
                 .setReceiverId(GroupCommParameterServerTask.TASK_ID)
                 .build())
@@ -190,8 +190,8 @@ public final class NeuralNetworkGroupCommDriver {
   public final class LayerParamBroadcast implements Name<String> {
   }
 
-  @NamedParameter(doc = "Name of the Reduce operator used for aggregating network activations and errors")
-  public final class ActivationErrorReduce implements Name<String> {
+  @NamedParameter(doc = "Name of the Reduce operator used for aggregating network parameter gradients")
+  public final class ParameterGradientReduce implements Name<String> {
   }
 
   @NamedParameter(doc = "Name of the Reduce operator used for aggregating validation results")

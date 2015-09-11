@@ -16,21 +16,17 @@
 package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
-import org.nd4j.linalg.api.ndarray.INDArray;
-
-import java.util.List;
 
 /**
- * Interface for parameter provider that gathers activation values and errors and provides updated parameters.
+ * Interface for parameter provider that gathers parameter gradients and provides updated parameters.
  */
 public interface ParameterProvider {
 
   /**
-   * Pushes activation values and errors for each training input.
-   * @param activations activation values of the training input.
-   * @param errors errors of the training input.
+   * Pushes parameter gradients of all layers for a training input.
+   * @param parameterGradients parameter gradients of all layers.
    */
-  void push(final List<INDArray> activations, final List<INDArray> errors);
+  void push(final LayerParameter[] parameterGradients);
 
   /**
    * @return the updated parameters of the whole network.

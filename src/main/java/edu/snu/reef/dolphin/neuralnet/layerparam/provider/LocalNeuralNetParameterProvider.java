@@ -29,14 +29,12 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Parameter provider for a neural network on the local environment.
- *
- * Computes parameter updates from activation values and errors
- * and calculates the updated parameters by adding the average of parameter gradients.
+ * <p/>
+ * Calculates the updated parameters by adding the average of parameter gradients.
  */
 public final class LocalNeuralNetParameterProvider implements ParameterProvider {
 
@@ -103,12 +101,11 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   /** {@inheritDoc} */
   @Override
-  public void push(final List<INDArray> activations, final List<INDArray> errors) {
-    for (int i = 0; i < deltaLayerParameters.length; ++i) {
-      final INDArray activation = activations.get(i).transpose();
-      assert activation.isColumnVector();
-      deltaLayerParameters[i].getWeightParam().addi(activation.mmul(errors.get(i)));
-      deltaLayerParameters[i].getBiasParam().addi(errors.get(i));
+  public void push(final LayerParameter[] parameterGradients) {
+    assert parameterGradients.length == deltaLayerParameters.length;
+    for (int i = 0; i < layerParameters.length; ++i) {
+      deltaLayerParameters[i].getWeightParam().addi(parameterGradients[i].getWeightParam());
+      deltaLayerParameters[i].getBiasParam().addi(parameterGradients[i].getBiasParam());
     }
     ++numUpdate;
   }
@@ -116,7 +113,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   /** {@inheritDoc} */
   @Override
   public LayerParameter[] pull() {
-
     if (numUpdate > 0) {
       for (int i = 0; i < deltaLayerParameters.length; ++i) {
         final LayerParameter layerParameter = layerParameters[i];
@@ -126,7 +122,6 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       }
       reset();
     }
-
     return layerParameters;
   }
 }

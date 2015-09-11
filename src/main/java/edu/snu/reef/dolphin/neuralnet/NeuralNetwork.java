@@ -110,8 +110,9 @@ public final class NeuralNetwork {
     activations.addAll(feedForward(input));
 
     final List<INDArray> errors = backPropagate(activations, label);
+    final LayerParameter[] parameterGradients = generateParameterGradients(activations, errors);
 
-    parameterProvider.push(activations, errors);
+    parameterProvider.push(parameterGradients);
     
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
@@ -220,5 +221,34 @@ public final class NeuralNetwork {
 
     Collections.reverse(errors);
     return errors;
+  }
+
+  /**
+   * Generates parameter gradients from the input layer to the output layer.
+   * @param activations activation values for each layer.
+   * @param errors errors for each layer.
+   * @return an array of parameter gradients for each layer.
+   */
+  public LayerParameter[] generateParameterGradients(final List<INDArray> activations,
+                                                     final List<INDArray> errors) {
+    return generateParameterGradients(0, layers.length - 1, activations, errors);
+  }
+
+  /**
+   * Generates parameter gradients from the specified beginning layer to the specified ending layer.
+   * @param begin the index of beginning layer, inclusive.
+   * @param end the index of ending layer, inclusive.
+   * @param activations activation values for each layer.
+   * @param errors errors for each layer.
+   * @return an array of parameter gradients for each layer.
+   */
+  public LayerParameter[] generateParameterGradients(final int begin, final int end,
+                                                     final List<INDArray> activations,
+                                                     final List<INDArray> errors) {
+    final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
+    for (int i = begin; i <= end; ++i) {
+      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations.get(i), errors.get(i));
+    }
+    return parameterGradients;
   }
 }
