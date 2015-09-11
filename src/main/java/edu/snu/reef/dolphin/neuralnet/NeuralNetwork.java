@@ -53,7 +53,7 @@ public final class NeuralNetwork {
   private final LayerBase[] layers;
 
   /**
-   * Manager that provides the updated parameters and gathers activations and error gradient vector for each input.
+   * Manager that provides the updated parameters and gathers activations and errors for each input.
    */
   private final ParameterProvider parameterProvider;
 
@@ -109,9 +109,9 @@ public final class NeuralNetwork {
     activations.add(input);
     activations.addAll(feedForward(input));
 
-    final List<INDArray> errorGradients = backPropagate(activations, label);
+    final List<INDArray> errors = backPropagate(activations, label);
 
-    parameterProvider.push(activations, errorGradients);
+    parameterProvider.push(activations, errors);
     
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
@@ -162,10 +162,10 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Computes error gradients from output layer to input layer.
+   * Computes errors from output layer to input layer.
    * @param activations a list of activations for each layer.
    * @param label the expected output.
-   * @return a list of error gradients for each layer.
+   * @return a list of errors for each layer.
    */
   public List<INDArray> backPropagate(final List<INDArray> activations,
                                       final INDArray label) {
@@ -173,11 +173,11 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Computes error gradients from output layer to the specified ending layer.
+   * Computes errors from output layer to the specified ending layer.
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
    * @param label the expected output.
-   * @return a list of error gradients for each layer.
+   * @return a list of errors for each layer.
    */
   public List<INDArray> backPropagateTo(final int end,
                                         final List<INDArray> activations,
@@ -186,23 +186,23 @@ public final class NeuralNetwork {
     
     // The first element of activations is input data.
     // So, (i + 1)-th element of activations refers to the activation of i-th layer.
-    final INDArray errorGradient = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
-    final List<INDArray> errorGradients = backPropagateFromTo(lastLayerIndex - 1, end, activations, errorGradient);
-    errorGradients.add(errorGradient);
-    return errorGradients;
+    final INDArray error = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
+    final List<INDArray> errors = backPropagateFromTo(lastLayerIndex - 1, end, activations, error);
+    errors.add(error);
+    return errors;
   }
 
   /**
-   * Computes error gradients from the specified beginning layer to the specified ending layer.
+   * Computes errors from the specified beginning layer to the specified ending layer.
    * @param begin the index of beginning layer, inclusive.
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
-   * @param nextErrorGradient the error gradient for next layer.
-   * @return a list of error gradients for each layer.
+   * @param nextError the error for next layer - the one closer to the output layer.
+   * @return a list of errors for each layer.
    */
   public List<INDArray> backPropagateFromTo(final int begin, final int end,
                                             final List<INDArray> activations,
-                                            final INDArray nextErrorGradient) {
+                                            final INDArray nextError) {
     if (begin == layers.length - 1) {
       throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
     }
@@ -210,15 +210,15 @@ public final class NeuralNetwork {
       throw new RuntimeException("The beginning index must be greater than or equal to the ending index.");
     }
 
-    final List<INDArray> errorGradients = new ArrayList<>();
-    INDArray errorGradient = nextErrorGradient;
+    final List<INDArray> errors = new ArrayList<>();
+    INDArray error = nextError;
 
     for (int i = begin; i >= end; --i) {
-      errorGradient = layers[i].backPropagate(activations.get(i + 1), layers[i + 1].getLayerParameter(), errorGradient);
-      errorGradients.add(errorGradient);
+      error = layers[i].backPropagate(activations.get(i + 1), layers[i + 1].getLayerParameter(), error);
+      errors.add(error);
     }
 
-    Collections.reverse(errorGradients);
-    return errorGradients;
+    Collections.reverse(errors);
+    return errors;
   }
 }

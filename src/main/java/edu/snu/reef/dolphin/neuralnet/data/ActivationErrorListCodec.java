@@ -25,43 +25,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Serialization codec for neural network activations and gradient values.
- * Assumes activations and gradients are a list of {@code INDArray}s.
+ * Serialization codec for neural network activations and error values.
+ * Assumes activations and errors are a list of {@code INDArray}s.
  * Internally uses {@link NDArrayCodec}.
  */
-public final class ActivationGradientListCodec implements Codec<List<Pair<List<INDArray>, List<INDArray>>>> {
+public final class ActivationErrorListCodec implements Codec<List<Pair<List<INDArray>, List<INDArray>>>> {
 
   private final NDArrayCodec ndArrayCodec;
 
   @Inject
-  private ActivationGradientListCodec(final NDArrayCodec ndArrayCodec) {
+  private ActivationErrorListCodec(final NDArrayCodec ndArrayCodec) {
     this.ndArrayCodec = ndArrayCodec;
   }
 
   @Override
-  public byte[] encode(final List<Pair<List<INDArray>, List<INDArray>>> activationsGradientsList) {
+  public byte[] encode(final List<Pair<List<INDArray>, List<INDArray>>> activationsErrorsList) {
     try (final ByteArrayOutputStream bstream = new ByteArrayOutputStream();
          final DataOutputStream dstream = new DataOutputStream(bstream)) {
 
-      dstream.writeInt(activationsGradientsList.size());
-      for (final Pair<List<INDArray>, List<INDArray>> activationGradient : activationsGradientsList) {
-        final List<INDArray> activations = activationGradient.getFirst();
+      dstream.writeInt(activationsErrorsList.size());
+      for (final Pair<List<INDArray>, List<INDArray>> activationError : activationsErrorsList) {
+        final List<INDArray> activations = activationError.getFirst();
         dstream.writeInt(activations.size());
         for (final INDArray activation : activations) {
           ndArrayCodec.encodeToStream(activation, dstream);
         }
 
-        final List<INDArray> gradients = activationGradient.getSecond();
-        dstream.writeInt(gradients.size());
-        for (final INDArray gradient : gradients) {
-          ndArrayCodec.encodeToStream(gradient, dstream);
+        final List<INDArray> errors = activationError.getSecond();
+        dstream.writeInt(errors.size());
+        for (final INDArray error : errors) {
+          ndArrayCodec.encodeToStream(error, dstream);
         }
       }
 
       return bstream.toByteArray();
 
     } catch (final IOException e) {
-      throw new RuntimeException("IOException while encoding activationsGradientsList", e);
+      throw new RuntimeException("IOException while encoding activationsErrorsList", e);
     }
   }
 
@@ -79,19 +79,19 @@ public final class ActivationGradientListCodec implements Codec<List<Pair<List<I
           activations.add(ndArrayCodec.decodeFromStream(dstream));
         }
 
-        final int gradientCount = dstream.readInt();
-        final List<INDArray> gradients = new ArrayList<>(gradientCount);
-        for (int gradientIndex = 0; gradientIndex < gradientCount; gradientIndex++) {
-          gradients.add(ndArrayCodec.decodeFromStream(dstream));
+        final int errorCount = dstream.readInt();
+        final List<INDArray> errors = new ArrayList<>(errorCount);
+        for (int errorIndex = 0; errorIndex < errorCount; errorIndex++) {
+          errors.add(ndArrayCodec.decodeFromStream(dstream));
         }
 
-        retList.add(new Pair<>(activations, gradients));
+        retList.add(new Pair<>(activations, errors));
       }
 
       return retList;
 
     } catch (final IOException e) {
-      throw new RuntimeException("IOException while decoding activationsGradientsList", e);
+      throw new RuntimeException("IOException while decoding activationsErrorsList", e);
     }
   }
 }

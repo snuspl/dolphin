@@ -78,7 +78,7 @@ public class NeuralNetworkTest {
 
   private NeuralNetwork neuralNetwork;
 
-  private final List<INDArray> expectedErrorGradients = Arrays.asList(
+  private final List<INDArray> expectedErrors = Arrays.asList(
       Nd4j.create(new float[]{
           -1.10814514935e-02f, 4.75458113254e-02f, 2.79511566851e-02f, -3.76325218465e-02f, -6.66430042946e-02f}),
       Nd4j.create(new float[]{5.96001904648e-01f, -4.45611556065e-01f, 4.88766051729e-01f}));
@@ -133,8 +133,8 @@ public class NeuralNetworkTest {
     assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
     activations.add(0, input);
 
-    final List<INDArray> errorGradients = neuralNetwork.backPropagate(activations, label);
-    assertTrue(Nd4jUtils.equals(errorGradients, expectedErrorGradients, tolerance));
+    final List<INDArray> errors = neuralNetwork.backPropagate(activations, label);
+    assertTrue(Nd4jUtils.equals(errors, expectedErrors, tolerance));
   }
 
   /**
@@ -151,7 +151,7 @@ public class NeuralNetworkTest {
     activations.add(input);
     activations.addAll(expectedActivations);
 
-    localNeuralNetParameterProvider.push(activations, expectedErrorGradients);
+    localNeuralNetParameterProvider.push(activations, expectedErrors);
     assertTrue(Nd4jUtils.equals(localNeuralNetParameterProvider.pull(), expectedParams, tolerance));
   }
 }

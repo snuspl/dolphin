@@ -66,9 +66,9 @@ public final class FullyConnectedLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public INDArray backPropagate(final INDArray activation,
-                                final LayerParameter nextParam,
-                                final INDArray nextErrorGradient) {
-    return nextErrorGradient.mmul(nextParam.getWeightParam().transpose()).muli(derivative(activation));
+                                final LayerParameter nextParameter,
+                                final INDArray nextError) {
+    return nextError.mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
   }
 
   /** {@inheritDoc} */

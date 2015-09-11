@@ -88,21 +88,21 @@ public abstract class LayerBase {
   public abstract INDArray feedForward(final INDArray input);
 
   /**
-   * Computes the error gradient.
+   * Computes the error.
    * @param activation the activation values.
-   * @param nextParam the parameter of the next layer.
-   * @param nextErrorGradient the error gradient of the next layer.
-   * @return the error gradient for the specified activation values.
+   * @param nextParameter the parameter of the next layer - the one closer to the output layer.
+   * @param nextError the error of the next layer - the one closer to the output layer.
+   * @return the error for this layer with the specified activation values.
    */
   public abstract INDArray backPropagate(final INDArray activation,
-                                         final LayerParameter nextParam,
-                                         final INDArray nextErrorGradient);
+                                         final LayerParameter nextParameter,
+                                         final INDArray nextError);
 
   /**
-   * Computes the error gradient. (only for output layer)
+   * Computes the error. (only for output layer)
    * @param activation the activations for output layer.
    * @param label the expected output.
-   * @return the error gradient for output layer.
+   * @return the error for the output layer with the specified label.
    */
   public abstract INDArray backPropagate(final INDArray activation,
                                          final INDArray label);
