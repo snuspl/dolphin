@@ -163,7 +163,7 @@ public final class NeuralNetwork {
 
   /**
    * Computes error gradients from output layer to input layer.
-   * @param activations an array of activations for each layer.
+   * @param activations a list of activations for each layer.
    * @param label the expected output.
    * @return a list of error gradients for each layer.
    */
@@ -183,6 +183,9 @@ public final class NeuralNetwork {
                                         final List<INDArray> activations,
                                         final INDArray label) {
     final int lastLayerIndex = layers.length - 1;
+    
+    // The first element of activations is input data.
+    // So, (i + 1)-th element of activations refers to the activation of i-th layer.
     final INDArray errorGradient = layers[lastLayerIndex].backPropagate(activations.get(lastLayerIndex + 1), label);
     final List<INDArray> errorGradients = backPropagateFromTo(lastLayerIndex - 1, end, activations, errorGradient);
     errorGradients.add(errorGradient);
