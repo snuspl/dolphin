@@ -52,7 +52,7 @@ public final class GroupCommParameterProvider implements ParameterProvider {
       @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
       final GroupCommClient groupCommClient) {
 
-    this.parameterGradientList = Collections.synchronizedList(new ArrayList<LayerParameter[]>(batchSize));
+    this.parameterGradientList = new ArrayList<>(batchSize);
     this.batchSize = batchSize;
     this.pushCount = 0;
 

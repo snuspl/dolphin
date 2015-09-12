@@ -102,7 +102,10 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   /** {@inheritDoc} */
   @Override
   public void push(final LayerParameter[] parameterGradients) {
-    assert parameterGradients.length == deltaLayerParameters.length;
+    if (parameterGradients.length != deltaLayerParameters.length) {
+      throw new RuntimeException(String.format("The number of parameter gradients (%d) is not equal to " +
+          "the number of layers (%d).", parameterGradients.length, deltaLayerParameters.length));
+    }
     for (int i = 0; i < layerParameters.length; ++i) {
       deltaLayerParameters[i].getWeightParam().addi(parameterGradients[i].getWeightParam());
       deltaLayerParameters[i].getBiasParam().addi(parameterGradients[i].getBiasParam());

@@ -67,7 +67,7 @@ public final class LayerParameterArrayListCodec
     try (final DataInputStream dstream = new DataInputStream(new ByteArrayInputStream(data))) {
       return decodeFromStream(dstream);
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during LayerParameterArrayList.decode()", e);
+      throw new RuntimeException("IOException during LayerParameterArrayListCodec.decode()", e);
     }
   }
 
@@ -81,7 +81,7 @@ public final class LayerParameterArrayListCodec
       }
       return retList;
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during LayerParameterArrayListCodec.decodeToStream()", e);
+      throw new RuntimeException("IOException during LayerParameterArrayListCodec.decodeFromStream()", e);
     }
   }
 }
