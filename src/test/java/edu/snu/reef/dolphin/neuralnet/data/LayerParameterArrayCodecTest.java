@@ -32,33 +32,48 @@ import static org.junit.Assert.assertArrayEquals;
 public final class LayerParameterArrayCodecTest {
 
   private LayerParameterArrayCodec layerParameterArrayCodec;
-  private Random random;
 
   @Before
   public void setUp() throws InjectionException {
     this.layerParameterArrayCodec = Tang.Factory.getTang().newInjector().getInstance(LayerParameterArrayCodec.class);
-    this.random = new Random();
   }
 
   /**
    * Checks that a random layer parameter array does not change after encoding and decoding it, sequentially.
    */
   @Test
-   public void testEncodeDecodeLayerParameters() {
-    final LayerParameter[] inputLayerParameters = new LayerParameter[10];
-    for (int index = 0; index < inputLayerParameters.length; index++) {
-      final INDArray weightParam = NDArrayGenerator.generateRandomNDArray(random, 2);
-      final INDArray biasParam = NDArrayGenerator.generateRandomNDArray(random, 2);
-      inputLayerParameters[index] = LayerParameter.newBuilder()
-          .setWeightParam(weightParam)
-          .setBiasParam(biasParam)
-          .build();
-    }
-
+  public void testEncodeDecodeLayerParameters() {
+    final LayerParameter[] inputLayerParameters = generateRandomLayerParameterArray();
     final LayerParameter[] outputLayerParameters =
         layerParameterArrayCodec.decode(layerParameterArrayCodec.encode(inputLayerParameters));
 
     assertArrayEquals("Encode-decode result is different from expected LayerParameter array",
         inputLayerParameters, outputLayerParameters);
+  }
+
+  /**
+   * @return a random 10-element array of layer parameters.
+   */
+  public static LayerParameter[] generateRandomLayerParameterArray() {
+    return generateRandomLayerParameterArray(new Random(), 10);
+  }
+
+  /**
+   * @param random a random number generator.
+   * @param numElements the number of array elements
+   * @return a random array of layer parameters.
+   */
+  public static LayerParameter[] generateRandomLayerParameterArray(final Random random,
+                                                                   final int numElements) {
+    final LayerParameter[] retLayerParameters = new LayerParameter[numElements];
+    for (int index = 0; index < retLayerParameters.length; index++) {
+      final INDArray weightParam = NDArrayGenerator.generateRandomNDArray(random, 2);
+      final INDArray biasParam = NDArrayGenerator.generateRandomNDArray(random, 2);
+      retLayerParameters[index] = LayerParameter.newBuilder()
+          .setWeightParam(weightParam)
+          .setBiasParam(biasParam)
+          .build();
+    }
+    return retLayerParameters;
   }
 }

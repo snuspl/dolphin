@@ -110,8 +110,9 @@ public final class NeuralNetwork {
     activations.addAll(feedForward(input));
 
     final List<INDArray> errors = backPropagate(activations, label);
+    final LayerParameter[] parameterGradients = generateParameterGradients(activations, errors);
 
-    parameterProvider.push(activations, errors);
+    parameterProvider.push(parameterGradients);
     
     if (++trainedCount >= batchSize) {
       final LayerParameter[] updatedParameters = parameterProvider.pull();
@@ -150,6 +151,11 @@ public final class NeuralNetwork {
    * @return a list of activations for each layer.
    */
   public List<INDArray> feedForward(final int begin, final int end, final INDArray input) {
+    if (begin > end) {
+      throw new RuntimeException(String.format(
+          "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
+    }
+
     final List<INDArray> activations = new ArrayList<>();
 
     INDArray activation = input;
@@ -207,7 +213,8 @@ public final class NeuralNetwork {
       throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
     }
     if (begin < end) {
-      throw new RuntimeException("The beginning index must be greater than or equal to the ending index.");
+      throw new RuntimeException(String.format(
+          "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
 
     final List<INDArray> errors = new ArrayList<>();
@@ -220,5 +227,46 @@ public final class NeuralNetwork {
 
     Collections.reverse(errors);
     return errors;
+  }
+
+  /**
+   * Generates parameter gradients for all layers.
+   * @param activations activation values for each layer.
+   * @param errors errors for each layer.
+   * @return an array of parameter gradients for each layer.
+   */
+  public LayerParameter[] generateParameterGradients(final List<INDArray> activations,
+                                                     final List<INDArray> errors) {
+    return generateParameterGradients(0, layers.length - 1, activations, errors);
+  }
+
+  /**
+   * Generates parameter gradients for each layer from the specified beginning layer to the specified ending layer.
+   * @param begin the index of beginning layer, inclusive.
+   * @param end the index of ending layer, inclusive.
+   * @param activations activation values for each layer.
+   * @param errors errors for each layer.
+   * @return an array of parameter gradients for each layer.
+   */
+  public LayerParameter[] generateParameterGradients(final int begin, final int end,
+                                                     final List<INDArray> activations,
+                                                     final List<INDArray> errors) {
+    if (begin < 0) {
+      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
+    }
+    if (end >= layers.length) {
+      throw new RuntimeException(String.format(
+          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
+    }
+    if (begin > end) {
+      throw new RuntimeException(String.format(
+          "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
+    }
+
+    final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
+    for (int i = begin; i <= end; ++i) {
+      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations.get(i), errors.get(i));
+    }
+    return parameterGradients;
   }
 }

@@ -151,7 +151,7 @@ public class NeuralNetworkTest {
     activations.add(input);
     activations.addAll(expectedActivations);
 
-    localNeuralNetParameterProvider.push(activations, expectedErrors);
+    localNeuralNetParameterProvider.push(neuralNetwork.generateParameterGradients(activations, expectedErrors));
     assertTrue(Nd4jUtils.equals(localNeuralNetParameterProvider.pull(), expectedParams, tolerance));
   }
 }

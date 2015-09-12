@@ -107,4 +107,11 @@ public abstract class LayerBase {
   public abstract INDArray backPropagate(final INDArray activation,
                                          final INDArray label);
 
+  /**
+   * Computes the parameter gradient for this layer.
+   * @param input the input for this layer.
+   * @param error the error for this layer.
+   * @return the parameter gradient for this layer.
+   */
+  public abstract LayerParameter generateParameterGradient(final INDArray input, final INDArray error);
 }
