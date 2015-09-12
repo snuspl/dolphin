@@ -230,7 +230,7 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Generates parameter gradients fot all layers.
+   * Generates parameter gradients for all layers.
    * @param activations activation values for each layer.
    * @param errors errors for each layer.
    * @return an array of parameter gradients for each layer.

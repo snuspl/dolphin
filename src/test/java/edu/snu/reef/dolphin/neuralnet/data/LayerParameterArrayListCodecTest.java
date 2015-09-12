@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static edu.snu.reef.dolphin.neuralnet.data.LayerParameterArrayCodecTest.generateRandomLayerParameterArray;
 import static org.junit.Assert.assertArrayEquals;
@@ -34,13 +33,11 @@ import static org.junit.Assert.assertArrayEquals;
 public final class LayerParameterArrayListCodecTest {
 
   private LayerParameterArrayListCodec layerParameterArrayListCodec;
-  private Random random;
 
   @Before
   public void setUp() throws InjectionException {
     this.layerParameterArrayListCodec =
         Tang.Factory.getTang().newInjector().getInstance(LayerParameterArrayListCodec.class);
-    this.random = new Random();
   }
 
   /**
@@ -55,7 +52,7 @@ public final class LayerParameterArrayListCodecTest {
     final List<LayerParameter[]> outputLayerParameterArrayList =
         layerParameterArrayListCodec.decode(layerParameterArrayListCodec.encode(inputLayerParameterArrayList));
 
-    assertArrayEquals("Encode-decode result is different from the expected a list of LayerParameter arrays",
+    assertArrayEquals("Encode-decode result is different from the expected list of LayerParameter arrays",
         inputLayerParameterArrayList.toArray(), outputLayerParameterArrayList.toArray());
   }
 }
