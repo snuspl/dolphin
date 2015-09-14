@@ -146,17 +146,13 @@ public final class NeuralNetwork {
    * @return an array of activations for each layer.
    */
   public INDArray[] feedForward(final int begin, final int end, final INDArray input) {
-    if (begin < 0) {
-      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
-    }
-    if (end >= layers.length) {
-      throw new RuntimeException(String.format(
-          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
-    }
     if (begin > end) {
       throw new RuntimeException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
+
+    checkIndices(begin, end);
+
     final INDArray[] activations = new INDArray[end - begin + 1];
     INDArray activation = input;
 
@@ -215,13 +211,9 @@ public final class NeuralNetwork {
       throw new RuntimeException(String.format(
           "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
-    if (begin < 0) {
-      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
-    }
-    if (end >= layers.length) {
-      throw new RuntimeException(String.format(
-          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
-    }
+
+    checkIndices(begin, end);
+
     final INDArray[] errors = new INDArray[end - begin + 1];
     INDArray error = nextError;
 
@@ -254,22 +246,46 @@ public final class NeuralNetwork {
   public LayerParameter[] generateParameterGradients(final int begin, final int end,
                                                      final INDArray[] activations,
                                                      final INDArray[] errors) {
-    if (begin < 0) {
-      throw new RuntimeException(String.format("The beginning index (%d) must be greater than or equal to 0.", begin));
-    }
-    if (end >= layers.length) {
-      throw new RuntimeException(String.format(
-          "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
-    }
     if (begin > end) {
       throw new RuntimeException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
+
+    checkIndices(begin, end);
 
     final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
     for (int i = begin; i <= end; ++i) {
       parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
     }
     return parameterGradients;
+  }
+
+  /**
+   * Check whether the indices for the beginning layer and the ending layer are within layer bound.
+   * @param begin the index of the beginning layer, inclusive.
+   * @param end the index of the ending layer, inclusive.
+   */
+  private void checkIndices(final int begin, final int end) {
+    // Case 1: forward direction
+    if (begin < end) {
+      if (begin < 0) {
+        throw new RuntimeException(String.format(
+            "The beginning index (%d) must be greater than or equal to 0.", begin));
+      }
+      if (end >= layers.length) {
+        throw new RuntimeException(String.format(
+            "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
+      }
+
+      // Case 2: backward direction
+    } else {
+      if (end < 0) {
+        throw new RuntimeException(String.format("The ending index (%d) must be greater than or equal to 0.", end));
+      }
+      if (begin >= layers.length) {
+        throw new RuntimeException(String.format(
+            "The beginning index (%d) must be less than the length of layers (%d).", begin, layers.length));
+      }
+    }
   }
 }
