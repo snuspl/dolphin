@@ -17,7 +17,8 @@ package edu.snu.reef.dolphin.neuralnet.data;
 
 import edu.snu.reef.dolphin.core.DataParser;
 import edu.snu.reef.dolphin.core.ParseException;
-import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.Delimiter;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.InputShape;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.reef.io.data.loading.api.DataSet;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.snu.reef.dolphin.neuralnet.util.Nd4jUtils.readNumpy;
+import static edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.inputShapeFromString;
 
 /**
  * Data parser for neural network.
@@ -48,19 +50,12 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   private ParseException parseException;
 
   @Inject
-  private NeuralNetworkDataParser(
-      final DataSet<LongWritable, Text> dataSet,
-      @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter,
-      @Parameter(NeuralNetworkDriverParameters.InputShape.class) final String inputShape) {
+  private NeuralNetworkDataParser(final DataSet<LongWritable, Text> dataSet,
+                                  @Parameter(Delimiter.class) final String delimiter,
+                                  @Parameter(InputShape.class) final String inputShape) {
     this.dataSet = dataSet;
     this.delimiter = delimiter;
-
-    // Converts a string to an array of integers.
-    final String[] inputShapeStrings = inputShape.split(NeuralNetworkDriverParameters.SHAPE_DELIMITER);
-    this.inputShape = new int[inputShapeStrings.length];
-    for (int i = 0; i < inputShapeStrings.length; ++i) {
-      this.inputShape[i] = Integer.parseInt(inputShapeStrings[i]);
-    }
+    this.inputShape = inputShapeFromString(inputShape);
   }
 
   /** {@inheritDoc} */

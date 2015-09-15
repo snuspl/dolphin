@@ -24,6 +24,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 
 /**
  * Fully connected Layer.
@@ -55,20 +56,40 @@ public final class FullyConnectedLayer extends LayerBase {
         Nd4j.getOpFactory().createTransform(activationFunction, activation.dup()).derivative());
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Computes an activation for this fully connected layer.
+   * @param input an input value for this layer.
+   * @return an activation row vector.
+   */
   @Override
   public INDArray feedForward(final INDArray input) {
+    // convert input to a row vector.
+    final INDArray inputVector = input.linearView();
+    // (output row vector) = (input row vector) x (weight matrix) + (bias row vector)
     final INDArray output =
-        input.linearView().mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
+        inputVector.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
+    // apply activation function.
     return Nd4j.getExecutioner().execAndReturn(Nd4j.getOpFactory().createTransform(activationFunction, output));
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Computes an error for this fully connected layer.
+   * @param activation an activation row vector.
+   * @param nextParameter the parameter of the next layer - the one closer to the output layer.
+   * @param nextError the error of the next layer - the one closer to the output layer.
+   * @return an error row vector.
+   */
   @Override
   public INDArray backPropagate(final INDArray activation,
                                 final LayerParameter nextParameter,
                                 final INDArray nextError) {
-    return nextError.linearView().mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
+    if (!activation.isRowVector()) {
+      throw new RuntimeException(String.format("Invalid activation shape %s. " +
+          "An activation for a fully connected layer must be a row vector.", Arrays.toString(activation.shape())));
+    }
+    final INDArray nextErrorVector = nextError.linearView(); // convert a error of the next layer to a row vector.
+    // ((next error row vector) x (weight matrix of the next layer)) * (derivative row vector)
+    return nextErrorVector.mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
   }
 
   /** {@inheritDoc} */
@@ -80,6 +101,10 @@ public final class FullyConnectedLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
+    if (!error.isRowVector()) {
+      throw new RuntimeException(String.format("Invalid error shape %s. " +
+          "An error of a fully connected layer must be a row vector.", Arrays.toString(error.shape())));
+    }
     return LayerParameter.newBuilder()
         .setWeightParam(input.linearView().transpose().mmul(error))
         .setBiasParam(error)

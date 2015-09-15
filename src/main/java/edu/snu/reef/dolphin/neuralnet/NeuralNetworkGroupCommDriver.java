@@ -50,7 +50,7 @@ public final class NeuralNetworkGroupCommDriver {
   private static final Logger LOG = Logger.getLogger(NeuralNetworkGroupCommDriver.class.getName());
 
   private final AtomicInteger taskIds = new AtomicInteger();
-  private final NeuralNetworkTaskParameters neuralNetworkTaskParameters;
+  private final NeuralNetworkESParameters neuralNetworkESParameters;
 
   /**
    * Accessor for Data Loading Service.
@@ -72,10 +72,10 @@ public final class NeuralNetworkGroupCommDriver {
 
   @Inject
   private NeuralNetworkGroupCommDriver(final DataLoadingService dataLoadingService,
-                                       final NeuralNetworkTaskParameters neuralNetworkTaskParameters,
+                                       final NeuralNetworkESParameters neuralNetworkESParameters,
                                        final GroupCommDriver groupCommDriver) {
     this.dataLoadingService = dataLoadingService;
-    this.neuralNetworkTaskParameters = neuralNetworkTaskParameters;
+    this.neuralNetworkESParameters = neuralNetworkESParameters;
     this.groupCommDriver = groupCommDriver;
     this.commGroup =
         groupCommDriver.newCommunicationGroup(NeuralNetworkCommGroup.class,
@@ -148,7 +148,7 @@ public final class NeuralNetworkGroupCommDriver {
 
         activeContext.submitContextAndService(groupCommContextConf,
             Configurations.merge(groupCommServiceConf, dataParseConf,
-                neuralNetworkTaskParameters.getServiceConfiguration()));
+                neuralNetworkESParameters.getServiceConfiguration()));
 
       // Case 3: Evaluator configured with a group comm parameter server context.
       // We can now place a group comm parameter server task on top of this context.
@@ -161,7 +161,7 @@ public final class NeuralNetworkGroupCommDriver {
                 .set(TaskConfiguration.IDENTIFIER, taskId)
                 .set(TaskConfiguration.TASK, GroupCommParameterServerTask.class)
                 .build(),
-            neuralNetworkTaskParameters.getTaskConfiguration());
+            neuralNetworkESParameters.getTaskConfiguration());
         commGroup.addTask(partialTaskConf);
         activeContext.submitTask(groupCommDriver.getTaskConfiguration(partialTaskConf));
 
@@ -176,7 +176,7 @@ public final class NeuralNetworkGroupCommDriver {
                 .set(TaskConfiguration.IDENTIFIER, taskId)
                 .set(TaskConfiguration.TASK, GroupCommNeuralNetworkTask.class)
                 .build(),
-            neuralNetworkTaskParameters.getTaskConfiguration());
+            neuralNetworkESParameters.getTaskConfiguration());
         commGroup.addTask(partialTaskConf);
         activeContext.submitTask(groupCommDriver.getTaskConfiguration(partialTaskConf));
       }

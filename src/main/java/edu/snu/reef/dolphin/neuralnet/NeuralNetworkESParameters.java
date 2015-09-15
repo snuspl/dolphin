@@ -32,7 +32,7 @@ import java.io.IOException;
 /**
  * Class that manages parameters specific to the neural network for task.
  */
-public final class NeuralNetworkTaskParameters {
+public final class NeuralNetworkESParameters {
 
   private final Configuration neuralNetworkConfiguration;
   private final String delimiter;
@@ -44,11 +44,11 @@ public final class NeuralNetworkTaskParameters {
   }
 
   @Inject
-  private NeuralNetworkTaskParameters(final ConfigurationSerializer configurationSerializer,
-                                      @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
-                                      @Parameter(Delimiter.class) final String delimiter,
-                                      @Parameter(MaxIterations.class) final int maxIterations,
-                                      @Parameter(InputShape.class) final String inputShape) throws IOException {
+  private NeuralNetworkESParameters(final ConfigurationSerializer configurationSerializer,
+                                    @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
+                                    @Parameter(Delimiter.class) final String delimiter,
+                                    @Parameter(MaxIterations.class) final int maxIterations,
+                                    @Parameter(InputShape.class) final String inputShape) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetConf);
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;

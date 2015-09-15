@@ -40,6 +40,7 @@ import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 /**
  * Class that manages command line parameters specific to the neural network for driver.
@@ -67,7 +68,30 @@ public final class NeuralNetworkDriverParameters {
   /**
    * Delimiter that is used for distinguishing dimensions of input shape.
    */
-  public static final String SHAPE_DELIMITER = ",";
+  private static final String SHAPE_DELIMITER = ",";
+
+  /**
+   * Converts a list of integer for an input shape to a string.
+   * @param dimensionList a list of integers for an input shape.
+   * @return a string for an input shape.
+   */
+  public static String inputShapeToString(final List<Integer> dimensionList) {
+    return StringUtils.join(dimensionList, SHAPE_DELIMITER);
+  }
+
+  /**
+   * Converts a string for an input shape to an array of integers.
+   * @param inputShapeString a string for an input shape.
+   * @return an array of integers for an input shape.
+   */
+  public static int[] inputShapeFromString(final String inputShapeString) {
+    final String[] inputShapeStrings = inputShapeString.split(SHAPE_DELIMITER);
+    final int[] inputShape = new int[inputShapeStrings.length];
+    for (int i = 0; i < inputShapeStrings.length; ++i) {
+      inputShape[i] = Integer.parseInt(inputShapeStrings[i]);
+    }
+    return inputShape;
+  }
 
   @Inject
   private NeuralNetworkDriverParameters(final ConfigurationSerializer configurationSerializer,
@@ -85,9 +109,8 @@ public final class NeuralNetworkDriverParameters {
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
 
-    // Converts a list of integers to a string
-    // because Tang configuration serializer does not support List serialization.
-    this.inputShape = StringUtils.join(neuralNetConf.getInputShape().getDimList(), SHAPE_DELIMITER);
+    // convert to string because Tang configuration serializer does not support List serialization.
+    this.inputShape = inputShapeToString(neuralNetConf.getInputShape().getDimList());
   }
 
   /**
@@ -182,7 +205,7 @@ public final class NeuralNetworkDriverParameters {
   public Configuration getDriverConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(
-            NeuralNetworkTaskParameters.SerializedNeuralNetConf.class,
+            NeuralNetworkESParameters.SerializedNeuralNetConf.class,
             serializedNeuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
