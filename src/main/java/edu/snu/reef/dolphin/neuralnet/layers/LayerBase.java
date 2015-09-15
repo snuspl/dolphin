@@ -74,25 +74,25 @@ public abstract class LayerBase {
   public abstract boolean isLearnable();
 
   /**
-   * Applies the derivative of the activation function of the layer to each element of matrix.
-   * @param activation the activations of the layer.
-   * @return the derivatives for the given activation.
+   * Applies a derivative of the activation function of the layer to each element of matrix.
+   * @param activation an activation value of the layer.
+   * @return a derivative for the given activation.
    */
   public abstract INDArray derivative(final INDArray activation);
 
   /**
-   * Computes the activations.
-   * @param input the input vector for the layer.
-   * @return the activations.
+   * Computes an activation value.
+   * @param input an input value for the layer.
+   * @return a activation value.
    */
   public abstract INDArray feedForward(final INDArray input);
 
   /**
-   * Computes the error.
-   * @param activation the activation values.
+   * Computes an error.
+   * @param activation an activation value.
    * @param nextParameter the parameter of the next layer - the one closer to the output layer.
-   * @param nextError the error of the next layer - the one closer to the output layer.
-   * @return the error for this layer with the specified activation values.
+   * @param nextError an error of the next layer - the one closer to the output layer.
+   * @return an error for this layer with the specified activation value.
    */
   public abstract INDArray backPropagate(final INDArray activation,
                                          final LayerParameter nextParameter,
@@ -100,18 +100,18 @@ public abstract class LayerBase {
 
   /**
    * Computes the error. (only for output layer)
-   * @param activation the activations for output layer.
+   * @param activation an activation for output layer.
    * @param label the expected output.
-   * @return the error for the output layer with the specified label.
+   * @return an error for the output layer with the specified label.
    */
   public abstract INDArray backPropagate(final INDArray activation,
                                          final INDArray label);
 
   /**
-   * Computes the parameter gradient for this layer.
-   * @param input the input for this layer.
-   * @param error the error for this layer.
-   * @return the parameter gradient for this layer.
+   * Computes a parameter gradient for this layer.
+   * @param input an input value for this layer.
+   * @param error an error for this layer.
+   * @return a parameter gradient for this layer.
    */
   public abstract LayerParameter generateParameterGradient(final INDArray input, final INDArray error);
 }
