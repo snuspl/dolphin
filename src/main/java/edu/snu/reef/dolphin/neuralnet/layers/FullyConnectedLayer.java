@@ -64,7 +64,7 @@ public final class FullyConnectedLayer extends LayerBase {
   @Override
   public INDArray feedForward(final INDArray input) {
     // convert input to a row vector.
-    final INDArray inputVector = input.linearView();
+    final INDArray inputVector = input.reshape(1, input.length());
     // (output row vector) = (input row vector) x (weight matrix) + (bias row vector)
     final INDArray output =
         inputVector.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
@@ -87,7 +87,8 @@ public final class FullyConnectedLayer extends LayerBase {
       throw new RuntimeException(String.format("Invalid activation shape %s. " +
           "An activation for a fully connected layer must be a row vector.", Arrays.toString(activation.shape())));
     }
-    final INDArray nextErrorVector = nextError.linearView(); // convert a error of the next layer to a row vector.
+    // convert a error of the next layer to a row vector.
+    final INDArray nextErrorVector = nextError.reshape(1, nextError.length());
     // ((next error row vector) x (weight matrix of the next layer)) * (derivative row vector)
     return nextErrorVector.mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
   }
@@ -106,7 +107,7 @@ public final class FullyConnectedLayer extends LayerBase {
           "An error of a fully connected layer must be a row vector.", Arrays.toString(error.shape())));
     }
     return LayerParameter.newBuilder()
-        .setWeightParam(input.linearView().transpose().mmul(error))
+        .setWeightParam(input.reshape(1, input.length()).transpose().mmul(error))
         .setBiasParam(error)
         .build();
   }
