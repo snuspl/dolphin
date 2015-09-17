@@ -18,8 +18,6 @@ package edu.snu.reef.dolphin.neuralnet.util;
 import edu.snu.reef.dolphin.neuralnet.NeuralNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
-import java.util.List;
-
 /**
  * Class for validating a neural network model using a given data input.
  * Calculates the prediction accuracy for the given validation data set.
@@ -34,8 +32,8 @@ public final class Validator {
   }
 
   public void validate(final INDArray input, final int label) {
-    final List<INDArray> activations = network.feedForward(input);
-    final INDArray output = activations.get(activations.size() - 1);
+    final INDArray[] activations = network.feedForward(input);
+    final INDArray output = activations[activations.length - 1];
     float maxValue = output.getFloat(0);
 
     // Find the index with highest probability.
