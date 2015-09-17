@@ -141,7 +141,7 @@ public class NeuralNetworkTest {
    */
   @Test
   public void localNeuralNetParameterProviderTest() throws InjectionException {
-    final INDArray[] activations = ArrayUtils.add(neuralNetwork.feedForward(input), 0, input);
+    final INDArray[] activations = ArrayUtils.add(expectedActivations, 0, input);
     final LocalNeuralNetParameterProvider localNeuralNetParameterProvider = Tang.Factory.getTang()
         .newInjector(neuralNetworkConfiguration).getInstance(LocalNeuralNetParameterProvider.class);
 

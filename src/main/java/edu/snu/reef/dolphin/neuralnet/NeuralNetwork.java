@@ -151,7 +151,7 @@ public final class NeuralNetwork {
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
-    checkIndices(begin, end);
+    checkIndices(begin, end, true);
 
     final INDArray[] activations = new INDArray[end - begin + 1];
     INDArray activation = input;
@@ -212,7 +212,7 @@ public final class NeuralNetwork {
           "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
 
-    checkIndices(begin, end);
+    checkIndices(begin, end, true);
 
     final INDArray[] errors = new INDArray[end - begin + 1];
     INDArray error = nextError;
@@ -251,7 +251,7 @@ public final class NeuralNetwork {
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
-    checkIndices(begin, end);
+    checkIndices(begin, end, true);
 
     final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
     for (int i = begin; i <= end; ++i) {
@@ -264,10 +264,11 @@ public final class NeuralNetwork {
    * Check whether the indices for the beginning layer and the ending layer are within layer bound.
    * @param begin the index of the beginning layer, inclusive.
    * @param end the index of the ending layer, inclusive.
+   * @param isFoward the flag for a direction.
    */
-  private void checkIndices(final int begin, final int end) {
+  private void checkIndices(final int begin, final int end, final boolean isFoward) {
     // Case 1: forward direction
-    if (begin < end) {
+    if (isFoward) {
       if (begin < 0) {
         throw new RuntimeException(String.format(
             "The beginning index (%d) must be greater than or equal to 0.", begin));
