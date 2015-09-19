@@ -24,6 +24,7 @@ import edu.snu.reef.dolphin.neuralnet.layerparam.provider.LocalNeuralNetParamete
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.ParameterProvider;
 import edu.snu.reef.dolphin.neuralnet.proto.NeuralNetworkProtos.*;
 import edu.snu.reef.dolphin.parameters.OnLocal;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -39,6 +40,7 @@ import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 /**
  * Class that manages command line parameters specific to the neural network for driver.
@@ -49,6 +51,7 @@ public final class NeuralNetworkDriverParameters {
   private final String delimiter;
   private final int maxIterations;
   private final boolean groupComm;
+  private final String inputShape;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -56,6 +59,38 @@ public final class NeuralNetworkDriverParameters {
 
   @NamedParameter(doc = "delimiter that is used in input file", short_name = "delim", default_value = ",")
   public static class Delimiter implements Name<String> {
+  }
+
+  @NamedParameter(doc = "the shape of input data")
+  public static class InputShape implements Name<String> {
+  }
+
+  /**
+   * Delimiter that is used for distinguishing dimensions of input shape.
+   */
+  private static final String SHAPE_DELIMITER = ",";
+
+  /**
+   * Converts a list of integer for an input shape to a string.
+   * @param dimensionList a list of integers for an input shape.
+   * @return a string for an input shape.
+   */
+  public static String inputShapeToString(final List<Integer> dimensionList) {
+    return StringUtils.join(dimensionList, SHAPE_DELIMITER);
+  }
+
+  /**
+   * Converts a string for an input shape to an array of integers.
+   * @param inputShapeString a string for an input shape.
+   * @return an array of integers for an input shape.
+   */
+  public static int[] inputShapeFromString(final String inputShapeString) {
+    final String[] inputShapeStrings = inputShapeString.split(SHAPE_DELIMITER);
+    final int[] inputShape = new int[inputShapeStrings.length];
+    for (int i = 0; i < inputShapeStrings.length; ++i) {
+      inputShape[i] = Integer.parseInt(inputShapeStrings[i]);
+    }
+    return inputShape;
   }
 
   @Inject
@@ -73,6 +108,9 @@ public final class NeuralNetworkDriverParameters {
         buildNeuralNetworkConfiguration(neuralNetConf));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+
+    // convert to string because Tang configuration serializer does not support List serialization.
+    this.inputShape = inputShapeToString(neuralNetConf.getInputShape().getDimList());
   }
 
   /**
@@ -167,10 +205,11 @@ public final class NeuralNetworkDriverParameters {
   public Configuration getDriverConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(
-            NeuralNetworkTaskParameters.SerializedNeuralNetConf.class,
+            NeuralNetworkESParameters.SerializedNeuralNetConf.class,
             serializedNeuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
+        .bindNamedParameter(InputShape.class, inputShape)
         .build();
   }
 

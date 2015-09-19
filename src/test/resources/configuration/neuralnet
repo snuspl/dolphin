@@ -16,6 +16,10 @@
 # description: neural network configuration for MNIST database
 batch_size: 10
 stepsize: 1e-3
+input_shape {
+  dim: 28
+  dim: 28
+}
 parameter_provider {
   type: "local"
 }

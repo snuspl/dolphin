@@ -44,7 +44,7 @@ public final class NeuralNetworkDriver {
 
   private final AtomicInteger ctrlCtxIds = new AtomicInteger();
   private final AtomicInteger taskIds = new AtomicInteger();
-  private final NeuralNetworkTaskParameters neuralNetworkTaskParameters;
+  private final NeuralNetworkESParameters neuralNetworkESParameters;
 
   /**
    * Accessor for data loading service
@@ -54,9 +54,9 @@ public final class NeuralNetworkDriver {
 
   @Inject
   private NeuralNetworkDriver(final DataLoadingService dataLoadingService,
-                              final NeuralNetworkTaskParameters neuralNetworkTaskParameters) {
+                              final NeuralNetworkESParameters neuralNetworkESParameters) {
     this.dataLoadingService = dataLoadingService;
-    this.neuralNetworkTaskParameters = neuralNetworkTaskParameters;
+    this.neuralNetworkESParameters = neuralNetworkESParameters;
   }
 
   final class ActiveContextHandler implements EventHandler<ActiveContext> {
@@ -80,7 +80,7 @@ public final class NeuralNetworkDriver {
 
         activeContext.submitContextAndService(
             ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build(),
-            dataParseConf);
+            Configurations.merge(dataParseConf, neuralNetworkESParameters.getServiceConfiguration()));
 
         // Case 2: Evaluator configured with a neural network context.
         // We can now place a neural network task on top of the contexts.
@@ -94,7 +94,7 @@ public final class NeuralNetworkDriver {
                   .set(TaskConfiguration.IDENTIFIER, taskId)
                   .set(TaskConfiguration.TASK, NeuralNetworkTask.class)
                   .build(),
-              neuralNetworkTaskParameters.getTaskConfiguration()));
+              neuralNetworkESParameters.getTaskConfiguration()));
         } catch (final BindException ex) {
           LOG.log(Level.SEVERE, "Configuration error in " + contextId, ex);
           throw new RuntimeException("Configuration error in " + contextId, ex);

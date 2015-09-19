@@ -17,7 +17,8 @@ package edu.snu.reef.dolphin.neuralnet.data;
 
 import edu.snu.reef.dolphin.core.DataParser;
 import edu.snu.reef.dolphin.core.ParseException;
-import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.Delimiter;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.InputShape;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.reef.io.data.loading.api.DataSet;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.snu.reef.dolphin.neuralnet.util.Nd4jUtils.readNumpy;
+import static edu.snu.reef.dolphin.neuralnet.NeuralNetworkDriverParameters.inputShapeFromString;
 
 /**
  * Data parser for neural network.
@@ -43,14 +45,17 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
 
   private final DataSet<LongWritable, Text> dataSet;
   private final String delimiter;
+  private final int[] inputShape;
   private List<Pair<Pair<INDArray, Integer>, Boolean>> result;
   private ParseException parseException;
 
   @Inject
-  public NeuralNetworkDataParser(final DataSet<LongWritable, Text> dataSet,
-                                 @Parameter(NeuralNetworkDriverParameters.Delimiter.class) final String delimiter) {
+  private NeuralNetworkDataParser(final DataSet<LongWritable, Text> dataSet,
+                                  @Parameter(Delimiter.class) final String delimiter,
+                                  @Parameter(InputShape.class) final String inputShape) {
     this.dataSet = dataSet;
     this.delimiter = delimiter;
+    this.inputShape = inputShapeFromString(inputShape);
   }
 
   /** {@inheritDoc} */
@@ -78,7 +83,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       try {
         final INDArray input = readNumpy(
             new ByteArrayInputStream(text.getBytes()), delimiter);
-        final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2));
+        final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2)).reshape(inputShape);
         final int label = (int) input.getFloat(input.columns() - 2);
         final boolean isValidation = ((int) input.getFloat(input.columns() - 1) == 1);
         trainingData.add(new Pair<>(new Pair<>(data, label), isValidation));
