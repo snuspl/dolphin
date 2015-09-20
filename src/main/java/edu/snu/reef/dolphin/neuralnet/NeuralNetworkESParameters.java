@@ -66,6 +66,16 @@ public final class NeuralNetworkESParameters {
   }
 
   /**
+   * @return the configuration for services, including the neural network configuration
+   */
+  public Configuration getServiceAndNeuralNetworkConfiguration() {
+    return Tang.Factory.getTang().newConfigurationBuilder(neuralNetworkConfiguration)
+        .bindNamedParameter(Delimiter.class, delimiter)
+        .bindNamedParameter(InputShape.class, inputShape)
+        .build();
+  }
+
+  /**
    * @return the configuration for task.
    */
   public Configuration getTaskConfiguration() {
