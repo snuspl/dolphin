@@ -15,8 +15,7 @@
  */
 package edu.snu.reef.dolphin.neuralnet;
 
-import edu.snu.reef.dolphin.neuralnet.data.LayerParameterArrayCodec;
-import edu.snu.reef.dolphin.neuralnet.data.LayerParameterArrayListCodec;
+import edu.snu.reef.dolphin.neuralnet.data.*;
 import edu.snu.reef.dolphin.parameters.*;
 import edu.snu.reef.dolphin.ps.ParameterServerConfiguration;
 import edu.snu.reef.dolphin.ps.driver.SingleNodeParameterServerManager;
@@ -211,8 +210,8 @@ public final class NeuralNetworkREEF {
     final Configuration parameterServerConfiguration = new ParameterServerConfiguration()
         .setManagerClass(SingleNodeParameterServerManager.class)
         .setUpdaterClass(NeuralNetworkParameterUpdater.class)
-        .setPreValueCodecClass(LayerParameterArrayListCodec.class)
-        .setValueCodecClass(LayerParameterArrayCodec.class)
+        .setPreValueCodecClass(NeuralNetParamWorkerDataCodec.class)
+        .setValueCodecClass(NeuralNetParamServerDataCodec.class)
         .build();
 
     return Configurations.merge(

@@ -16,6 +16,7 @@
 package edu.snu.reef.dolphin.neuralnet;
 
 import edu.snu.reef.dolphin.core.DataParseService;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkParameterUpdater.LogPeriod;
 import edu.snu.reef.dolphin.neuralnet.data.NeuralNetworkDataParser;
 import edu.snu.reef.dolphin.ps.driver.ParameterServerDriver;
 import org.apache.reef.annotations.audience.DriverSide;
@@ -26,6 +27,8 @@ import org.apache.reef.driver.task.TaskConfiguration;
 import org.apache.reef.io.data.loading.api.DataLoadingService;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Configurations;
+import org.apache.reef.tang.Tang;
+import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.annotations.Unit;
 import org.apache.reef.wake.EventHandler;
 
@@ -49,6 +52,7 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
   private final NeuralNetworkESParameters neuralNetworkESParameters;
   private final AtomicInteger neuralNetworkTaskCount;
   private ActiveContext serverContext;
+  private final int logPeriod;
 
   /**
    * Accessor for Data Loading Service.
@@ -65,11 +69,13 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
   @Inject
   private NeuralNetworkSingleNodeParameterServerDriver(final DataLoadingService dataLoadingService,
                                                        final NeuralNetworkESParameters neuralNetworkESParameters,
-                                                       final ParameterServerDriver psDriver) {
+                                                       final ParameterServerDriver psDriver,
+                                                       @Parameter(LogPeriod.class) final int logPeriod) {
     this.dataLoadingService = dataLoadingService;
     this.neuralNetworkESParameters = neuralNetworkESParameters;
     this.psDriver = psDriver;
     this.neuralNetworkTaskCount = new AtomicInteger(dataLoadingService.getNumberOfPartitions());
+    this.logPeriod = logPeriod;
   }
 
   final class ActiveContextHandler implements EventHandler<ActiveContext> {
@@ -84,6 +90,9 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
       // We add a parameter server context and service to it.
       if (dataLoadingService.isComputeContext(activeContext)) {
         final Configuration contextConf = Configurations.merge(
+            Tang.Factory.getTang().newConfigurationBuilder()
+                .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
+                .build(),
             ContextConfiguration.CONF
                 .set(ContextConfiguration.IDENTIFIER, "ParameterServerContext")
                 .build(),
@@ -121,7 +130,7 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
         activeContext.submitTask(Configurations.merge(
             TaskConfiguration.CONF
                 .set(TaskConfiguration.IDENTIFIER, taskId)
-                .set(TaskConfiguration.TASK, NeuralNetworkTask.class)
+                .set(TaskConfiguration.TASK, NeuralNetworkParameterServerTask.class)
                 .build(),
             neuralNetworkESParameters.getTaskConfiguration()));
 

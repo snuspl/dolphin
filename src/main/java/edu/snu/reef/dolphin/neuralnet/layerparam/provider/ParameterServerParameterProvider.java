@@ -17,6 +17,8 @@ package edu.snu.reef.dolphin.neuralnet.layerparam.provider;
 
 import edu.snu.reef.dolphin.neuralnet.NeuralNetworkParameterUpdater;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationParameters.BatchSize;
+import edu.snu.reef.dolphin.neuralnet.data.NeuralNetParamServerData;
+import edu.snu.reef.dolphin.neuralnet.data.NeuralNetParamWorkerData;
 import edu.snu.reef.dolphin.neuralnet.layers.LayerParameter;
 import edu.snu.reef.dolphin.ps.worker.ParameterWorker;
 import org.apache.reef.tang.annotations.Parameter;
@@ -37,14 +39,14 @@ public final class ParameterServerParameterProvider implements ParameterProvider
 
   private static final int RETRY_COUNT = 3;
 
-  private final ParameterWorker<String, List<LayerParameter[]>, LayerParameter[]> worker;
+  private final ParameterWorker<String, NeuralNetParamWorkerData, NeuralNetParamServerData> worker;
   private final List<LayerParameter[]> parameterGradientsList;
   private final int batchSize;
   private int pushCount;
 
   @Inject
   private ParameterServerParameterProvider(
-      final ParameterWorker<String, List<LayerParameter[]>, LayerParameter[]> worker,
+      final ParameterWorker<String, NeuralNetParamWorkerData, NeuralNetParamServerData> worker,
       @Parameter(BatchSize.class) final int batchSize) {
     this.worker = worker;
     this.parameterGradientsList = new ArrayList<>(batchSize);
@@ -58,7 +60,7 @@ public final class ParameterServerParameterProvider implements ParameterProvider
 
     if (++pushCount > batchSize) {
       pushCount = 0;
-      worker.push(NeuralNetworkParameterUpdater.WHOLE_MODEL, parameterGradientsList);
+      worker.push(NeuralNetworkParameterUpdater.WHOLE_MODEL, new NeuralNetParamWorkerData(parameterGradientsList));
       parameterGradientsList.clear();
     }
   }
@@ -67,7 +69,12 @@ public final class ParameterServerParameterProvider implements ParameterProvider
   public LayerParameter[] pull() {
     int retryCount = 0;
     while (retryCount < RETRY_COUNT) {
-      final LayerParameter[] retVal = worker.pull(NeuralNetworkParameterUpdater.WHOLE_MODEL);
+      final NeuralNetParamServerData neuralNetParamServerData = worker.pull(NeuralNetworkParameterUpdater.WHOLE_MODEL);
+      if (neuralNetParamServerData.getIsValidationStatsPair()) {
+        throw new RuntimeException("Requested NeuralNetworkParameterUpdater.WHOLE_MODEL but received validation stats");
+      }
+
+      final LayerParameter[] retVal = neuralNetParamServerData.getLayerParameters().get();
       if (retVal != null) {
         return retVal;
       }

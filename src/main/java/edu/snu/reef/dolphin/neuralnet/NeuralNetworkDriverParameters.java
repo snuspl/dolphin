@@ -17,6 +17,7 @@ package edu.snu.reef.dolphin.neuralnet;
 
 import com.google.protobuf.TextFormat;
 import edu.snu.reef.dolphin.examples.ml.parameters.MaxIterations;
+import edu.snu.reef.dolphin.neuralnet.NeuralNetworkParameterUpdater.LogPeriod;
 import edu.snu.reef.dolphin.neuralnet.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.reef.dolphin.neuralnet.layerparam.provider.GroupCommParameterProvider;
@@ -53,6 +54,7 @@ public final class NeuralNetworkDriverParameters {
   private final int maxIterations;
   private final ProviderType providerType;
   private final String inputShape;
+  private final int logPeriod;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -103,7 +105,8 @@ public final class NeuralNetworkDriverParameters {
                                         @Parameter(ConfigurationPath.class) final String configurationPath,
                                         @Parameter(Delimiter.class) final String delimiter,
                                         @Parameter(MaxIterations.class) final int maxIterations,
-                                        @Parameter(OnLocal.class) final boolean onLocal) throws IOException {
+                                        @Parameter(OnLocal.class) final boolean onLocal,
+                                        @Parameter(LogPeriod.class) final int logPeriod) throws IOException {
     final NeuralNetworkConfiguration neuralNetConf = loadNeuralNetworkConfiguration(configurationPath, onLocal);
 
     // the method is being called twice: here and in `buildNeuralNetworkConfiguration`
@@ -113,6 +116,7 @@ public final class NeuralNetworkDriverParameters {
         buildNeuralNetworkConfiguration(neuralNetConf));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+    this.logPeriod = logPeriod;
 
     // convert to string because Tang configuration serializer does not support List serialization.
     this.inputShape = inputShapeToString(neuralNetConf.getInputShape().getDimList());
@@ -221,6 +225,7 @@ public final class NeuralNetworkDriverParameters {
     cl.registerShortNameOfClass(ConfigurationPath.class);
     cl.registerShortNameOfClass(Delimiter.class);
     cl.registerShortNameOfClass(MaxIterations.class);
+    cl.registerShortNameOfClass(LogPeriod.class);
   }
 
   /**
@@ -234,6 +239,7 @@ public final class NeuralNetworkDriverParameters {
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .bindNamedParameter(InputShape.class, inputShape)
+        .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
         .build();
   }
 
