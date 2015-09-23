@@ -1,0 +1,52 @@
+/**
+ * Copyright (C) 2015 Seoul National University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.snu.reef.dolphin.examples.ml.data;
+
+public final class Rating {
+  private final int userIndex;
+  private final int itemIndex;
+  private final double ratingScore;
+  
+  public Rating(final int userIndex, final int itemIndex, final double ratingScore) {
+    this.userIndex = userIndex;
+    this.itemIndex = itemIndex;
+    this.ratingScore = ratingScore;
+  }
+  
+  public final int getUserIndex() {
+    return userIndex;
+  }
+  
+  public final int getItemIndex() {
+    return itemIndex;
+  }
+  
+  public final double getRatingScore() {
+    return ratingScore;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("Rating(")
+        .append(userIndex)
+        .append(", ")
+        .append(itemIndex)
+        .append(", ")
+        .append(ratingScore)
+        .append(")");
+    return sb.toString();
+  }
+}
