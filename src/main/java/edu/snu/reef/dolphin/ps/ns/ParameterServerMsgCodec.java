@@ -22,7 +22,7 @@ import org.apache.reef.wake.remote.Codec;
 import javax.inject.Inject;
 
 /**
- * Codec for {@link AvroParameterServerMsg}s..
+ * Codec for {@link AvroParameterServerMsg}s.
  * Simply uses {@link AvroUtils} to encode and decode messages.
  */
 public final class ParameterServerMsgCodec implements Codec<AvroParameterServerMsg> {

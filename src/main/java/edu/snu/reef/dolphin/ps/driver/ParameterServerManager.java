@@ -21,7 +21,7 @@ import org.apache.reef.tang.Configuration;
 /**
  * Driver-side manager for the Parameter Server.
  * Context/service configuration and PS-related evaluator management is done by this class.
- * Although public, the {@code getConfiguration} methods should not be called by the user directly because
+ * Although public, the methods should not be called by the user directly because
  * {@code ParameterServerDriver} calls them internally.
  */
 @DriverSide

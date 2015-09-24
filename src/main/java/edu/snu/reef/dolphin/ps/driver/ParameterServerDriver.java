@@ -86,7 +86,7 @@ public final class ParameterServerDriver {
   }
 
   /**
-   * @return context configuration that both worker and server Evaluators uses
+   * @return context configuration that both worker and server Evaluators use
    */
   private Configuration getCommonContextConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder(codecConfiguration)

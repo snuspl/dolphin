@@ -20,7 +20,6 @@ import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.tang.InjectionFuture;
 import org.apache.reef.tang.annotations.Parameter;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,10 +27,10 @@ import java.util.logging.Logger;
 
 /**
  * Parameter Server worker that interacts with a server which uses only one node.
- * A single instance of this class can be used by more than one thread safely.
+ * A single instance of this class can be used by more than one thread safely, if and only if
+ * the codec classes used in {@link WorkerSideMsgSender} are thread-safe.
  */
 @EvaluatorSide
-@ThreadSafe
 public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker<K, P, V> {
   private static final Logger LOG = Logger.getLogger(SingleNodeParameterWorker.class.getName());
   private static final long TIMEOUT = 10000; // milliseconds
@@ -71,6 +70,8 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
 
   /**
    * Try to fetch a {@code value} from the server, waiting for a certain {@code TIMEOUT} period.
+   * If a value associated with {@code key} doesn't exist, then the server will create an initial value
+   * using {@link edu.snu.reef.dolphin.ps.server.ParameterUpdater} and return that value.
    * @param key key object representing the expected value
    * @return value specified by the {@code key}, or null if wait time exceeds {@code TIMEOUT}
    */

@@ -28,7 +28,7 @@ public interface ParameterUpdater<K, P, V> {
    * from {@code preValue}, that is associated with {@code key}.
    * @param key key object with which the generated value should be associated with
    * @param preValue preValue sent from a worker that will be used to create a new value
-   * @return new value that was generated
+   * @return new value that was generated, or null if no update should occur
    */
   V process(K key, P preValue);
 

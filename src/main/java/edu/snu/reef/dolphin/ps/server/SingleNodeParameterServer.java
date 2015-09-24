@@ -17,7 +17,6 @@ package edu.snu.reef.dolphin.ps.server;
 
 import org.apache.reef.annotations.audience.EvaluatorSide;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,9 +25,9 @@ import java.util.logging.Logger;
 /**
  * Parameter Server server that consists of exactly one node.
  * Users should spawn a single evaluator for this server.
+ * This class is thread-safe if and only if {@link ParameterUpdater} is thread-safe.
  */
 @EvaluatorSide
-@ThreadSafe
 public final class SingleNodeParameterServer<K, P, V> implements ParameterServer<K, P, V> {
   private static final Logger LOG = Logger.getLogger(SingleNodeParameterServer.class.getName());
 
@@ -49,7 +48,7 @@ public final class SingleNodeParameterServer<K, P, V> implements ParameterServer
   }
 
   /**
-   * Store a {@code preValue} sent from a worker.
+   * Process a {@code preValue} sent from a worker and store the resulting value.
    * Uses {@link ParameterUpdater} to generate a value from {@code preValue} and to apply the generated value to
    * the k-v store. Updates are done only when a write lock is acquired, for concurrency between
    * multiple push/pull threads.
