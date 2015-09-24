@@ -23,6 +23,7 @@ import org.apache.reef.tang.annotations.Parameter;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -109,12 +110,17 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
    * {@inheritDoc}
    */
   @Override
-  public void reply(final K key, final V value) {
+  public void processReply(final K key, final V value) {
     final ValueWrapper valueWrapper = keyToValueWrapper.remove(key);
-    synchronized (valueWrapper) {
-      valueWrapper.setValue(value);
-      // wake all threads waiting for the value
-      valueWrapper.notifyAll();
+    if (valueWrapper != null) {
+      synchronized (valueWrapper) {
+        valueWrapper.setValue(value);
+        // wake all threads waiting for the value
+        valueWrapper.notifyAll();
+      }
+    } else {
+      LOG.log(Level.WARNING, "Someone else is trying to reply with the same key. My value will be lost.");
+      LOG.log(Level.FINE, "My value was: " + value.toString());
     }
   }
 

@@ -23,6 +23,7 @@ import org.apache.reef.wake.EventHandler;
 import org.apache.reef.wake.IdentifierFactory;
 
 import javax.inject.Inject;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -46,17 +47,11 @@ public final class NetworkContextRegister {
     this.endpointId = endpointId;
   }
 
-  @Inject
-  private NetworkContextRegister(final PSNetworkSetup psNetworkSetup,
-                                 final IdentifierFactory identifierFactory) {
-    this(psNetworkSetup, identifierFactory, null);
-  }
-
   public final class RegisterContextHandler implements EventHandler<ContextStart> {
     @Override
     public void onNext(final ContextStart contextStart) {
-      psNetworkSetup.registerConnectionFactory(identifierFactory.getNewInstance(
-          endpointId == null ? contextStart.getId() : endpointId));
+      psNetworkSetup.registerConnectionFactory(identifierFactory.getNewInstance(endpointId));
+      LOG.log(Level.INFO, "My NCS id is " + endpointId);
     }
   }
 

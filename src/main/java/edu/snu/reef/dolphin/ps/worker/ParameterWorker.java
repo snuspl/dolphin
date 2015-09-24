@@ -46,6 +46,6 @@ public interface ParameterWorker<K, P, V> {
    * @param key key object representing what was sent
    * @param value value sent from the server
    */
-  void reply(K key, V value);
+  void processReply(K key, V value);
 }
 

@@ -37,7 +37,7 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
   private static final Logger LOG = Logger.getLogger(WorkerSideMsgHandler.class.getName());
 
   /**
-   * This evaluator's worker that is excepting Parameter Server messages.
+   * This evaluator's worker that is expecting Parameter Server messages.
    */
   private final ParameterWorker<K, P, V> parameterWorker;
 
@@ -71,7 +71,7 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
     final AvroParameterServerMsg innerMsg = SingleMessageExtractor.extract(msg);
     switch (innerMsg.getType()) {
     case ReplyMsg:
-      onReplyMsg(innerMsg);
+      onReplyMsg(innerMsg.getReplyMsg());
       break;
 
     default:
@@ -81,10 +81,9 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
     LOG.exiting(WorkerSideMsgHandler.class.getSimpleName(), "onNext");
   }
 
-  private void onReplyMsg(final AvroParameterServerMsg msg) {
-    final ReplyMsg replyMsg = msg.getReplyMsg();
+  private void onReplyMsg(final ReplyMsg replyMsg) {
     final K key = keyCodec.decode(replyMsg.getKey().array());
     final V value = valueCodec.decode(replyMsg.getValue().array());
-    parameterWorker.reply(key, value);
+    parameterWorker.processReply(key, value);
   }
 }

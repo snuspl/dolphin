@@ -82,11 +82,11 @@ public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message
     final AvroParameterServerMsg innerMsg = SingleMessageExtractor.extract(msg);
     switch (innerMsg.getType()) {
     case PushMsg:
-      onPushMsg(innerMsg);
+      onPushMsg(innerMsg.getPushMsg());
       break;
 
     case PullMsg:
-      onPullMsg(innerMsg);
+      onPullMsg(innerMsg.getPullMsg());
       break;
 
     default:
@@ -96,15 +96,13 @@ public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message
     LOG.exiting(ServerSideMsgHandler.class.getSimpleName(), "onNext");
   }
 
-  private void onPushMsg(final AvroParameterServerMsg msg) {
-    final PushMsg pushMsg = msg.getPushMsg();
+  private void onPushMsg(final PushMsg pushMsg) {
     final K key = keyCodec.decode(pushMsg.getKey().array());
     final P preValue = preValueCodec.decode(pushMsg.getPreValue().array());
     parameterServer.push(key, preValue);
   }
 
-  private void onPullMsg(final AvroParameterServerMsg msg) {
-    final PullMsg pullMsg = msg.getPullMsg();
+  private void onPullMsg(final PullMsg pullMsg) {
     final String srcId = pullMsg.getSrcId().toString();
     final K key = keyCodec.decode(pullMsg.getKey().array());
     final ValueEntry<V> value = parameterServer.pull(key);
