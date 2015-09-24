@@ -89,6 +89,8 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
           continue;
         }
 
+        valueWrapper.startWaiting();
+
         // the first one to wait will send the fetch message
         // others don't have to send the same message again
         if (isFirstToWait) {
@@ -99,6 +101,14 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
           valueWrapper.wait(TIMEOUT);
         } catch (final InterruptedException ex) {
           throw new RuntimeException("InterruptedException while waiting for reply for key " + key);
+        }
+
+        final V value = valueWrapper.getValue();
+        valueWrapper.stopWaiting();
+        if (value == null && valueWrapper.getWaiting() <= 0) {
+          LOG.log(Level.WARNING, "The reply didn't arrive for any waiting threads. Any late replies will get ignored.");
+          LOG.log(Level.FINE, "I was waiting on the key: " + key.toString());
+          keyToValueWrapper.remove(key, valueWrapper);
         }
 
         return valueWrapper.getValue();
@@ -119,7 +129,9 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
         valueWrapper.notifyAll();
       }
     } else {
-      LOG.log(Level.WARNING, "Someone else is trying to reply with the same key. My value will be lost.");
+      LOG.log(Level.WARNING, "Either someone else is trying to reply with the same key, or " +
+          "pull threads got tired of waiting and returned. My value will be lost anyway.");
+      LOG.log(Level.FINE, "My key was: " + key.toString());
       LOG.log(Level.FINE, "My value was: " + value.toString());
     }
   }
@@ -128,14 +140,32 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
    * Wrapper class needed to distinguish null from non-null objects without causing {@code NullPointerException}s.
    */
   private final class ValueWrapper {
+    private int waiting;
     private V value;
 
     public void setValue(final V value) {
+      this.waiting = 0;
       this.value = value;
     }
 
     public V getValue() {
       return this.value;
+    }
+
+    public void startWaiting() {
+      waiting++;
+    }
+
+    public void stopWaiting() {
+      if (waiting <= 0) {
+        LOG.log(Level.WARNING, "No one should be waiting on me.");
+      } else {
+        waiting--;
+      }
+    }
+
+    public int getWaiting() {
+      return this.waiting;
     }
   }
 }
