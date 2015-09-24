@@ -15,8 +15,8 @@
  */
 package edu.snu.reef.dolphin.ps.server;
 
-import edu.snu.reef.dolphin.ps.ParameterServerConfiguration.KeyCodecName;
-import edu.snu.reef.dolphin.ps.ParameterServerConfiguration.PreValueCodecName;
+import edu.snu.reef.dolphin.ps.ParameterServerParameters.KeyCodecName;
+import edu.snu.reef.dolphin.ps.ParameterServerParameters.PreValueCodecName;
 import edu.snu.reef.dolphin.ps.avro.AvroParameterServerMsg;
 import edu.snu.reef.dolphin.ps.avro.PullMsg;
 import edu.snu.reef.dolphin.ps.avro.PushMsg;

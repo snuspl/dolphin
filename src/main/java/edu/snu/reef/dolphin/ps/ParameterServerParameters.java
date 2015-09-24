@@ -19,25 +19,25 @@ import org.apache.reef.io.serialization.Codec;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
-public class ParameterServerConfiguration {
+public class ParameterServerParameters {
 
-  @NamedParameter(doc = "")
+  @NamedParameter(doc = "codec class for encoding and decoding key objects")
   public final class KeyCodecName implements Name<Codec> {
   }
 
-  @NamedParameter(doc = "")
+  @NamedParameter(doc = "codec class for encoding and decoding preValue objects")
   public final class PreValueCodecName implements Name<Codec> {
   }
 
-  @NamedParameter(doc = "")
+  @NamedParameter(doc = "codec class for encoding and decoding value objects")
   public final class ValueCodecName implements Name<Codec> {
   }
 
-  @NamedParameter(doc = "")
+  @NamedParameter(doc = "configuration of codec classes serialized as a string")
   public final class SerializedCodecConfiguration implements Name<String> {
   }
 
-  @NamedParameter(doc = "")
+  @NamedParameter(doc = "ParameterUpdater class configuration serialized as a string")
   public final class SerializedUpdaterConfiguration implements Name<String> {
   }
 }

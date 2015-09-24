@@ -15,7 +15,7 @@
  */
 package edu.snu.reef.dolphin.ps;
 
-import edu.snu.reef.dolphin.ps.ParameterServerConfiguration.*;
+import edu.snu.reef.dolphin.ps.ParameterServerParameters.*;
 import edu.snu.reef.dolphin.ps.driver.ParameterServerManager;
 import edu.snu.reef.dolphin.ps.server.ParameterUpdater;
 import org.apache.reef.io.serialization.Codec;

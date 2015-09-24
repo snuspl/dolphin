@@ -15,8 +15,8 @@
  */
 package edu.snu.reef.dolphin.ps.driver;
 
-import edu.snu.reef.dolphin.ps.ParameterServerConfiguration.SerializedCodecConfiguration;
-import edu.snu.reef.dolphin.ps.ParameterServerConfiguration.SerializedUpdaterConfiguration;
+import edu.snu.reef.dolphin.ps.ParameterServerParameters.SerializedCodecConfiguration;
+import edu.snu.reef.dolphin.ps.ParameterServerParameters.SerializedUpdaterConfiguration;
 import edu.snu.reef.dolphin.ps.ns.NetworkContextRegister;
 import edu.snu.reef.dolphin.ps.ns.PSMessageHandler;
 import edu.snu.reef.dolphin.ps.server.ServerSideMsgHandler;
