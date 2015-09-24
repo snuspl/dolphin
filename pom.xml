@@ -127,6 +127,8 @@
             <excludes>
               <!-- Markdown files such as README.md -->
               <exclude>**/*.md</exclude>
+              <!-- REEF files that the CI server generates -->
+              <exclude>reef/**</exclude>
               <!-- Git files -->
               <exclude>.gitattributes</exclude>
               <exclude>.gitignore</exclude>
