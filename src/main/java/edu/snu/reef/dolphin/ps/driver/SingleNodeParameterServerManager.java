@@ -21,6 +21,7 @@ import edu.snu.reef.dolphin.ps.server.SingleNodeParameterServer;
 import edu.snu.reef.dolphin.ps.worker.ParameterWorker;
 import edu.snu.reef.dolphin.ps.worker.SingleNodeParameterWorker;
 import org.apache.reef.annotations.audience.DriverSide;
+import org.apache.reef.driver.context.ServiceConfiguration;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
@@ -69,7 +70,10 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
    */
   @Override
   public Configuration getWorkerServiceConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder()
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(ServiceConfiguration.CONF
+            .set(ServiceConfiguration.SERVICES, SingleNodeParameterWorker.class)
+            .build())
         .bindImplementation(ParameterWorker.class, SingleNodeParameterWorker.class)
         .build();
   }
@@ -80,7 +84,10 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
    */
   @Override
   public Configuration getServerServiceConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder()
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(ServiceConfiguration.CONF
+            .set(ServiceConfiguration.SERVICES, SingleNodeParameterServer.class)
+            .build())
         .bindImplementation(ParameterServer.class, SingleNodeParameterServer.class)
         .build();
   }
