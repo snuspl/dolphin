@@ -20,7 +20,6 @@ import org.apache.reef.annotations.audience.EvaluatorSide;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
 
 /**
  * Parameter Server server that consists of exactly one node.
@@ -29,7 +28,6 @@ import java.util.logging.Logger;
  */
 @EvaluatorSide
 public final class SingleNodeParameterServer<K, P, V> implements ParameterServer<K, P, V> {
-  private static final Logger LOG = Logger.getLogger(SingleNodeParameterServer.class.getName());
 
   /**
    * A map holding keys and values sent from workers.
