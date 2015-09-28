@@ -63,10 +63,16 @@ public final class PSNetworkSetup {
   }
 
   public ConnectionFactory<AvroParameterServerMsg> getConnectionFactory() {
+    if (connectionFactory == null) {
+      throw new RuntimeException("A connection factory has not been registered yet.");
+    }
     return connectionFactory;
   }
 
   public Identifier getMyId() {
+    if (connectionFactory == null) {
+      throw new RuntimeException("A connection factory has not been registered yet.");
+    }
     return connectionFactory.getLocalEndPointId();
   }
 }
