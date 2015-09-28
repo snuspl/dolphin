@@ -140,11 +140,10 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
    * Wrapper class needed to distinguish null from non-null objects without causing {@code NullPointerException}s.
    */
   private final class ValueWrapper {
-    private int waiting;
+    private int waiting = 0;
     private V value;
 
     public void setValue(final V value) {
-      this.waiting = 0;
       this.value = value;
     }
 
