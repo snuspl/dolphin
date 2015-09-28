@@ -15,68 +15,15 @@
  */
 package edu.snu.reef.dolphin.ps.server;
 
-import edu.snu.reef.dolphin.ps.ParameterServerParameters.KeyCodecName;
-import edu.snu.reef.dolphin.ps.ParameterServerParameters.ValueCodecName;
-import edu.snu.reef.dolphin.ps.avro.AvroParameterServerMsg;
-import edu.snu.reef.dolphin.ps.avro.ReplyMsg;
-import edu.snu.reef.dolphin.ps.avro.Type;
-import edu.snu.reef.dolphin.ps.ns.PSNetworkSetup;
-import org.apache.reef.exception.evaluator.NetworkException;
-import org.apache.reef.io.network.Connection;
-import org.apache.reef.io.serialization.Codec;
-import org.apache.reef.tang.annotations.Parameter;
-import org.apache.reef.wake.IdentifierFactory;
-
-import javax.inject.Inject;
-import java.nio.ByteBuffer;
+import org.apache.reef.annotations.audience.EvaluatorSide;
+import org.apache.reef.tang.annotations.DefaultImplementation;
 
 /**
  * Server-side Parameter Server message sender.
  */
-public final class ServerSideMsgSender<K, V> {
-
-  /**
-   * Network Connection Service related setup required for a Parameter Server application.
-   */
-  private final PSNetworkSetup psNetworkSetup;
-
-  /**
-   * Required for using Network Connection Service API.
-   */
-  private final IdentifierFactory identifierFactory;
-
-  /**
-   * Codec for encoding PS keys.
-   */
-  private final Codec<K> keyCodec;
-
-  /**
-   * Codec for encoding PS values.
-   */
-  private final Codec<V> valueCodec;
-
-
-  @Inject
-  private ServerSideMsgSender(final PSNetworkSetup psNetworkSetup,
-                              final IdentifierFactory identifierFactory,
-                              @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
-                              @Parameter(ValueCodecName.class) final Codec<V> valueCodec) {
-    this.psNetworkSetup = psNetworkSetup;
-    this.identifierFactory = identifierFactory;
-    this.keyCodec = keyCodec;
-    this.valueCodec = valueCodec;
-  }
-
-  private void send(final String destId, final AvroParameterServerMsg msg) {
-    final Connection<AvroParameterServerMsg> conn = psNetworkSetup.getConnectionFactory()
-        .newConnection(identifierFactory.getNewInstance(destId));
-    try {
-      conn.open();
-      conn.write(msg);
-    } catch (final NetworkException ex) {
-      throw new RuntimeException("NetworkException during connection open/write", ex);
-    }
-  }
+@EvaluatorSide
+@DefaultImplementation(ServerSideMsgSenderImpl.class)
+public interface ServerSideMsgSender<K, V> {
 
   /**
    * Send a reply to another evaluator that requested a certain value.
@@ -85,26 +32,5 @@ public final class ServerSideMsgSender<K, V> {
    * @param key key object associated with the expected value
    * @param valueEntry {@link ValueEntry} object containing the requested value
    */
-  public void sendReplyMsg(final String destId, final K key, final ValueEntry<V> valueEntry) {
-    final ByteBuffer valueByteArray;
-
-    // The updater may be writing a new value right now, so we acquire a read lock before proceeding
-    valueEntry.getReadWriteLock().readLock().lock();
-    try {
-      valueByteArray = ByteBuffer.wrap(valueCodec.encode(valueEntry.getValue()));
-    } finally {
-      valueEntry.getReadWriteLock().readLock().unlock();
-    }
-
-    final ReplyMsg replyMsg = ReplyMsg.newBuilder()
-        .setKey(ByteBuffer.wrap(keyCodec.encode(key)))
-        .setValue(valueByteArray)
-        .build();
-
-    send(destId,
-        AvroParameterServerMsg.newBuilder()
-            .setType(Type.ReplyMsg)
-            .setReplyMsg(replyMsg)
-            .build());
-  }
+  void sendReplyMsg(final String destId, final K key, final ValueEntry<V> valueEntry);
 }
