@@ -99,9 +99,10 @@ public final class ParameterServerDriver {
    * @return context configuration for an Evaluator that uses a {@code ParameterWorker}
    */
   public Configuration getWorkerContextConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(
-        getCommonContextConfiguration(),
-        psManager.getWorkerContextConfiguration())
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(
+            getCommonContextConfiguration(),
+            psManager.getWorkerContextConfiguration())
         .bindNamedParameter(PSMessageHandler.class, WorkerSideMsgHandler.class)
         .build();
 
@@ -111,10 +112,11 @@ public final class ParameterServerDriver {
    * @return context configuration for an Evaluator that uses a {@code ParameterServer}
    */
   public Configuration getServerContextConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(
-        getCommonContextConfiguration(),
-        psManager.getServerContextConfiguration(),
-        updaterConfiguration)
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(
+            getCommonContextConfiguration(),
+            psManager.getServerContextConfiguration(),
+            updaterConfiguration)
         .bindNamedParameter(PSMessageHandler.class, ServerSideMsgHandler.class)
         .build();
   }
@@ -133,9 +135,10 @@ public final class ParameterServerDriver {
    * @return service configuration for an Evaluator that uses a {@code ParameterWorker}
    */
   public Configuration getWorkerServiceConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(
-        psManager.getWorkerServiceConfiguration(),
-        getNameResolverServiceConfiguration())
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(
+            psManager.getWorkerServiceConfiguration(),
+            getNameResolverServiceConfiguration())
         .bindImplementation(IdentifierFactory.class, StringIdentifierFactory.class)
         .build();
   }
@@ -144,9 +147,10 @@ public final class ParameterServerDriver {
    * @return service configuration for an Evaluator that uses a {@code ParameterServer}
    */
   public Configuration getServerServiceConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(
-        psManager.getServerServiceConfiguration(),
-        getNameResolverServiceConfiguration())
+    return Tang.Factory.getTang()
+        .newConfigurationBuilder(
+            psManager.getServerServiceConfiguration(),
+            getNameResolverServiceConfiguration())
         .bindImplementation(IdentifierFactory.class, StringIdentifierFactory.class)
         .build();
   }
