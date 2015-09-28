@@ -36,6 +36,7 @@
     <protobuf.version>2.5.0</protobuf.version>
     <nd4j.version>0.0.3.5.5.5</nd4j.version>
     <avro.version>1.7.7</avro.version>
+    <mockito.version>1.10.19</mockito.version>
   </properties>
 
   <dependencies>
@@ -113,6 +114,11 @@
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
       <version>${avro.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
     </dependency>
   </dependencies>
 
