@@ -31,6 +31,7 @@ import org.apache.reef.io.network.util.StringIdentifierFactory;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Parameter;
+import org.apache.reef.tang.exceptions.BindException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.apache.reef.wake.IdentifierFactory;
 import org.apache.reef.wake.remote.address.LocalAddressProvider;
@@ -77,7 +78,7 @@ public final class ParameterServerDriver {
                                 @Parameter(SerializedCodecConfiguration.class) final String serializedCodecConf,
                                 @Parameter(SerializedUpdaterConfiguration.class) final String serializedUpdaterConf,
                                 final NameServer nameServer,
-                                final LocalAddressProvider localAddressProvider) throws IOException {
+                                final LocalAddressProvider localAddressProvider) throws IOException, BindException {
     this.psManager = psManager;
     this.codecConfiguration = configurationSerializer.fromString(serializedCodecConf);
     this.updaterConfiguration = configurationSerializer.fromString(serializedUpdaterConf);

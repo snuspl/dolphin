@@ -79,7 +79,7 @@ public final class SingleNodeParameterWorkerTest {
    * creating multiple threads that try to pull values from the server using {@link SingleNodeParameterWorker}.
    */
   @Test
-  public void testMultithreadPull() throws InterruptedException {
+  public void testMultiThreadPull() throws InterruptedException {
     final int numPullThreads = 8;
     final CountDownLatch countDownLatch = new CountDownLatch(numPullThreads);
     final Runnable[] threads = new Runnable[numPullThreads];

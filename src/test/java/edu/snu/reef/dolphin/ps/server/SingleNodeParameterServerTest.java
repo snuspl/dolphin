@@ -66,7 +66,7 @@ public final class SingleNodeParameterServerTest {
    * running threads that push values to and pull values from the server, concurrently.
    */
   @Test
-  public void testMultithreadPushPull() throws InterruptedException {
+  public void testMultiThreadPushPull() throws InterruptedException {
     final int numPushThreads = 8;
     final int numPushes = 1000000;
     final int numPullThreads = 8;
