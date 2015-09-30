@@ -14,10 +14,9 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run_kmeans.sh -numCls 4 -convThr 0.01 -maxIter 20 -local true -split 4 -input ../src/test/resources/data/clustering -output output_kmeans -maxNumEvalLocal 5
+# bin/run_kmeans.sh -numCls 4 -convThr 0.01 -maxIter 20 -local true -split 4 -input dolphin-bsp/src/test/resources/data/clustering -output output_kmeans -maxNumEvalLocal 5
 
-# RUNTIME
-SELF_JAR=../target/dolphin-0.1-SNAPSHOT-shaded.jar
+SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 
 LOGGING_CONFIG='-Djava.util.logging.config.class=org.apache.reef.util.logging.Config'
 
@@ -25,8 +24,8 @@ CLASSPATH=$YARN_HOME/share/hadoop/common/*:$YARN_HOME/share/hadoop/common/lib/*:
 
 YARN_CONF_DIR=$YARN_HOME/etc/hadoop
 
-ALG=edu.snu.reef.dolphin.examples.ml.algorithms.clustering.kmeans.KMeansREEF
+ALG=edu.snu.dolphin.bsp.examples.ml.algorithms.clustering.kmeans.KMeansREEF
 
-CMD="java -cp $YARN_CONF_DIR:$SELF_JAR:$CLASSPATH $LOCAL_RUNTIME_TMP $LOGGING_CONFIG $ALG $*"
+CMD="java -cp $YARN_CONF_DIR:$SELF_JAR:$CLASSPATH $LOGGING_CONFIG $ALG $*"
 echo $CMD
-$CMD # 2> /dev/null
+$CMD

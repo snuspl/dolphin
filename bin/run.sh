@@ -14,10 +14,9 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run.sh -local true -split 4 -input ../src/test/resources/data/sample -output output_simple -maxNumEvalLocal 5
+# bin/run.sh -local true -split 4 -input dolphin-bsp/src/test/resources/data/sample -output output_simple -maxNumEvalLocal 5
 
-# RUNTIME
-SELF_JAR=../target/dolphin-0.1-SNAPSHOT-shaded.jar
+SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 
 LOGGING_CONFIG='-Djava.util.logging.config.class=org.apache.reef.util.logging.Config'
 
@@ -25,8 +24,8 @@ CLASSPATH=$YARN_HOME/share/hadoop/common/*:$YARN_HOME/share/hadoop/common/lib/*:
 
 YARN_CONF_DIR=$YARN_HOME/etc/hadoop
 
-ALG=edu.snu.reef.dolphin.examples.simple.SimpleREEF
+ALG=edu.snu.dolphin.bsp.examples.simple.SimpleREEF
 
-CMD="java -cp $YARN_CONF_DIR:$SELF_JAR:$CLASSPATH $LOCAL_RUNTIME_TMP $LOGGING_CONFIG $ALG $*"
+CMD="java -cp $YARN_CONF_DIR:$SELF_JAR:$CLASSPATH $LOGGING_CONFIG $ALG $*"
 echo $CMD
-$CMD # 2> /dev/null
+$CMD
