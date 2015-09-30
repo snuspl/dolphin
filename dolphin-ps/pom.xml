@@ -19,6 +19,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <artifactId>dolphin-ps</artifactId>
+  <name>Dolphin PS</name>
+  <packaging>jar</packaging>
+
   <parent>
     <groupId>edu.snu.dolphin</groupId>
     <artifactId>dolphin</artifactId>
@@ -26,10 +30,6 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>dolphin-ps</artifactId>
-  <name>Dolphin PS</name>
-  <version>0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
@@ -107,7 +107,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add-source</id>
