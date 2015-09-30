@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run_regression.sh -dim 3 -maxIter 20 -stepSize 0.001 -lambda 0.1 -local true -split 4 -input dolphin-bsp/src/test/resources/data/regression -output output_regression -maxNumEvalLocal 5
+# bin/run_regression.sh -dim 3 -maxIter 20 -stepSize 0.001 -lambda 0.1 -local true -split 4 -input dolphin-bsp/src/test/resources/data/regression -output output_regression -maxNumEvalLocal 5
 
 SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 

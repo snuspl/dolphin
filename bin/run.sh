@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run.sh -local true -split 4 -input dolphin-bsp/src/test/resources/data/sample -output output_simple -maxNumEvalLocal 5
+# bin/run.sh -local true -split 4 -input dolphin-bsp/src/test/resources/data/sample -output output_simple -maxNumEvalLocal 5
 
 SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 

@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run_em.sh -numCls 4 -convThr 0.01 -maxIter 20 -local true -split 4 -input dolphin-bsp/src/test/resources/data/clustering -output output_em -maxNumEvalLocal 5
+# bin/run_em.sh -numCls 4 -convThr 0.01 -maxIter 20 -local true -split 4 -input dolphin-bsp/src/test/resources/data/clustering -output output_em -maxNumEvalLocal 5
 
 SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 
