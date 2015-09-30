@@ -1,0 +1,80 @@
+/*
+ * Copyright (C) 2015 Seoul National University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.snu.dolphin.dnn.layerparam.initializer;
+
+import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
+import edu.snu.dolphin.dnn.layers.LayerParameter;
+import org.apache.reef.tang.annotations.Parameter;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+import javax.inject.Inject;
+
+/**
+ * Parameter Initializer of fully connected layer.
+ *
+ * initializes the weight matrix with pseudo random normal distributed value with mean 0 and given standard deviation.
+ * initializes the bias vector with the given value.
+ */
+public final class FullyConnectedLayerParameterInitializer implements LayerParameterInitializer {
+
+  private final int index;
+  private final int numInput;
+  private final int numOutput;
+  private final float initWeight;
+  private final float initBias;
+  private final long randomSeed;
+
+  @Inject
+  public FullyConnectedLayerParameterInitializer(
+      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
+      @Parameter(LayerConfigurationParameters.NumberOfInput.class) final int numInput,
+      @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
+      @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
+      @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
+      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias) {
+    this.index = index;
+    this.randomSeed = randomSeed;
+    this.numInput = numInput;
+    this.numOutput = numOutput;
+    this.initWeight = initWeight;
+    this.initBias = initBias;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public LayerParameter generateInitialParameter() {
+    final INDArray weight = Nd4j.randn(numInput, numOutput, randomSeed);
+    final INDArray bias = Nd4j.valueArrayOf(1, numOutput, initBias);
+
+    weight.muli(initWeight); // multiply by standard deviation.
+
+    // Mark arrays persist for the aggressive garbage collection strategy.
+    weight.data().persist();
+    bias.data().persist();
+
+    return LayerParameter.newBuilder()
+        .setWeightParam(weight)
+        .setBiasParam(bias)
+        .build();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int getIndex() {
+    return this.index;
+  }
+}

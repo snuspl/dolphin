@@ -19,11 +19,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>edu.snu.reef</groupId>
+  <groupId>edu.snu.dolphin</groupId>
   <artifactId>dolphin</artifactId>
   <name>Dolphin</name>
   <version>0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>dolphin-bsp</module>
+    <module>dolphin-dnn</module>
+    <module>dolphin-ps</module>
+  </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,92 +45,135 @@
     <mockito.version>1.10.19</mockito.version>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>reef-common</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>reef-io</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>reef-runtime-local</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>reef-runtime-yarn</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>reef-poison</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>tang</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.reef</groupId>
-      <artifactId>wake</artifactId>
-      <version>${reef.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- HADOOP -->
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- End of HADOOP -->
-    <dependency>
-      <groupId>org.apache.mahout</groupId>
-      <artifactId>mahout-math</artifactId>
-      <version>${mahout.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>${protobuf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.nd4j</groupId>
-      <artifactId>nd4j-java</artifactId>
-      <version>${nd4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
-      <version>${avro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-    </dependency>
-  </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>reef-common</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>reef-io</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>reef-runtime-local</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>reef-runtime-yarn</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>reef-poison</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>tang</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.reef</groupId>
+        <artifactId>wake</artifactId>
+        <version>${reef.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+      </dependency>
+      <!-- HADOOP -->
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <version>${hadoop.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <!-- End of HADOOP -->
+      <dependency>
+        <groupId>org.apache.mahout</groupId>
+        <artifactId>mahout-math</artifactId>
+        <version>${mahout.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>${protobuf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.nd4j</groupId>
+        <artifactId>nd4j-java</artifactId>
+        <version>${nd4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.7</source>
+            <target>1.7</target>
+            <showDeprecation>true</showDeprecation>
+            <encoding>${project.build.sourceEncoding}</encoding>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.3</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <outputFile>
+              ${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar
+            </outputFile>
+            <filters>
+              <filter>
+                <artifact>*:*</artifact>
+                <excludes>
+                  <exclude>META-INF/*</exclude>
+                  <exclude>LICENSE</exclude>
+                  <exclude>yarn-default.xml</exclude>
+                  <exclude>yarn-version-info.properties</exclude>
+                  <exclude>core-default.xml</exclude>
+                </excludes>
+              </filter>
+            </filters>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
@@ -176,7 +225,7 @@
             </dependency>
           </dependencies>
           <configuration>
-            <configLocation>src/main/resources/checkstyle.xml</configLocation>
+            <configLocation>checkstyle.xml</configLocation>
             <outputFile>${project.build.directory}/checkstyle-errors.xml</outputFile>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
           </configuration>
@@ -189,33 +238,6 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>schema</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
-              <outputDirectory>${project.basedir}/target/generated-sources/avro</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-          <showDeprecation>true</showDeprecation>
-          <encoding>${project.build.sourceEncoding}</encoding>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
@@ -239,79 +261,6 @@
             <goals>
               <goal>check</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <outputFile>
-            ${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar
-          </outputFile>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*</exclude>
-                <exclude>LICENSE</exclude>
-                <exclude>yarn-default.xml</exclude>
-                <exclude>yarn-version-info.properties</exclude>
-                <exclude>core-default.xml</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-sources</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <tasks>
-                <mkdir dir="target/generated-sources/proto"/>
-                <exec executable="protoc">
-                  <arg value="--proto_path=src/main/proto/"/>
-                  <arg value="--java_out=target/generated-sources/proto"/>
-                  <arg value="src/main/proto/neural_network.proto"/>
-                </exec>
-              </tasks>
-              <sourceRoot>${project.basedir}/target/generated-sources/proto</sourceRoot>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.basedir}/target/generated-sources/proto</source>
-                <source>${project.basedir}/target/generated-sources/avro/</source>
-              </sources>
-            </configuration>
           </execution>
         </executions>
       </plugin>
