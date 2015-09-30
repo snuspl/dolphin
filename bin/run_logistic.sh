@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# ./run_logistic.sh -dim 3 -maxIter 20 -stepSize 0.00001 -lambda 0.1 -local true -split 4 -input ../src/test/resources/data/classification -output output_logistic -maxNumEvalLocal 5
+# ./run_logistic.sh -dim 3 -maxIter 20 -stepSize 0.00001 -lambda 0.1 -local true -split 4 -input dolphin-bsp/src/test/resources/data/classification -output output_logistic -maxNumEvalLocal 5
 
 SELF_JAR=`echo dolphin-bsp/target/dolphin-bsp-*-shaded.jar`
 
