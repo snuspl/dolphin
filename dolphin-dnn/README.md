@@ -1,114 +1,121 @@
 # Dolphin - Deep Neural Network
 
-Dolphin’s deep neural network is a deep learning framework on the top of [Apache REEF](https://reef.incubator.apache.org). It supports a BSP-style deep learning and an asynchronous deep learning by communicating with a parameter server. It is designed for training big deep learning models over large datasets by supporting both data partitioning and model partitioning inspired by Google's [DistBelief](http://papers.nips.cc/paper/4687-large-scale-distributed-deep-networks.pdf). Model partitioning is on-going work.
+`dolphin-dnn` is a deep learning framework built on [Apache REEF](https://reef.incubator.apache.org). It is capable of both BSP-style synchronous deep learning and parameter server-backed asynchronous deep learning. `dolphin-dnn` is designed for training large neural network models on big data by supporting data partitioning as well as model partitioning, inspired by Google's [DistBelief](http://papers.nips.cc/paper/4687-large-scale-distributed-deep-networks.pdf), although the current codebase only contains methods for data partitioning; model partitioning is on-going work.
 
-* Data partitioning: All input data are distributed to evaluators each of which has a replica of a whole neural network model and processes training against a part of data.
+* Data partitioning: Input data are distributed across evaluators, each of which has a replica of the whole neural network model. Every partition independently trains its model on its own data, and the updated models are shared between partitions periodically. The model sharing can be done either synchronously or asynchronously, depending on the implementation.
 
-![Data Partitioning](http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Data-Partitioning.png)
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Data-Partitioning.png" alt="Data Partitioning" width="431px" height="273px"/></p>
 
-* Model partitioning: Each evaluator processes training of a part of a whole neural network model.
+* Model partitioning: Each partition works on a certain portion of the neural network model. Partitions of a model need to process the same training data at a given time, whereas in data partitioning model replicas make progress without regard to each other.
 
-![Model Partitioning](http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Model-Partitioning.png)
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Model-Partitioning.png" alt="Model Partitioning" width="486px" height="281px"/></p>
 
-Currently, Dolphin's deep neural network only provides fully connected layer. More types of layers such as convolutional layer and subsampling layer will be supported.
+Currently `dolphin-dnn` only supports fully connected layers, but other types of layers such as convolutional layers and subsampling layers will be supported in the future.
 
 ## Architecture
 
-![Dolphin DNN Architecture](http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/DNN-Architecture.png)
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/DNN-Architecture.png" alt="Dolphin DNN Architecture" width="367px" height="207px"/></p>
 
-Dolphin's deep neural network is made up of two components; a neural network model and a parameter provider. A neural network model consists of layers that are defined by a [protocol buffer definition file](#layers). A parameter provider is an instance that receives parameter gradients from a neural network model and sends these gradients to a parameter server that generates updated parameters using received gradients.
+A typical REEF evaluator in `dolphin-dnn` is made up of two components; a neural network model and a parameter provider. A neural network model consists of layers that are defined by a [protocol buffer definition file](#layers). A parameter provider is an instance that receives parameter gradients from the neural network model and sends these gradients to a parameter server, which in turn generates new parameters using gradients.
 
-The training procedure of a neural network model is following. First, each evaluator builds its neural network model by a neural network configuration  that is provided by REEF driver. After being built, the neural network model replica computes activation values for each layer with given training input data. Using these activation values, it computes parameter gradients for each layer by backpropagation and pushes these gradients to a parameter provider. The parameter provider sends gradients to a parameter server. The parameter server updates parameters of the model using gradients received from neural network replicas. Each neural network replica requests and receives updated parameters from the parameter server, and replaces their parameters with updated ones periodically.
+The training procedure of a neural network model is as follows. First, each REEF evaluator builds its neural network model from a configuration that is provided by the REEF driver. This neural network model replica then computes activation values for each layer with given training input data. Using these activation values, the model computes parameter gradients for each layer via backpropagation and hands these gradients to the parameter provider. The parameter provider acts as a communication media between the model and the server, by interacting with the server to update model parameters and provide new parameters for the local model. The implementation of a parameter provider and server may differ per design (see 'Parameter Provider' section below). After receiving the new parameters, each model replica repeats the above steps with the update parameters for many epochs.
 
 ## Input file format
-Dolphin's deep neural network can process a Numpy compatible plain text file which is stored in the following format. 
+`dolphin-dnn` can process Numpy-compatible plain text input files which are stored in the following format.
 
-![Input File Format](http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Input-Data-Format.png)
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Input-Data-Format.png" alt="Input File Format" width="500px" height="162px"/></p>
 
-Each line represents a vector whose elements are separated using a delimiter specified by a command line parameter [`delim`](#parameter-delim). This vector consists of a serialized input data and its metadata. We assume that each element can be converted to a floating number.
+Each line represents a vector whose elements are separated using a delimiter, specified via the command line parameter [`delim`](#parameter-delim). Vectors should consist of serialized input data and other metadata. We assume that each element can be converted to a floating number `float`.
 
-* *Serialized input data*: an input data that is serialized as a vector. The shape of an input data can be specified in a [protocol buffer definition file](#configuration-input_shape).
-* *Output*: an expected output for an input data.
-* *Validation flag*: a flag that indicates whether an input data is used for validation. `1.0` if a data is used for validating a model. `0.0` if a data is used for training a model.
+* *Serialized input data*: an input data object that is serialized as a vector. The shape of input data can be specified in a separate [protocol buffer definition file](#configuration-input_shape).
+* *Output*: the expected output for a given input data object.
+* *Validation flag*: a flag that indicates whether an input data is used for validation: `1.0` for validating, and `0.0` for training.
 
 ## Configuration
-To create a neural network model, you need to define the architecture of a neural network model in a protocol buffer definition file.
-Now, only fully connected layer is supported. 
+To create a neural network model, you must define the architecture of your neural network model in a protocol buffer definition file. Only fully connected layers are supported, for now.
 
-### Common
-* Required
-	* `batch_size`: the number of training inputs that is used for each parameters update.
-	* `stepsize`: a step size (learning rate) for stochastic gradient descent.
-	* <a name=configuration-input_shape>`input_shape`</a>: the shape of input data.
+### Common Fields
+* `batch_size`: the number of training inputs used per parameter update.
+* `stepsize`: step size (learning rate) for stochastic gradient descent.
+* <a name=configuration-input_shape>`input_shape`</a>: the shape of input data.
 
 ### Parameter Provider
-Parameter provider is an instance that receives parameter gradients for each training input from a neural network model and provides the model with updated parameters (weights and biases).
+The parameter provider is an instance that receives parameter gradients for each training input from a neural network model and provides the model with updated parameters (weights and biases). You must select the type of parameter provider you want to use by specifying the field `parameter_provider`.
 
-### Local Parameter Provider
-A local parameter provider does not communicate with a parameter server. Instead, it computes updated parameters using gradients received from a neural network model by itself and provides updated parameters on a request of the model.
+##### Local Parameter Provider
+A local parameter provider does not communicate with a separate parameter server. Instead, it locally updates parameters using gradients received from a neural network model. This provider is used mainly for testing the correctness of a network.
+```
+parameter_provider {
+  type: "local"
+}
+```
 
-* Parameter provider type: `Local`
+##### Group Communication Parameter Provider
+Group communication providers are used for BSP-style network training. The group communication provider communicates with a group communication parameter server using [Apache REEF](https://reef.incubator.apache.org)'s Group Communication Service. The server aggregates parameter gradients received from providers using the MPI Reduce operation. After updating parameters, the server broadcasts the updated parameters back to all providers. All operations are done synchronously, hence the name group communication.
 
-### Group Communication Parameter Provider
-A group communication provider is used for a BSP-style deep learning. The group communication provider communicates with a group communication parameter server using [Apache REEF](https://reef.incubator.apache.org)'s Group Communication Service. The group communication parameter server aggregates parameter gradients received from each neural network replica by reduce operation. It updates parameters of a model using gradients and broadcasts updated parameters to all neural network replicas.
+```
+parameter_provider {
+  type: "groupcomm"
+}
+```
 
-* Parameter provider type: `GroupComm`
+##### Parameter Server Parameter Provider
+Parameter server parameter providers are used for asynchronous training. This provider is used together with Dolphin's parameter server module `dolphin-ps`. Parameter server providers can send parameter **push** or **pull** requests to the server. The server updates parameters of a model when gradients are **push**ed, and provides a model replica with the latest parameters when it receives a **pull** request. After replacing its parameters with the updated ones, each model replica proceeds with its next input data without waiting for other replicas to finish their updates, in contrast to the group communication parameter provider where all providers start with the same model weights. Thus, there is some inconsistency between replicas; the parameters used for training can be different from each other.
 
-### Parameter Server Parameter Provider
-A parameter server parameter provider is used for an asynchronous deep learning. The parameter server parameter provider sends parameter gradients that its model replica computes to Dolphin's parameter server. Dolphin's parameter server updates parameters of a model by a specified batch size and provides a replica with latest updated parameters when it receives a request for updated parameters. In contrast to a group communication parameter provider, after replacing its parameters with the updated one, each replica proceeds training for next input data without waiting for other replicas updates. Thus, there is inconsistency that parameters used for training of a replica can be different from each other.
 
-* Parameter provider type: `ParameterServer`
+```
+parameter_provider {
+  type: "paramserver"
+}
+```
 
 ### Layers
 
-#### Fully Connected Layer
+##### Fully Connected Layer
 * Layer type: `FullyConnected`
-* Parameters(`FullyConnectedLayerConfiguration fully_connected_param`)
-	* Required
-		* `init_weight`: a standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
-		* `init_bias`: a constant value with which the biases in this layer are initialized.
-		* `activation_function`: an activation function to produce a output value for this layer.
+* Parameters (`FullyConnectedLayerConfiguration fully_connected_param`)
+	* `init_weight`: the standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
+	* `init_bias`: constant value with which the biases of this layer are initialized.
+	* `activation_function`: the activation function to produce a output value for this layer.
 
 **More types of layers such as convolutional layer and subsampling layer will be supported.**
 
-#### Activation function
+##### Activation function
 The following functions are supported.
 
 * Sigmoid: `sigmoid`
 * ReLU: `relu`
 * TanhH: `tanh`
-* Power: `pow` (Now, this produces squared value.)
+* Power: `pow` (squared value)
 * Absolute: `abs`
 * Softmax: `softmax`
 
 ## How to run
-The script for running a neural network model is located at `bin/run_neuralnetwork.sh`. `test/resources/data/neuralnet` is a sample of [MNIST](http://yann.lecun.com/exdb/mnist) dataset composed of 1,000 training images and 100 test images. `test/resources/configuration/neuralnet` is an example of a protocol buffer definition file and defines a neural network model that has two fully connected layers with a local parameter provider.
+A script for training a neural network model is included with the source code, in `bin/run_neuralnetwork.sh`. `test/resources/data/neuralnet` is a sample subset of the [MNIST](http://yann.lecun.com/exdb/mnist) dataset, composed of 1,000 training images and 100 test images. `test/resources/configuration/neuralnet` is an example of a protocol buffer definition file; it defines a neural network model that uses two fully connected layers and a local parameter provider.
 
-You can run training of the model example with the sample of MNIST dataset on local runtime environment by
+You can run a network of the given example on REEF local runtime environment by
 
 ```bash
 cd $DOLPHIN_HOME
-bin/run_neuralnet.sh -local true -maxIter 100 -conf src/test/resources/configuration/neuralnet -input src/test/resources/data/neuralnet -timeout 800000
+bin/run_neuralnet.sh -local true -maxIter 100 -conf dolphin-dnn/src/test/resources/configuration/neuralnet -input dolphin-dnn/src/test/resources/data/neuralnet -timeout 800000
 ```
 
-You can specify your neural network training environment with the following command line parameters.
-
-Command line parameters
+#### Command line parameters
 
 * Required
-	* `input`: the path of an input data file.
-	* `conf`: the path of a protocol buffer definition file.
+	* `input`: path of the input data file to use.
+	* `conf`: path of the protocol buffer definition file to use.
 * Optional
-	* `local`[default=false]: the flag that indicates a local runtime environment. If `false`, neural network will run on YARN environment.
-	* `maxIter`[default=20]: the maximum number of allowed iterations before a neural network training stops.
+	* `local`[default=false]: a boolean value that indicates whether to use REEF local runtime environment or not. If `false`, the neural network will run on YARN environment.
+	* `maxIter`[default=20]: the maximum number of allowed iterations before the neural network training stops.
 	* <a name="parameter-delim">`delim`</a>\[default=,\]: the delimiter that is used for separating elements of input data.
-	* `timeout`[default=100000]: an allowed time until neural network training ends. (unit: millisecond)
+	* `timeout`[default=100000]: allowed time until neural network training ends. (unit: milliseconds)
 
 ## Example
 ### A example of protocol buffer definition file for MNIST
-The following is the example of a protocol buffer definition file for MNIST `test/resources/configuration/neuralnet`. 
+The following is the example of a protocol buffer definition file for the MNIST dataset. It can be found at `dolphin-dnn/src/test/resources/configuration/neuralnet`.
 
-```protobuf
+```
 batch_size: 10
 stepsize: 1e-3
 input_shape {
@@ -139,12 +146,12 @@ layer {
   }
 }
 ```
-A neural network model comprises two fully connected layers with 50 and 10 features respectively with a local parameter provider. `input_shape` specifies the shape of input data. For MNIST dataset, each data is 28 * 28 images. So, `input_shape` is configured as following.
+This model comprises two fully connected layers with 50 and 10 features, respectively, and a local parameter provider. `input_shape` specifies the shape of input data. For the MNIST dataset, each data object is a 28 * 28 image and thus `input_shape` is configured as the following.
 
-```protobuf
+```
 input_shape {
   dim: 28
   dim: 28
 }
 ```
-Parameters are updated with gradients when every 10 inputs are processed since `batch_size` is specified as 10 and 1e-3 is used as learning rate for stochastic gradient descent algorithm.
+Parameters are updated when every 10 inputs are processed since `batch_size` is specified as 10, and 1e-3 is used as the learning rate for the stochastic gradient descent algorithm.
