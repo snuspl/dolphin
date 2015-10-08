@@ -19,11 +19,10 @@ Dolphin is a machine learning platform built on top of [Apache REEF](http://reef
     cd dolphin
     mvn clean install
     ```
-    
+
 
 3. Run Dolphin: check the READMEs in the submodules for more details.
 
 ### Dolphin Mailing List
 Bug reports and feature requests are welcome, as well as even simple questions!  
 Contact us and share your thoughts by subscribing to dolphin-discussion@googlegroups.com.
-
