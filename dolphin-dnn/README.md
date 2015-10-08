@@ -4,17 +4,17 @@
 
 * Data partitioning: Input data are distributed across evaluators, each of which has a replica of the whole neural network model. Every replica independently trains its model on its own data, and the updated models are shared between replicas periodically. The model sharing can be done either synchronously or asynchronously, depending on the implementation.
 
-<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Data-Partitioning.png" alt="Data Partitioning" width="862px" height="546px"/></p>
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Data-Partitioning.png" alt="Data Partitioning" width="646px" height="410px"/></p>
 
 * Model partitioning: Each partition works on a certain portion of the neural network model. Partitions of a model need to process the same training data at a given time, whereas in data partitioning model replicas make progress without regard to each other.
 
-<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Model-Partitioning.png" alt="Model Partitioning" width="972px" height="562px"/></p>
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Model-Partitioning.png" alt="Model Partitioning" width="646px" height="374px"/></p>
 
 Currently `dolphin-dnn` only supports fully connected layers, but other types of layers such as convolutional layers and subsampling layers will be supported in the future.
 
 ## Architecture
 
-<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/DNN-Architecture.png" alt="Dolphin DNN Architecture" width="734px" height="414px"/></p>
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/DNN-Architecture.png" alt="Dolphin DNN Architecture" width="646px" height="364px"/></p>
 
 A typical REEF evaluator in `dolphin-dnn` is made up of two components; a neural network model and a parameter provider. A neural network model consists of layers that are defined by a [protocol buffer definition file](#layers). A parameter provider is an instance that receives parameter gradients from the neural network model and sends these gradients to a parameter server, which in turn generates new parameters using gradients.
 
@@ -23,7 +23,7 @@ The training procedure of a neural network model is as follows. First, each REEF
 ## Input file format
 `dolphin-dnn` can process Numpy-compatible plain text input files which are stored in the following format.
 
-<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Input-Data-Format.png" alt="Input File Format" width="1000px" height="324px"/></p>
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Input-Data-Format.png" alt="Input File Format" width="625px" height="202px"/></p>
 
 Each line represents a vector whose elements are separated using a delimiter, specified via the command line parameter [`delim`](#parameter-delim). Vectors should consist of serialized input data and other metadata. We assume that each element can be converted to a floating number `float`.
 
@@ -60,7 +60,7 @@ parameter_provider {
 ```
 
 ##### Parameter Server Parameter Provider
-Parameter server parameter providers are used for asynchronous training. This provider is used together with Dolphin's parameter server module [`dolphin-ps`](../dolphin-dnn/README.md). Parameter server providers can send parameter **push** or **pull** requests to the server. The server updates parameters of a model when gradients are **push**ed, and provides a model replica with the latest parameters when it receives a **pull** request. After replacing its parameters with the updated ones, each model replica proceeds with its next input data without waiting for other replicas to finish their updates, in contrast to the group communication parameter provider where all providers start with the same model weights. Thus, there is some inconsistency between replicas; the parameters used for training can be different from each other.
+Parameter server parameter providers are used for asynchronous training. This provider is used together with Dolphin's parameter server module [`dolphin-ps`](../dolphin-ps/README.md). Parameter server providers can send parameter **push** or **pull** requests to the server. The server updates parameters of a model when gradients are **push**ed, and provides a model replica with the latest parameters when it receives a **pull** request. After replacing its parameters with the updated ones, each model replica proceeds with its next input data without waiting for other replicas to finish their updates, in contrast to the group communication parameter provider where all providers start with the same model weights. Thus, there is some inconsistency between replicas; the parameters used for training can be different from each other.
 
 
 ```

@@ -5,7 +5,7 @@ The idea of using a separate server for aggregating and storing parameters for a
 
 ### Architecture
 
-<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Parameter-Server.png" alt="Parameter Server Architecture" width="968px" height="496px"/></p>
+<p align="center"><img src="http://cmslab.snu.ac.kr/home/wp-content/uploads/2015/09/Parameter-Server.png" alt="Parameter Server Architecture" width="646px" height="332px"/></p>
 
 Dolphin's parameter server module is made up of two components: the server and the worker. Both sides have a message sender and a message handler (receiver) to communicate with each other using [Apache REEF](http://reef.incubator.apache.org/)'s Network Connection Service. The worker provides methods for applications to **push** and **pull** parameter values to/from servers, while the server receives such values and stores them in a key-value store. Before storing values, the server transforms them into a different format using a parameter updater in case the application requires a pre-processing step. [Adam](https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-chilimbi.pdf), for instance, makes servers compute weight updates from activation and error gradient vectors rather than directly sending the updates from workers.
 
