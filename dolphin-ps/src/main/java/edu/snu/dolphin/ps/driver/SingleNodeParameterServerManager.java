@@ -65,7 +65,7 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
 
   /**
    * Returns server-side service configuration.
-   * Sets {@link SingleNodeParameterServer} as the {@link ParameterWorker} class.
+   * Sets {@link SingleNodeParameterServer} as the {@link ParameterServer} class.
    */
   @Override
   public Configuration getServerServiceConfiguration() {
