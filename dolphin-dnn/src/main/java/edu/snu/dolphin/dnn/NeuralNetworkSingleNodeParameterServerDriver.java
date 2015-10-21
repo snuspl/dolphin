@@ -90,16 +90,16 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
       // We add a parameter server context and service to it.
       if (dataLoadingService.isComputeContext(activeContext)) {
         final Configuration contextConf = Configurations.merge(
-            Tang.Factory.getTang().newConfigurationBuilder()
-                .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
-                .build(),
             ContextConfiguration.CONF
                 .set(ContextConfiguration.IDENTIFIER, "ParameterServerContext")
                 .build(),
             psDriver.getServerContextConfiguration());
         final Configuration serviceConf = Configurations.merge(
             psDriver.getServerServiceConfiguration(),
-            neuralNetworkESParameters.getServiceAndNeuralNetworkConfiguration());
+            neuralNetworkESParameters.getServiceAndNeuralNetworkConfiguration(),
+            Tang.Factory.getTang().newConfigurationBuilder()
+                .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
+                .build());
 
         LOG.log(Level.FINEST, "Submit parameter server context {0} to {1}", new Object[]{activeContext, contextId});
         activeContext.submitContextAndService(contextConf, serviceConf);

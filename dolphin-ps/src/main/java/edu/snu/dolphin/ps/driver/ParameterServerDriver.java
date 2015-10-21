@@ -90,7 +90,7 @@ public final class ParameterServerDriver {
    * @return context configuration that both worker and server Evaluators use
    */
   private Configuration getCommonContextConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(codecConfiguration)
+    return Tang.Factory.getTang().newConfigurationBuilder()
         .bindSetEntry(ContextStartHandlers.class, NetworkContextRegister.RegisterContextHandler.class)
         .bindSetEntry(ContextStopHandlers.class, NetworkContextRegister.UnregisterContextHandler.class)
         .build();
@@ -100,12 +100,7 @@ public final class ParameterServerDriver {
    * @return context configuration for an Evaluator that uses a {@code ParameterWorker}
    */
   public Configuration getWorkerContextConfiguration() {
-    return Tang.Factory.getTang()
-        .newConfigurationBuilder(
-            getCommonContextConfiguration(),
-            psManager.getWorkerContextConfiguration())
-        .bindNamedParameter(PSMessageHandler.class, WorkerSideMsgHandler.class)
-        .build();
+    return getCommonContextConfiguration();
 
   }
 
@@ -113,13 +108,7 @@ public final class ParameterServerDriver {
    * @return context configuration for an Evaluator that uses a {@code ParameterServer}
    */
   public Configuration getServerContextConfiguration() {
-    return Tang.Factory.getTang()
-        .newConfigurationBuilder(
-            getCommonContextConfiguration(),
-            psManager.getServerContextConfiguration(),
-            updaterConfiguration)
-        .bindNamedParameter(PSMessageHandler.class, ServerSideMsgHandler.class)
-        .build();
+    return getCommonContextConfiguration();
   }
 
   /**
@@ -138,9 +127,11 @@ public final class ParameterServerDriver {
   public Configuration getWorkerServiceConfiguration() {
     return Tang.Factory.getTang()
         .newConfigurationBuilder(
+            codecConfiguration,
             psManager.getWorkerServiceConfiguration(),
             getNameResolverServiceConfiguration())
         .bindImplementation(IdentifierFactory.class, StringIdentifierFactory.class)
+        .bindNamedParameter(PSMessageHandler.class, WorkerSideMsgHandler.class)
         .build();
   }
 
@@ -150,9 +141,12 @@ public final class ParameterServerDriver {
   public Configuration getServerServiceConfiguration() {
     return Tang.Factory.getTang()
         .newConfigurationBuilder(
+            codecConfiguration,
             psManager.getServerServiceConfiguration(),
+            updaterConfiguration,
             getNameResolverServiceConfiguration())
         .bindImplementation(IdentifierFactory.class, StringIdentifierFactory.class)
+        .bindNamedParameter(PSMessageHandler.class, ServerSideMsgHandler.class)
         .build();
   }
 }
