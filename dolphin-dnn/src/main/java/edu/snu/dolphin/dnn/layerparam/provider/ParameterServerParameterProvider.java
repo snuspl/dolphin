@@ -69,6 +69,11 @@ public final class ParameterServerParameterProvider implements ParameterProvider
     int retryCount = 0;
     while (retryCount < RETRY_COUNT) {
       final NeuralNetParamServerData neuralNetParamServerData = worker.pull(NeuralNetworkParameterUpdater.WHOLE_MODEL);
+      if (neuralNetParamServerData == null) {
+        retryCount++;
+        continue;
+      }
+
       if (neuralNetParamServerData.isValidationStatsPair()) {
         throw new RuntimeException("Requested NeuralNetworkParameterUpdater.WHOLE_MODEL but received validation stats");
       }
@@ -79,12 +84,7 @@ public final class ParameterServerParameterProvider implements ParameterProvider
             retList.size()));
       }
 
-      final LayerParameter[] retVal = retList.get(0);
-      if (retVal != null) {
-        return retVal;
-      }
-
-      retryCount++;
+      return retList.get(0);
     }
 
     throw new RuntimeException("Retried " + RETRY_COUNT + " times but failed to pull model from server.");
