@@ -37,12 +37,12 @@ public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParam
     try (final ByteArrayOutputStream bstream = new ByteArrayOutputStream();
          final DataOutputStream dstream = new DataOutputStream(bstream)) {
 
-      if (neuralNetParamServerData.getIsValidationStatsPair()) {
+      if (neuralNetParamServerData.isValidationStatsPair()) {
         dstream.writeBoolean(true);
-        validationStatsPairCodec.encodeToStream(neuralNetParamServerData.getValidationStatsPair().get(), dstream);
+        validationStatsPairCodec.encodeToStream(neuralNetParamServerData.getValidationStatsPair(), dstream);
       } else {
         dstream.writeBoolean(false);
-        layerParameterArrayListCodec.encodeToStream(neuralNetParamServerData.getLayerParametersList().get(), dstream);
+        layerParameterArrayListCodec.encodeToStream(neuralNetParamServerData.getLayerParametersList(), dstream);
       }
       return bstream.toByteArray();
 

@@ -69,11 +69,11 @@ public final class ParameterServerParameterProvider implements ParameterProvider
     int retryCount = 0;
     while (retryCount < RETRY_COUNT) {
       final NeuralNetParamServerData neuralNetParamServerData = worker.pull(NeuralNetworkParameterUpdater.WHOLE_MODEL);
-      if (neuralNetParamServerData.getIsValidationStatsPair()) {
+      if (neuralNetParamServerData.isValidationStatsPair()) {
         throw new RuntimeException("Requested NeuralNetworkParameterUpdater.WHOLE_MODEL but received validation stats");
       }
 
-      final List<LayerParameter[]> retList = neuralNetParamServerData.getLayerParametersList().get();
+      final List<LayerParameter[]> retList = neuralNetParamServerData.getLayerParametersList();
       if (retList.size() != 1) {
         throw new RuntimeException(String.format("Expected one array of LayerParmeters but received %d arrays",
             retList.size()));

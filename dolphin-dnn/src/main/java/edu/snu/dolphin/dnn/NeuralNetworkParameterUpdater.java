@@ -81,20 +81,13 @@ public final class NeuralNetworkParameterUpdater
   @Override
   public NeuralNetParamServerData process(final String key,
                                           final NeuralNetParamServerData neuralNetParamServerData) {
-    if (neuralNetParamServerData.getIsValidationStatsPair()) {
-      return new NeuralNetParamServerData(processValidationStats(
-          neuralNetParamServerData.getValidationStatsPair().get()));
+    if (neuralNetParamServerData.isValidationStatsPair()) {
+      return new NeuralNetParamServerData(neuralNetParamServerData.getValidationStatsPair());
     } else {
       return new NeuralNetParamServerData(processLayerParametersList(key,
-          neuralNetParamServerData.getLayerParametersList().get()));
+          neuralNetParamServerData.getLayerParametersList()));
     }
   }
-
-  private Pair<ValidationStats, ValidationStats> processValidationStats(
-      final Pair<ValidationStats, ValidationStats> validationStatsPair) {
-    return validationStatsPair;
-  }
-
 
   /**
    * Aggregate parameter gradients by computing the average of all gradients, per layer.
@@ -135,19 +128,19 @@ public final class NeuralNetworkParameterUpdater
    */
   @Override
   public NeuralNetParamServerData update(final NeuralNetParamServerData oldData, final NeuralNetParamServerData delta) {
-    if (oldData.getIsValidationStatsPair()) {
-      if (!delta.getIsValidationStatsPair()) {
+    if (oldData.isValidationStatsPair()) {
+      if (!delta.isValidationStatsPair()) {
         throw new RuntimeException("NeuralNetParamServerData oldData and delta have the same key but different format");
       }
       return new NeuralNetParamServerData(updateValidationStatsPair(
-          oldData.getValidationStatsPair().get(), delta.getValidationStatsPair().get()));
+          oldData.getValidationStatsPair(), delta.getValidationStatsPair()));
 
     } else {
-      if (delta.getIsValidationStatsPair()) {
+      if (delta.isValidationStatsPair()) {
         throw new RuntimeException("NeuralNetParamServerData oldData and delta have the same key but different format");
       }
       return new NeuralNetParamServerData(updateLayerParameter(
-          oldData.getLayerParametersList().get().get(0), delta.getLayerParametersList().get().get(0)));
+          oldData.getLayerParametersList().get(0), delta.getLayerParametersList().get(0)));
     }
   }
 

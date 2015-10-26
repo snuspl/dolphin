@@ -23,31 +23,28 @@ import org.apache.reef.util.Optional;
 import java.util.List;
 
 public final class NeuralNetParamServerData {
-  private final boolean isValidationStatsPair;
   private final Optional<Pair<ValidationStats, ValidationStats>> validationStatsPair;
   private final Optional<List<LayerParameter[]>> layerParametersList;
 
   public NeuralNetParamServerData(final Pair<ValidationStats, ValidationStats> validationStatsPair) {
-    this.isValidationStatsPair = true;
     this.validationStatsPair = Optional.of(validationStatsPair);
     this.layerParametersList = Optional.empty();
   }
 
   public NeuralNetParamServerData(final List<LayerParameter[]> layerParametersList) {
-    this.isValidationStatsPair = false;
     this.validationStatsPair = Optional.empty();
     this.layerParametersList = Optional.of(layerParametersList);
   }
 
-  public boolean getIsValidationStatsPair() {
-    return this.isValidationStatsPair;
+  public boolean isValidationStatsPair() {
+    return this.validationStatsPair.isPresent();
   }
 
-  public Optional<Pair<ValidationStats, ValidationStats>> getValidationStatsPair() {
-    return this.validationStatsPair;
+  public Pair<ValidationStats, ValidationStats> getValidationStatsPair() {
+    return this.validationStatsPair.get();
   }
 
-  public Optional<List<LayerParameter[]>> getLayerParametersList() {
-    return this.layerParametersList;
+  public List<LayerParameter[]> getLayerParametersList() {
+    return this.layerParametersList.get();
   }
 }
