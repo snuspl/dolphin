@@ -130,7 +130,7 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
         activeContext.submitTask(Configurations.merge(
             TaskConfiguration.CONF
                 .set(TaskConfiguration.IDENTIFIER, taskId)
-                .set(TaskConfiguration.TASK, NeuralNetworkParameterServerTask.class)
+                .set(TaskConfiguration.TASK, ParameterServerNeuralNetworkTask.class)
                 .build(),
             neuralNetworkESParameters.getTaskConfiguration()));
 

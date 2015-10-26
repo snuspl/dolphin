@@ -39,8 +39,8 @@ import static edu.snu.dolphin.dnn.NeuralNetworkTask.*;
  * Assumes the input file can be parsed by NeuralNetworkDataParser.
  */
 @TaskSide
-public final class NeuralNetworkParameterServerTask implements Task {
-  private static final Logger LOG = Logger.getLogger(NeuralNetworkParameterServerTask.class.getName());
+public final class ParameterServerNeuralNetworkTask implements Task {
+  private static final Logger LOG = Logger.getLogger(ParameterServerNeuralNetworkTask.class.getName());
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
@@ -50,7 +50,7 @@ public final class NeuralNetworkParameterServerTask implements Task {
   private final ParameterWorker<String, NeuralNetParamServerData, ?> worker;
 
   @Inject
-  NeuralNetworkParameterServerTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
+  ParameterServerNeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
                                    final NeuralNetwork neuralNetwork,
                                    @Parameter(MaxIterations.class) final int maxIterations,
                                    final ParameterWorker<String, NeuralNetParamServerData, ?> worker) {
