@@ -18,7 +18,6 @@ package edu.snu.dolphin.dnn;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
-import edu.snu.dolphin.dnn.data.NeuralNetParamWorkerData;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.ValidationStats;
@@ -36,13 +35,14 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class NeuralNetworkParameterUpdater
-    implements ParameterUpdater<String, NeuralNetParamWorkerData, NeuralNetParamServerData> {
+    implements ParameterUpdater<String, NeuralNetParamServerData, NeuralNetParamServerData> {
   private static final Logger LOG = Logger.getLogger(NeuralNetworkParameterUpdater.class.getName());
 
   @NamedParameter(doc = "Minimum number of training example to use when outputting validation statistics",
@@ -80,13 +80,13 @@ public final class NeuralNetworkParameterUpdater
 
   @Override
   public NeuralNetParamServerData process(final String key,
-                                          final NeuralNetParamWorkerData neuralNetParamWorkerData) {
-    if (neuralNetParamWorkerData.getIsValidationStatsPair()) {
+                                          final NeuralNetParamServerData neuralNetParamServerData) {
+    if (neuralNetParamServerData.getIsValidationStatsPair()) {
       return new NeuralNetParamServerData(processValidationStats(
-          neuralNetParamWorkerData.getValidationStatsPair().get()));
+          neuralNetParamServerData.getValidationStatsPair().get()));
     } else {
       return new NeuralNetParamServerData(processLayerParametersList(key,
-          neuralNetParamWorkerData.getLayerParametersList().get()));
+          neuralNetParamServerData.getLayerParametersList().get()));
     }
   }
 
@@ -99,8 +99,8 @@ public final class NeuralNetworkParameterUpdater
   /**
    * Aggregate parameter gradients by computing the average of all gradients, per layer.
    */
-  private LayerParameter[] processLayerParametersList(final String key,
-                                                      final List<LayerParameter[]> parameterGradientsList) {
+  private List<LayerParameter[]> processLayerParametersList(final String key,
+                                                            final List<LayerParameter[]> parameterGradientsList) {
     if (parameterGradientsList == null || parameterGradientsList.size() == 0 || !key.equals(WHOLE_MODEL)) {
       return null;
     }
@@ -125,7 +125,9 @@ public final class NeuralNetworkParameterUpdater
       sumParameterGradient.getBiasParam().divi(parameterGradientsList.size()).muli(stepsize);
     }
 
-    return aggregatedParameterGradients;
+    final List<LayerParameter[]> retList = new ArrayList<>(1);
+    retList.add(aggregatedParameterGradients);
+    return retList;
   }
 
   /**
@@ -145,7 +147,7 @@ public final class NeuralNetworkParameterUpdater
         throw new RuntimeException("NeuralNetParamServerData oldData and delta have the same key but different format");
       }
       return new NeuralNetParamServerData(updateLayerParameter(
-          oldData.getLayerParameters().get(), delta.getLayerParameters().get()));
+          oldData.getLayerParametersList().get().get(0), delta.getLayerParametersList().get().get(0)));
     }
   }
 
@@ -173,8 +175,8 @@ public final class NeuralNetworkParameterUpdater
     return new Pair<>(newTrainingValidation, newCrossValidation);
   }
 
-  private LayerParameter[] updateLayerParameter(final LayerParameter[] layerParameters,
-                                                final LayerParameter[] parameterGradients) {
+  private List<LayerParameter[]> updateLayerParameter(final LayerParameter[] layerParameters,
+                                                      final LayerParameter[] parameterGradients) {
     for (int index = 0; index < layerParameters.length; ++index) {
       final LayerParameter layerParameter = layerParameters[index];
       final LayerParameter parameterGradient = parameterGradients[index];
@@ -182,7 +184,9 @@ public final class NeuralNetworkParameterUpdater
       layerParameter.getBiasParam().subi(parameterGradient.getBiasParam());
     }
 
-    return layerParameters;
+    final List<LayerParameter[]> retList = new ArrayList<>(1);
+    retList.add(layerParameters);
+    return retList;
   }
 
   /**
@@ -203,7 +207,7 @@ public final class NeuralNetworkParameterUpdater
     return new Pair<>(new ValidationStats(), new ValidationStats());
   }
 
-  private LayerParameter[] initValueLayerParameters() {
+  private List<LayerParameter[]> initValueLayerParameters() {
     final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
@@ -224,6 +228,8 @@ public final class NeuralNetworkParameterUpdater
       }
     }
 
-    return layerParameters;
+    final List<LayerParameter[]> retList = new ArrayList<>(1);
+    retList.add(layerParameters);
+    return retList;
   }
 }

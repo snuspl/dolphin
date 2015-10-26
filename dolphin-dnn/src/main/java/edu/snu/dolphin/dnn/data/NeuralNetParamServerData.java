@@ -20,21 +20,23 @@ import edu.snu.dolphin.dnn.util.ValidationStats;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.util.Optional;
 
+import java.util.List;
+
 public final class NeuralNetParamServerData {
   private final boolean isValidationStatsPair;
   private final Optional<Pair<ValidationStats, ValidationStats>> validationStatsPair;
-  private final Optional<LayerParameter[]> layerParameters;
+  private final Optional<List<LayerParameter[]>> layerParametersList;
 
   public NeuralNetParamServerData(final Pair<ValidationStats, ValidationStats> validationStatsPair) {
     this.isValidationStatsPair = true;
     this.validationStatsPair = Optional.of(validationStatsPair);
-    this.layerParameters = Optional.empty();
+    this.layerParametersList = Optional.empty();
   }
 
-  public NeuralNetParamServerData(final LayerParameter[] layerParameters) {
+  public NeuralNetParamServerData(final List<LayerParameter[]> layerParametersList) {
     this.isValidationStatsPair = false;
     this.validationStatsPair = Optional.empty();
-    this.layerParameters = Optional.of(layerParameters);
+    this.layerParametersList = Optional.of(layerParametersList);
   }
 
   public boolean getIsValidationStatsPair() {
@@ -45,7 +47,7 @@ public final class NeuralNetParamServerData {
     return this.validationStatsPair;
   }
 
-  public Optional<LayerParameter[]> getLayerParameters() {
-    return this.layerParameters;
+  public Optional<List<LayerParameter[]>> getLayerParametersList() {
+    return this.layerParametersList;
   }
 }

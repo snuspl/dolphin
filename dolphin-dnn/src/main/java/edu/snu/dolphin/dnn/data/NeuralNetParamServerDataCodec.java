@@ -21,13 +21,14 @@ import javax.inject.Inject;
 import java.io.*;
 
 public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParamServerData> {
-  private final LayerParameterArrayCodec layerParameterArrayCodec;
+
+  private final LayerParameterArrayListCodec layerParameterArrayListCodec;
   private final ValidationStatsPairCodec validationStatsPairCodec;
 
   @Inject
-  private NeuralNetParamServerDataCodec(final LayerParameterArrayCodec layerParameterArrayCodec,
+  private NeuralNetParamServerDataCodec(final LayerParameterArrayListCodec layerParameterArrayListCodec,
                                         final ValidationStatsPairCodec validationStatsPairCodec) {
-    this.layerParameterArrayCodec = layerParameterArrayCodec;
+    this.layerParameterArrayListCodec = layerParameterArrayListCodec;
     this.validationStatsPairCodec = validationStatsPairCodec;
   }
 
@@ -41,7 +42,7 @@ public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParam
         validationStatsPairCodec.encodeToStream(neuralNetParamServerData.getValidationStatsPair().get(), dstream);
       } else {
         dstream.writeBoolean(false);
-        layerParameterArrayCodec.encodeToStream(neuralNetParamServerData.getLayerParameters().get(), dstream);
+        layerParameterArrayListCodec.encodeToStream(neuralNetParamServerData.getLayerParametersList().get(), dstream);
       }
       return bstream.toByteArray();
 
@@ -57,7 +58,7 @@ public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParam
       if (isValidationStatsPair) {
         return new NeuralNetParamServerData(validationStatsPairCodec.decodeFromStream(dstream));
       } else {
-        return new NeuralNetParamServerData(layerParameterArrayCodec.decodeFromStream(dstream));
+        return new NeuralNetParamServerData(layerParameterArrayListCodec.decodeFromStream(dstream));
       }
 
     } catch (final IOException e) {

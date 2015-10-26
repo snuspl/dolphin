@@ -17,7 +17,7 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.core.DataParser;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
-import edu.snu.dolphin.dnn.data.NeuralNetParamWorkerData;
+import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.util.Validator;
 import edu.snu.dolphin.ps.worker.ParameterWorker;
 import org.apache.reef.annotations.audience.TaskSide;
@@ -47,13 +47,13 @@ public final class NeuralNetworkParameterServerTask implements Task {
   private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
-  private final ParameterWorker<String, NeuralNetParamWorkerData, ?> worker;
+  private final ParameterWorker<String, NeuralNetParamServerData, ?> worker;
 
   @Inject
   NeuralNetworkParameterServerTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
                                    final NeuralNetwork neuralNetwork,
                                    @Parameter(MaxIterations.class) final int maxIterations,
-                                   final ParameterWorker<String, NeuralNetParamWorkerData, ?> worker) {
+                                   final ParameterWorker<String, NeuralNetParamServerData, ?> worker) {
     super();
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
@@ -72,7 +72,7 @@ public final class NeuralNetworkParameterServerTask implements Task {
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
 
-      worker.push(NeuralNetworkParameterUpdater.VALIDATION, new NeuralNetParamWorkerData(
+      worker.push(NeuralNetworkParameterUpdater.VALIDATION, new NeuralNetParamServerData(
           new Pair<>(trainingValidator.getValidationStats(), crossValidator.getValidationStats())));
 
       crossValidator.getValidationStats().reset();
