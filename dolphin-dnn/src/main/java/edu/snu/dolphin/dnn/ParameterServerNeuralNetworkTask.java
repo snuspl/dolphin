@@ -54,7 +54,6 @@ public final class ParameterServerNeuralNetworkTask implements Task {
                                    final NeuralNetwork neuralNetwork,
                                    @Parameter(MaxIterations.class) final int maxIterations,
                                    final ParameterWorker<String, NeuralNetParamServerData, ?> worker) {
-    super();
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
     this.maxIterations = maxIterations;
