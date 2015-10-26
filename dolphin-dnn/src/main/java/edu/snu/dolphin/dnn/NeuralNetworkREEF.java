@@ -105,8 +105,7 @@ public final class NeuralNetworkREEF {
 
   /**
    * Builds and returns the configuration for the Driver.
-   * The configuration changes depending on whether we use REEF Group Communication or not.
-   * TODO #68: This code may change when asynchronous Parameter Server is introduced.
+   * The configuration changes depending on which {@code ParameterProvider} we use.
    *
    * @return the configuration for driver with data loading.
    */

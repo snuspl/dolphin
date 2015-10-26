@@ -34,9 +34,9 @@ import java.util.logging.Logger;
 import static edu.snu.dolphin.dnn.NeuralNetworkTask.*;
 
 /**
- * The task that trains neural network with the data set.
- *
- * Assumes the input file can be parsed by NeuralNetworkDataParser.
+ * Task for training a neural network when the {@code dolphin-ps} package is used.
+ * Compared to {@code NeuralNetworkTask} which logs its validation results per iteration,
+ * this Task sends its results to the parameter server for centralized logging.
  */
 @TaskSide
 public final class ParameterServerNeuralNetworkTask implements Task {

@@ -41,6 +41,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This {@link ParameterUpdater} implementation depicts how the parameter server for {@code dolphin-dnn} should
+ * process data received from workers.
+ *
+ * <p>This class either</p>
+ * <ol>
+ *   <li>aggregates gradients according to batch size and subtracts them from the current network parameters, or</li>
+ *   <li>records validations results and logs them per a certain log period.</li>
+ * </ol>
+ */
 public final class NeuralNetworkParameterUpdater
     implements ParameterUpdater<String, NeuralNetParamServerData, NeuralNetParamServerData> {
   private static final Logger LOG = Logger.getLogger(NeuralNetworkParameterUpdater.class.getName());
@@ -78,6 +88,9 @@ public final class NeuralNetworkParameterUpdater
   }
 
 
+  /**
+   * Process a {@link NeuralNetParamServerData} value given from a worker into server-friendly format.
+   */
   @Override
   public NeuralNetParamServerData process(final String key,
                                           final NeuralNetParamServerData neuralNetParamServerData) {
@@ -124,7 +137,7 @@ public final class NeuralNetworkParameterUpdater
   }
 
   /**
-   * Subtract the parameter gradients from the current layer parameter values.
+   * Update a {@link NeuralNetParamServerData} value stored in the server using a value given from a worker.
    */
   @Override
   public NeuralNetParamServerData update(final NeuralNetParamServerData oldData, final NeuralNetParamServerData delta) {
@@ -144,6 +157,11 @@ public final class NeuralNetworkParameterUpdater
     }
   }
 
+  /**
+   * Use the aggregated validation statistics to output the current training and validation errors to {@code LOG}.
+   * If the number of observed training data instances (cumulative) exceed {@code logPeriod}, the errors are output and
+   * the counter is reset to zero.
+   */
   private Pair<ValidationStats, ValidationStats> updateValidationStatsPair(
       final Pair<ValidationStats, ValidationStats> oldValid, final Pair<ValidationStats, ValidationStats> deltaValid) {
     final ValidationStats oldTrainingValidation = oldValid.getFirst();
@@ -168,6 +186,9 @@ public final class NeuralNetworkParameterUpdater
     return new Pair<>(newTrainingValidation, newCrossValidation);
   }
 
+  /**
+   * Subtract the parameter gradients from the current layer parameter values.
+   */
   private List<LayerParameter[]> updateLayerParameter(final LayerParameter[] layerParameters,
                                                       final LayerParameter[] parameterGradients) {
     for (int index = 0; index < layerParameters.length; ++index) {
@@ -183,7 +204,8 @@ public final class NeuralNetworkParameterUpdater
   }
 
   /**
-   * Use {@link LayerParameterInitializer} to generate initial layer parameter values.
+   * Generate an initial value of {@link NeuralNetParamServerData} using {@link #initValueLayerParameters()} or
+   * {@link #initValueValidationStatsPair()}.
    */
   @Override
   public NeuralNetParamServerData initValue(final String key) {
@@ -196,9 +218,16 @@ public final class NeuralNetworkParameterUpdater
     }
   }
 
+  /**
+   * Generate a pair of empty validation stats.
+   */
   private Pair<ValidationStats, ValidationStats> initValueValidationStatsPair() {
     return new Pair<>(new ValidationStats(), new ValidationStats());
   }
+
+  /**
+   * Use {@link LayerParameterInitializer} to generate initial layer parameter values.
+   */
 
   private List<LayerParameter[]> initValueLayerParameters() {
     final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];

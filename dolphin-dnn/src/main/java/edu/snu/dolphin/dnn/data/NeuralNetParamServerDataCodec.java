@@ -20,6 +20,10 @@ import org.apache.reef.io.serialization.Codec;
 import javax.inject.Inject;
 import java.io.*;
 
+/**
+ * Codec for serializing {@link NeuralNetParamServerData}.
+ * Internally uses {@link LayerParameterArrayListCodec} and {@link ValidationStatsPairCodec}.
+ */
 public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParamServerData> {
 
   private final LayerParameterArrayListCodec layerParameterArrayListCodec;

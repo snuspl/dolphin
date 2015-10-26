@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parameter provider for a neural network that uses REEF Parameter Server.
+ * Parameter provider for a neural network that uses Dolphin Parameter Server, {@code dolphin-ps}.
  * <p/>
  * Sends parameter gradients to the server using a certain batch size.
  * Receives updated parameters from the server.

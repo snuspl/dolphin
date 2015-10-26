@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The driver code for the neural network REEF application that uses REEF Parameter Server.
+ * The driver code for the neural network REEF application that uses Dolphin Parameter Server, {@code dolphin-ps}.
  */
 @DriverSide
 @Unit
@@ -94,6 +94,9 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
                 .set(ContextConfiguration.IDENTIFIER, "ParameterServerContext")
                 .build(),
             psDriver.getServerContextConfiguration());
+
+        // Add the configuration for Neural Network and
+        // the server-side parameter server configuration.
         final Configuration serviceConf = Configurations.merge(
             psDriver.getServerServiceConfiguration(),
             neuralNetworkESParameters.getServiceAndNeuralNetworkConfiguration(),
@@ -112,7 +115,8 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
             ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build(),
             psDriver.getWorkerContextConfiguration());
 
-        // Add Data Parse Service and Neural Network Service configurations
+        // Add Data Parse Service and Neural Network configurations,
+        // as well as the worker-side parameter server configuration.
         final Configuration serviceConf = Configurations.merge(
             DataParseService.getServiceConfiguration(NeuralNetworkDataParser.class),
             neuralNetworkESParameters.getServiceConfiguration(),

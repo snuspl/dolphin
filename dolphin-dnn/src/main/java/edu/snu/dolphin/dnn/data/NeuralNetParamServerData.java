@@ -22,6 +22,10 @@ import org.apache.reef.util.Optional;
 
 import java.util.List;
 
+/**
+ * This class represents the data transmitted between the parameter server and worker.
+ * This can contain either a pair of {@link ValidationStats}, or a list of {@link LayerParameter} arrays.
+ */
 public final class NeuralNetParamServerData {
   private final Optional<Pair<ValidationStats, ValidationStats>> validationStatsPair;
   private final Optional<List<LayerParameter[]>> layerParametersList;

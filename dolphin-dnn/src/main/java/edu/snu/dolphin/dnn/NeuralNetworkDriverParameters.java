@@ -244,7 +244,7 @@ public final class NeuralNetworkDriverParameters {
   }
 
   /**
-   * @return {@code true} if this Neural Network application uses REEF Group Communication, {@code false} otherwise
+   * @return the {@link ProviderType} of the injected neural net configuration
    */
   public ProviderType getProviderType() {
     return this.providerType;
