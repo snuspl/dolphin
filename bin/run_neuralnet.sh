@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# bin/run_neuralnet.sh -local true -maxIter 100 -conf dolphin-dnn/src/test/resources/configuration/neuralnet -input dolphin-dnn/src/test/resources/data/neuralnet  -timeout 800000
+# bin/run_neuralnet.sh -local true -maxIter 100 -conf dolphin-dnn/src/test/resources/configuration/neuralnet -input dolphin-dnn/src/test/resources/data/neuralnet  -timeout 800000 -logPeriod 1000
 
 SELF_JAR=`echo dolphin-dnn/target/dolphin-dnn-*-shaded.jar`
 
