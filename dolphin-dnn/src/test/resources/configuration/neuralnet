@@ -21,7 +21,7 @@ input_shape {
   dim: 28
 }
 parameter_provider {
-  type: "parameterserver"
+  type: "local"
 }
 layer {
   type: "FullyConnected"
