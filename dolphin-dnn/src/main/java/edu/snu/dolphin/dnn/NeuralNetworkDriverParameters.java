@@ -244,7 +244,7 @@ public final class NeuralNetworkDriverParameters {
   }
 
   /**
-   * @return the {@link ProviderType} of the injected neural net configuration
+   * @return the {@link ProviderType} of the neural net configuration loaded from the filesystem
    */
   public ProviderType getProviderType() {
     return this.providerType;

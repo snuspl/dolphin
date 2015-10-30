@@ -103,7 +103,8 @@ public final class NeuralNetworkParameterUpdater
   }
 
   /**
-   * Aggregate parameter gradients by computing the average of all gradients, per layer.
+   * Aggregate parameter gradients by computing the average of all gradients, per layer,
+   * and multiplying the step size.
    */
   private List<LayerParameter[]> processLayerParametersList(final String key,
                                                             final List<LayerParameter[]> parameterGradientsList) {
@@ -159,7 +160,7 @@ public final class NeuralNetworkParameterUpdater
 
   /**
    * Use the aggregated validation statistics to output the current training and validation errors to {@code LOG}.
-   * If the number of observed training data instances (cumulative) exceed {@code logPeriod}, the errors are output and
+   * If the number of observed training data instances (cumulative) exceeds {@code logPeriod}, the errors are output and
    * the counter is reset to zero.
    */
   private Pair<ValidationStats, ValidationStats> updateValidationStatsPair(
@@ -228,7 +229,6 @@ public final class NeuralNetworkParameterUpdater
   /**
    * Use {@link LayerParameterInitializer} to generate initial layer parameter values.
    */
-
   private List<LayerParameter[]> initValueLayerParameters() {
     final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
 

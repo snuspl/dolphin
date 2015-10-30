@@ -80,7 +80,7 @@ public final class ParameterServerParameterProvider implements ParameterProvider
 
       final List<LayerParameter[]> retList = neuralNetParamServerData.getLayerParametersList();
       if (retList.size() != 1) {
-        throw new RuntimeException(String.format("Expected one array of LayerParmeters but received %d arrays",
+        throw new RuntimeException(String.format("Expected one array of LayerParameters but received %d arrays",
             retList.size()));
       }
 
