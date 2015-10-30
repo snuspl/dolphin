@@ -22,7 +22,7 @@ import org.apache.reef.tang.annotations.DefaultImplementation;
  * Worker-side Parameter Server message sender.
  */
 @EvaluatorSide
-@DefaultImplementation(WorkerSideMsgSender.class)
+@DefaultImplementation(WorkerSideMsgSenderImpl.class)
 public interface WorkerSideMsgSender<K, P> {
 
   /**

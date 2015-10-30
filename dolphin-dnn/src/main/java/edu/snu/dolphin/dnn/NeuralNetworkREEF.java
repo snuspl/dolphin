@@ -16,6 +16,9 @@
 package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.parameters.*;
+import edu.snu.dolphin.dnn.data.NeuralNetParamServerDataCodec;
+import edu.snu.dolphin.ps.ParameterServerConfigurationBuilder;
+import edu.snu.dolphin.ps.driver.SingleNodeParameterServerManager;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.reef.client.DriverConfiguration;
 import org.apache.reef.client.DriverLauncher;
@@ -102,52 +105,118 @@ public final class NeuralNetworkREEF {
 
   /**
    * Builds and returns the configuration for the Driver.
-   * The configuration changes depending on whether we use REEF Group Communication or not.
-   * TODO #68: This code may change when asynchronous Parameter Server is introduced.
+   * The configuration changes depending on which {@code ParameterProvider} we use.
    *
    * @return the configuration for driver with data loading.
    */
   private Configuration getDriverConfWithDataLoad() {
-    final boolean usesGroupComm = neuralNetworkDriverParameters.isGroupComm();
+    switch (neuralNetworkDriverParameters.getProviderType()) {
+    case LOCAL:
+      return getDriverConfLocalProvider();
+    case GROUP_COMM:
+      return getDriverConfGroupCommProvider();
+    case PARAMETER_SERVER:
+      return getDriverConfParamServerProvider();
+    default:
+      throw new RuntimeException("No driver configuration for provider type " +
+          neuralNetworkDriverParameters.getProviderType());
+    }
+  }
 
+  private Configuration getDriverConfLocalProvider() {
     final ConfigurationModule neuralNetworkDriverConf = DriverConfiguration.CONF
-        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(
-            usesGroupComm ? NeuralNetworkGroupCommDriver.class : NeuralNetworkDriver.class))
+        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(NeuralNetworkDriver.class))
         .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(TextInputFormat.class))
-        .set(DriverConfiguration.DRIVER_IDENTIFIER, "Neural Network")
-        .set(DriverConfiguration.ON_CONTEXT_ACTIVE,
-            usesGroupComm ?
-                NeuralNetworkGroupCommDriver.ActiveContextHandler.class :
-                NeuralNetworkDriver.ActiveContextHandler.class);
+        .set(DriverConfiguration.DRIVER_IDENTIFIER, "NeuralNetworkLocal")
+        .set(DriverConfiguration.ON_CONTEXT_ACTIVE, NeuralNetworkDriver.ActiveContextHandler.class);
 
     final EvaluatorRequest dataRequest = EvaluatorRequest.newBuilder()
         .setNumberOfCores(1)
         .setMemory(evalSize)
         .build();
 
-    final DataLoadingRequestBuilder dataLoadingRequestBuilder = new DataLoadingRequestBuilder()
+    final Configuration dataLoadingConfiguration = new DataLoadingRequestBuilder()
         .setInputFormatClass(TextInputFormat.class)
         .setInputPath(processInputDir(inputDir))
         .setNumberOfDesiredSplits(desiredSplits)
         .addDataRequest(dataRequest)
-        .setDriverConfigurationModule(neuralNetworkDriverConf);
+        .setDriverConfigurationModule(neuralNetworkDriverConf)
+        .build();
 
-    if (usesGroupComm) {
-      dataLoadingRequestBuilder.addComputeRequest(EvaluatorRequest.newBuilder()
-          .setNumberOfCores(1)
-          .setMemory(evalSize)
-          .build());
+    return Configurations.merge(
+        dataLoadingConfiguration,
+        neuralNetworkDriverParameters.getDriverConfiguration());
+  }
 
-      return Configurations.merge(
-          dataLoadingRequestBuilder.build(),
-          neuralNetworkDriverParameters.getDriverConfiguration(),
-          GroupCommService.getConfiguration());
+  private Configuration getDriverConfGroupCommProvider() {
+    final ConfigurationModule neuralNetworkDriverConf = DriverConfiguration.CONF
+        .set(DriverConfiguration.GLOBAL_LIBRARIES,
+            EnvironmentUtils.getClassLocation(NeuralNetworkGroupCommDriver.class))
+        .set(DriverConfiguration.GLOBAL_LIBRARIES, EnvironmentUtils.getClassLocation(TextInputFormat.class))
+        .set(DriverConfiguration.DRIVER_IDENTIFIER, "NeuralNetworkGroupComm")
+        .set(DriverConfiguration.ON_CONTEXT_ACTIVE, NeuralNetworkGroupCommDriver.ActiveContextHandler.class);
 
-    } else {
-      return Configurations.merge(
-          dataLoadingRequestBuilder.build(),
-          neuralNetworkDriverParameters.getDriverConfiguration());
-    }
+    final Configuration dataLoadingConfiguration = new DataLoadingRequestBuilder()
+        .setInputFormatClass(TextInputFormat.class)
+        .setInputPath(processInputDir(inputDir))
+        .setNumberOfDesiredSplits(desiredSplits)
+        .addDataRequest(EvaluatorRequest.newBuilder()
+            .setNumberOfCores(1)
+            .setMemory(evalSize)
+            .build())
+        .addComputeRequest(EvaluatorRequest.newBuilder()
+            .setNumber(1)
+            .setNumberOfCores(1)
+            .setMemory(evalSize)
+            .build())
+        .setDriverConfigurationModule(neuralNetworkDriverConf)
+        .build();
+
+    return Configurations.merge(
+        dataLoadingConfiguration,
+        neuralNetworkDriverParameters.getDriverConfiguration(),
+        GroupCommService.getConfiguration());
+  }
+
+  private Configuration getDriverConfParamServerProvider() {
+    final ConfigurationModule neuralNetworkDriverConf = DriverConfiguration.CONF
+        .set(DriverConfiguration.GLOBAL_LIBRARIES,
+            EnvironmentUtils.getClassLocation(NeuralNetworkSingleNodeParameterServerDriver.class))
+        .set(DriverConfiguration.GLOBAL_LIBRARIES,
+            EnvironmentUtils.getClassLocation(TextInputFormat.class))
+        .set(DriverConfiguration.DRIVER_IDENTIFIER, "NeuralNetworkSingleNodeParamServer")
+        .set(DriverConfiguration.ON_CONTEXT_ACTIVE,
+            NeuralNetworkSingleNodeParameterServerDriver.ActiveContextHandler.class)
+        .set(DriverConfiguration.ON_TASK_COMPLETED,
+            NeuralNetworkSingleNodeParameterServerDriver.CompletedTaskHandler.class);
+
+    final Configuration dataLoadingConfiguration = new DataLoadingRequestBuilder()
+        .setInputFormatClass(TextInputFormat.class)
+        .setInputPath(processInputDir(inputDir))
+        .setNumberOfDesiredSplits(desiredSplits)
+        .addDataRequest(EvaluatorRequest.newBuilder()
+            .setNumberOfCores(1)
+            .setMemory(evalSize)
+            .build())
+        .addComputeRequest(EvaluatorRequest.newBuilder()
+            .setNumber(1)
+            .setNumberOfCores(1)
+            .setMemory(evalSize)
+            .build())
+        .setDriverConfigurationModule(neuralNetworkDriverConf)
+        .build();
+
+    final Configuration parameterServerConfiguration = new ParameterServerConfigurationBuilder()
+        .setManagerClass(SingleNodeParameterServerManager.class)
+        .setUpdaterClass(NeuralNetworkParameterUpdater.class)
+        .setPreValueCodecClass(NeuralNetParamServerDataCodec.class)
+        .setValueCodecClass(NeuralNetParamServerDataCodec.class)
+        .build();
+
+    return Configurations.merge(
+        dataLoadingConfiguration,
+        neuralNetworkDriverParameters.getDriverConfiguration(),
+        parameterServerConfiguration);
   }
 
   /**

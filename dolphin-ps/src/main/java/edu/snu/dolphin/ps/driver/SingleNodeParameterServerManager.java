@@ -28,6 +28,7 @@ import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
 import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Manager class for a Parameter Server that uses only one node for a server.
@@ -36,32 +37,12 @@ import javax.inject.Inject;
 @DriverSide
 public final class SingleNodeParameterServerManager implements ParameterServerManager {
   private static final String SERVER_ID = "SINGLE_NODE_SERVER_ID";
+  private static final String WORKER_ID_PREFIX = "SINGLE_NODE_WORKER_ID_";
+  private final AtomicInteger numWorkers;
 
   @Inject
   private SingleNodeParameterServerManager() {
-  }
-
-  /**
-   * Returns worker-side context configuration.
-   * Binds the server id to a named parameter so that workers know where to send push/pull messages to.
-   */
-  @Override
-  public Configuration getWorkerContextConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(ServerId.class, SERVER_ID)
-        .build();
-  }
-
-  /**
-   * Returns server-side context configuration.
-   * Binds the server id to a named parameter so that
-   * the server uses it to register itself to Network Connection Service.
-   */
-  @Override
-  public Configuration getServerContextConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(EndpointId.class, SERVER_ID)
-        .build();
+    this.numWorkers = new AtomicInteger(0);
   }
 
   /**
@@ -70,17 +51,21 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
    */
   @Override
   public Configuration getWorkerServiceConfiguration() {
+    final int workerIndex = numWorkers.getAndIncrement();
+
     return Tang.Factory.getTang()
         .newConfigurationBuilder(ServiceConfiguration.CONF
             .set(ServiceConfiguration.SERVICES, SingleNodeParameterWorker.class)
             .build())
         .bindImplementation(ParameterWorker.class, SingleNodeParameterWorker.class)
+        .bindNamedParameter(ServerId.class, SERVER_ID)
+        .bindNamedParameter(EndpointId.class, WORKER_ID_PREFIX + workerIndex)
         .build();
   }
 
   /**
    * Returns server-side service configuration.
-   * Sets {@link SingleNodeParameterServer} as the {@link ParameterWorker} class.
+   * Sets {@link SingleNodeParameterServer} as the {@link ParameterServer} class.
    */
   @Override
   public Configuration getServerServiceConfiguration() {
@@ -89,6 +74,7 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
             .set(ServiceConfiguration.SERVICES, SingleNodeParameterServer.class)
             .build())
         .bindImplementation(ParameterServer.class, SingleNodeParameterServer.class)
+        .bindNamedParameter(EndpointId.class, SERVER_ID)
         .build();
   }
 

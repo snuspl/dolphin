@@ -17,11 +17,13 @@ package edu.snu.dolphin.dnn;
 
 import com.google.protobuf.TextFormat;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
+import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater.LogPeriod;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
+import edu.snu.dolphin.dnn.layerparam.provider.ParameterServerParameterProvider;
 import edu.snu.dolphin.dnn.proto.NeuralNetworkProtos.*;
 import edu.snu.dolphin.bsp.parameters.OnLocal;
 import org.apache.commons.lang.StringUtils;
@@ -50,8 +52,9 @@ public final class NeuralNetworkDriverParameters {
   private final String serializedNeuralNetworkConfiguration;
   private final String delimiter;
   private final int maxIterations;
-  private final boolean groupComm;
+  private final ProviderType providerType;
   private final String inputShape;
+  private final int logPeriod;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -63,6 +66,10 @@ public final class NeuralNetworkDriverParameters {
 
   @NamedParameter(doc = "the shape of input data")
   public static class InputShape implements Name<String> {
+  }
+
+  enum ProviderType {
+    LOCAL, GROUP_COMM, PARAMETER_SERVER
   }
 
   /**
@@ -98,19 +105,38 @@ public final class NeuralNetworkDriverParameters {
                                         @Parameter(ConfigurationPath.class) final String configurationPath,
                                         @Parameter(Delimiter.class) final String delimiter,
                                         @Parameter(MaxIterations.class) final int maxIterations,
-                                        @Parameter(OnLocal.class) final boolean onLocal) throws IOException {
+                                        @Parameter(OnLocal.class) final boolean onLocal,
+                                        @Parameter(LogPeriod.class) final int logPeriod) throws IOException {
     final NeuralNetworkConfiguration neuralNetConf = loadNeuralNetworkConfiguration(configurationPath, onLocal);
 
     // the method is being called twice: here and in `buildNeuralNetworkConfiguration`
     // this could be made to once by refactoring the code
-    this.groupComm = neuralNetConf.getParameterProvider().getType().equals("groupcomm");
+    this.providerType = getProviderType(neuralNetConf.getParameterProvider());
     this.serializedNeuralNetworkConfiguration = configurationSerializer.toString(
         buildNeuralNetworkConfiguration(neuralNetConf));
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+    this.logPeriod = logPeriod;
 
     // convert to string because Tang configuration serializer does not support List serialization.
     this.inputShape = inputShapeToString(neuralNetConf.getInputShape().getDimList());
+  }
+
+  /**
+   * @param parameterProviderConfiguration parameter provider protobuf configuration of a neural network
+   * @return the type of the configured parameter provider
+   */
+  private static ProviderType getProviderType(final ParameterProviderConfiguration parameterProviderConfiguration) {
+    switch (parameterProviderConfiguration.getType().toLowerCase()) {
+    case "local":
+      return ProviderType.LOCAL;
+    case "groupcomm":
+      return ProviderType.GROUP_COMM;
+    case "parameterserver":
+      return ProviderType.PARAMETER_SERVER;
+    default:
+      throw new IllegalArgumentException("Illegal parameter provider: " + parameterProviderConfiguration.getType());
+    }
   }
 
   /**
@@ -123,6 +149,8 @@ public final class NeuralNetworkDriverParameters {
       return LocalNeuralNetParameterProvider.class;
     case "groupcomm":
       return GroupCommParameterProvider.class;
+    case "parameterserver":
+      return ParameterServerParameterProvider.class;
     default:
       throw new IllegalArgumentException("Illegal parameter provider: " + parameterProvider);
     }
@@ -197,6 +225,7 @@ public final class NeuralNetworkDriverParameters {
     cl.registerShortNameOfClass(ConfigurationPath.class);
     cl.registerShortNameOfClass(Delimiter.class);
     cl.registerShortNameOfClass(MaxIterations.class);
+    cl.registerShortNameOfClass(LogPeriod.class);
   }
 
   /**
@@ -210,13 +239,14 @@ public final class NeuralNetworkDriverParameters {
         .bindNamedParameter(Delimiter.class, delimiter)
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .bindNamedParameter(InputShape.class, inputShape)
+        .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
         .build();
   }
 
   /**
-   * @return {@code true} if this Neural Network application uses REEF Group Communication, {@code false} otherwise
+   * @return the {@link ProviderType} of the neural net configuration loaded from the filesystem
    */
-  public boolean isGroupComm() {
-    return this.groupComm;
+  public ProviderType getProviderType() {
+    return this.providerType;
   }
 }

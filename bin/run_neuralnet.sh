@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # EXAMPLE USAGE 
-# bin/run_neuralnet.sh -local true -maxIter 100 -conf ../src/test/resources/configuration/neuralnet -input dolphin-dnn/src/test/resources/data/neuralnet  -timeout 800000
+# bin/run_neuralnet.sh -local true -maxIter 100 -conf dolphin-dnn/src/test/resources/configuration/neuralnet -input dolphin-dnn/src/test/resources/data/neuralnet  -timeout 800000
 
 SELF_JAR=`echo dolphin-dnn/target/dolphin-dnn-*-shaded.jar`
 
@@ -24,7 +24,7 @@ CLASSPATH=$YARN_HOME/share/hadoop/common/*:$YARN_HOME/share/hadoop/common/lib/*:
 
 YARN_CONF_DIR=$YARN_HOME/etc/hadoop
 
-ALG=edu.snu.reef.dolphin.neuralnet.NeuralNetworkREEF
+ALG=edu.snu.dolphin.dnn.NeuralNetworkREEF
 
 CMD="java -cp $YARN_CONF_DIR:$SELF_JAR:$CLASSPATH $LOGGING_CONFIG $ALG $*"
 echo $CMD
