@@ -60,7 +60,7 @@ public final class GroupCommParameterServerTask implements Task {
   private final float stepsize;
   private final int maxIterations;
   private final Broadcast.Sender<LayerParameter[]> layerParamBroadcastSender;
-  private final Reduce.Receiver<List<LayerParameter[]>> parameterGradientReduceReceiver;
+  private final Reduce.Receiver<List<Pair<Integer, LayerParameter[]>>> parameterGradientReduceReceiver;
   private final Reduce.Receiver<Pair<ValidationStats, ValidationStats>> validationStatsPairReduceReceiver;
 
   @Inject
@@ -143,7 +143,7 @@ public final class GroupCommParameterServerTask implements Task {
     // Rather, `iteration` tracks the number of iterations `GroupCommNeuralNetworkTask`s have finished up until now.
     while (iteration < maxIterations) {
       LOG.log(Level.INFO, "GroupCommParameterServerTask.call() loop {0}....", loopIndex++);
-      final List<LayerParameter[]> result = parameterGradientReduceReceiver.reduce();
+      final List<Pair<Integer, LayerParameter[]>> result = parameterGradientReduceReceiver.reduce();
 
       if (result.size() == 0) {
         // All Tasks have finished this iteration. Let's end the iteration.
@@ -156,7 +156,10 @@ public final class GroupCommParameterServerTask implements Task {
       }
 
       // aggregate parameter gradients
-      for (final LayerParameter[] parameterGradient : result) {
+      int batchSizeSum = 0;
+      for (final Pair<Integer, LayerParameter[]> integerAndParameterGradientPair : result) {
+        batchSizeSum += integerAndParameterGradientPair.getFirst();
+        final LayerParameter[] parameterGradient = integerAndParameterGradientPair.getSecond();
         for (int index = 0; index < deltaLayerParameters.length; index++) {
           deltaLayerParameters[index].getWeightParam().addi(parameterGradient[index].getWeightParam());
           deltaLayerParameters[index].getBiasParam().addi(parameterGradient[index].getBiasParam());
@@ -167,8 +170,9 @@ public final class GroupCommParameterServerTask implements Task {
       for (int index = 0; index < deltaLayerParameters.length; ++index) {
         final LayerParameter layerParameter = layerParameters[index];
         final LayerParameter deltaLayerParameter = deltaLayerParameters[index];
-        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(result.size()).muli(stepsize));
-        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(result.size()).muli(stepsize));
+        final float factor = stepsize / batchSizeSum;
+        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().muli(factor));
+        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().muli(factor));
       }
 
       resetDeltaLayerParameters();

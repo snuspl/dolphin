@@ -19,7 +19,6 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.blas.MatrixUtils;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import edu.snu.dolphin.dnn.layers.LayerBase;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
@@ -42,12 +41,6 @@ public final class NeuralNetwork {
   private final MatrixFactory matrixFactory;
 
   /**
-   * The size of a batch of training inputs.
-   * The parameters are only updated after a batch of inputs is processed.
-   */
-  private final int batchSize;
-
-  /**
    * A set of layers which a neural network comprises.
    */
   private final LayerBase[] layers;
@@ -56,11 +49,6 @@ public final class NeuralNetwork {
    * Manager that provides the updated parameters and gathers activations and errors for each input.
    */
   private final ParameterProvider parameterProvider;
-
-  /**
-   * The number of processed training inputs.
-   */
-  private int trainedCount;
 
   /**
    * the empty matrix.
@@ -78,11 +66,9 @@ public final class NeuralNetwork {
   private NeuralNetwork(final MatrixFactory matrixFactory,
                         final ConfigurationSerializer configurationSerializer,
                         @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
-                        @Parameter(BatchSize.class) final int batchSize,
                         final ParameterProvider parameterProvider,
                         final Injector injector) {
     this.matrixFactory = matrixFactory;
-    this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
     this.layers = new LayerBase[serializedLayerConfSets.size()];
     this.emptyMatrix = matrixFactory.create(0);
@@ -118,33 +104,30 @@ public final class NeuralNetwork {
   /**
    * Trains neural network with the given input and label.
    * @param input the input matrix.
-   * @param label the label vector.
+   * @param label the label matrix.
    */
   public void train(final Matrix input, final Matrix label) {
     final Matrix[] activations = ArrayUtils.add(feedForward(input), 0, input); // inserts input at the beginning.
     final Matrix[] errors = backPropagate(activations, label);
     final LayerParameter[] parameterGradients = generateParameterGradients(activations, errors);
 
-    parameterProvider.push(parameterGradients);
-    
-    if (++trainedCount >= batchSize) {
-      final LayerParameter[] updatedParameters = parameterProvider.pull();
-      for (int i = 0; i < layers.length; ++i) {
-        if (layers[i].isLearnable()) {
-          layers[i].setLayerParameter(updatedParameters[i]);
-        }
+    parameterProvider.push(input.getRows(), parameterGradients);
+
+    final LayerParameter[] updatedParameters = parameterProvider.pull();
+    for (int i = 0; i < layers.length; ++i) {
+      if (layers[i].isLearnable()) {
+        layers[i].setLayerParameter(updatedParameters[i]);
       }
-      trainedCount = 0;
     }
   }
 
   /**
    * Trains neural network with the given input and label.
    * @param input the input matrix.
-   * @param label the label.
+   * @param labels the label array.
    */
-  public void train(final Matrix input, final int label) {
-    train(input, MatrixUtils.createOutputVector(matrixFactory, label, layers[layers.length - 1].getNumOutput()));
+  public void train(final Matrix input, final int[] labels) {
+    train(input, MatrixUtils.createOutputMatrix(matrixFactory, labels, layers[layers.length - 1].getNumOutput()));
   }
 
   /**

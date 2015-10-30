@@ -20,24 +20,22 @@ import edu.snu.dolphin.dnn.util.ValidationStats;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.util.Optional;
 
-import java.util.List;
-
 /**
  * This class represents the data transmitted between the parameter server and worker.
- * This can contain either a pair of {@link ValidationStats}, or a list of {@link LayerParameter} arrays.
+ * This can contain either a pair of {@link ValidationStats}, or an array of {@link LayerParameter}s.
  */
 public final class NeuralNetParamServerData {
   private final Optional<Pair<ValidationStats, ValidationStats>> validationStatsPair;
-  private final Optional<List<LayerParameter[]>> layerParametersList;
+  private final Optional<LayerParameter[]> layerParameters;
 
   public NeuralNetParamServerData(final Pair<ValidationStats, ValidationStats> validationStatsPair) {
     this.validationStatsPair = Optional.of(validationStatsPair);
-    this.layerParametersList = Optional.empty();
+    this.layerParameters = Optional.empty();
   }
 
-  public NeuralNetParamServerData(final List<LayerParameter[]> layerParametersList) {
+  public NeuralNetParamServerData(final LayerParameter[] layerParameters) {
     this.validationStatsPair = Optional.empty();
-    this.layerParametersList = Optional.of(layerParametersList);
+    this.layerParameters = Optional.of(layerParameters);
   }
 
   public boolean isValidationStatsPair() {
@@ -48,7 +46,7 @@ public final class NeuralNetParamServerData {
     return this.validationStatsPair.get();
   }
 
-  public List<LayerParameter[]> getLayerParametersList() {
-    return this.layerParametersList.get();
+  public LayerParameter[] getLayerParameters() {
+    return this.layerParameters.get();
   }
 }

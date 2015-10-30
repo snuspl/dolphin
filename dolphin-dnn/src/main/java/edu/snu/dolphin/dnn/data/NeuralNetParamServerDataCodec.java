@@ -22,17 +22,17 @@ import java.io.*;
 
 /**
  * Codec for serializing {@link NeuralNetParamServerData}.
- * Internally uses {@link LayerParameterArrayListCodec} and {@link ValidationStatsPairCodec}.
+ * Internally uses {@link LayerParameterArrayCodec} and {@link ValidationStatsPairCodec}.
  */
 public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParamServerData> {
 
-  private final LayerParameterArrayListCodec layerParameterArrayListCodec;
+  private final LayerParameterArrayCodec layerParameterArrayCodec;
   private final ValidationStatsPairCodec validationStatsPairCodec;
 
   @Inject
-  private NeuralNetParamServerDataCodec(final LayerParameterArrayListCodec layerParameterArrayListCodec,
+  private NeuralNetParamServerDataCodec(final LayerParameterArrayCodec layerParameterArrayCodec,
                                         final ValidationStatsPairCodec validationStatsPairCodec) {
-    this.layerParameterArrayListCodec = layerParameterArrayListCodec;
+    this.layerParameterArrayCodec = layerParameterArrayCodec;
     this.validationStatsPairCodec = validationStatsPairCodec;
   }
 
@@ -46,7 +46,7 @@ public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParam
         validationStatsPairCodec.encodeToStream(neuralNetParamServerData.getValidationStatsPair(), dstream);
       } else {
         dstream.writeBoolean(false);
-        layerParameterArrayListCodec.encodeToStream(neuralNetParamServerData.getLayerParametersList(), dstream);
+        layerParameterArrayCodec.encodeToStream(neuralNetParamServerData.getLayerParameters(), dstream);
       }
       return bstream.toByteArray();
 
@@ -62,7 +62,7 @@ public final class NeuralNetParamServerDataCodec implements Codec<NeuralNetParam
       if (isValidationStatsPair) {
         return new NeuralNetParamServerData(validationStatsPairCodec.decodeFromStream(dstream));
       } else {
-        return new NeuralNetParamServerData(layerParameterArrayListCodec.decodeFromStream(dstream));
+        return new NeuralNetParamServerData(layerParameterArrayCodec.decodeFromStream(dstream));
       }
 
     } catch (final IOException e) {

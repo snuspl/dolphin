@@ -15,8 +15,6 @@
  */
 package edu.snu.dolphin.dnn.layerparam.provider;
 
-import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
@@ -34,27 +32,21 @@ import java.util.Set;
 /**
  * Parameter provider for a neural network on the local environment.
  * <p/>
- * Calculates the updated parameters by adding the average of parameter gradients.
+ * Calculates the updated parameters by stochastic gradient descent algorithm.
  */
 public final class LocalNeuralNetParameterProvider implements ParameterProvider {
 
   private final LayerParameter[] layerParameters;
-  private final LayerParameter[] deltaLayerParameters;
   private final float stepsize;
-  private int numUpdate = 0;
-  private final MatrixFactory matrixFactory;
 
   @Inject
   public LocalNeuralNetParameterProvider(
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
-      final MatrixFactory matrixFactory,
       final Injector injector) {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
-    this.matrixFactory = matrixFactory;
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
@@ -72,61 +64,21 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
         throw new RuntimeException("InjectionException", exception);
       }
     }
-    initDeltaParameters();
-  }
-
-  /**
-   * Initializes delta parameters with zero matrices.
-   */
-  private void initDeltaParameters() {
-    for (int i = 0; i < layerParameters.length; ++i) {
-      final Matrix biasParam = layerParameters[i].getBiasParam();
-      final Matrix weightParam = layerParameters[i].getWeightParam();
-
-      deltaLayerParameters[i] = LayerParameter.newBuilder()
-          .setWeightParam(matrixFactory.zeros(weightParam.getRows(), weightParam.getColumns()))
-          .setBiasParam(matrixFactory.zeros(biasParam.getRows(), biasParam.getColumns()))
-          .build();
-    }
-  }
-
-  /**
-   * Resets the number of updates and delta parameters by filling zeros.
-   */
-  private void reset() {
-    for (final LayerParameter layerParameter : deltaLayerParameters) {
-      layerParameter.getWeightParam().fill(0.0f);
-      layerParameter.getBiasParam().fill(0.0f);
-    }
-    numUpdate = 0;
   }
 
   /** {@inheritDoc} */
   @Override
-  public void push(final LayerParameter[] parameterGradients) {
-    if (parameterGradients.length != deltaLayerParameters.length) {
-      throw new RuntimeException(String.format("The number of parameter gradients (%d) is not equal to " +
-          "the number of layers (%d).", parameterGradients.length, deltaLayerParameters.length));
-    }
+  public void push(final int batchSize, final LayerParameter[] parameterGradients) {
+    final float factor = stepsize / batchSize;
     for (int i = 0; i < layerParameters.length; ++i) {
-      deltaLayerParameters[i].getWeightParam().addi(parameterGradients[i].getWeightParam());
-      deltaLayerParameters[i].getBiasParam().addi(parameterGradients[i].getBiasParam());
+      layerParameters[i].getWeightParam().subi(parameterGradients[i].getWeightParam().mul(factor));
+      layerParameters[i].getBiasParam().subi(parameterGradients[i].getBiasParam().mul(factor));
     }
-    ++numUpdate;
   }
 
   /** {@inheritDoc} */
   @Override
   public LayerParameter[] pull() {
-    if (numUpdate > 0) {
-      for (int i = 0; i < deltaLayerParameters.length; ++i) {
-        final LayerParameter layerParameter = layerParameters[i];
-        final LayerParameter deltaLayerParameter = deltaLayerParameters[i];
-        layerParameter.getWeightParam().subi(deltaLayerParameter.getWeightParam().divi(numUpdate).muli(stepsize));
-        layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().divi(numUpdate).muli(stepsize));
-      }
-      reset();
-    }
     return layerParameters;
   }
 }

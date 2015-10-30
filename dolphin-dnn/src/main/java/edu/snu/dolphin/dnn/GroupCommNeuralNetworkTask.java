@@ -18,7 +18,6 @@ package edu.snu.dolphin.dnn;
 import edu.snu.dolphin.bsp.core.DataParser;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.Validator;
@@ -47,24 +46,21 @@ final class GroupCommNeuralNetworkTask implements Task {
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
-  private final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser;
+  private final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
-  private final int batchSize;
   private final GroupCommParameterProvider parameterProvider;
 
   @Inject
-  GroupCommNeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser,
+  GroupCommNeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser,
                              final NeuralNetwork neuralNetwork,
                              @Parameter(MaxIterations.class) final int maxIterations,
-                             @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
                              final GroupCommParameterProvider parameterProvider) {
     this.dataParser = dataParser;
     this.neuralNetwork = neuralNetwork;
     this.maxIterations = maxIterations;
     this.trainingValidator = new Validator(neuralNetwork);
     this.crossValidator = new Validator(neuralNetwork);
-    this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
   }
 
@@ -72,16 +68,14 @@ final class GroupCommNeuralNetworkTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "GroupCommNeuralNetworkTask.call() commencing....");
 
-    final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet = dataParser.get();
+    final List<Pair<Pair<Matrix, int[]>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
 
       // Send dummy messages until the parameter server sends an empty message,
       // which means all Tasks have finished their iterations.
       while (true) {
-        for (int index = 0; index < batchSize; index++) {
-          parameterProvider.push(null);
-        }
+        parameterProvider.push(0, null);
 
         final LayerParameter[] layerParameters = parameterProvider.pull();
         if (layerParameters.length == 0) {

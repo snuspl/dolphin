@@ -47,39 +47,35 @@ public final class FullyConnectedLayer extends LayerBase {
   }
 
   /**
-   * Computes an activation for this fully connected layer.
-   * @param input an input value for this layer.
-   * @return an activation row vector.
+   * Computes output values for this fully connected layer.
+   * @param input input values for this layer.
+   * @return output values for this layer.
    */
   @Override
   public Matrix feedForward(final Matrix input) {
-    // (output row vector) = (input row vector) x (weight matrix) + (bias row vector)
+    // (output matrix) = (input matrix) x (weight matrix) + (bias row vector)
     return input.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
   }
 
   /**
-   * Computes an error for this fully connected layer.
-   * @param input the input value.
-   * @param activation the activation value.
-   * @param nextError the error of the next layer - the one closer to the output layer.
-   * @return an error for this layer.
+   * Computes errors for this fully connected layer.
+   * @param input the input values for this layer.
+   * @param activation the output values.
+   * @param nextError the errors of the next layer - the one closer to the output layer.
+   * @return errors for this layer with the specified input value.
    */
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
-    // (next error row vector) x (weight matrix of this layer)
+    // ((next error matrix) x (weight matrix of the next layer))
     return nextError.mmul(getLayerParameter().getWeightParam().transpose());
   }
 
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    if (!error.isRowVector()) {
-      throw new RuntimeException(String.format("Invalid error (rows=%d columns=%d). " +
-          "An error for a fully connected layer must be a row vector.",  error.getRows(), error.getColumns()));
-    }
     return LayerParameter.newBuilder()
         .setWeightParam(input.transpose().mmul(error))
-        .setBiasParam(error)
+        .setBiasParam(error.columnSums())
         .build();
   }
 }

@@ -24,6 +24,7 @@ import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
@@ -57,6 +58,7 @@ public final class NeuralNetworkDriverParameters {
   private final ProviderType providerType;
   private final int logPeriod;
   private final String serializedBlasConfiguration;
+  private final int batchSize;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -93,6 +95,7 @@ public final class NeuralNetworkDriverParameters {
     this.maxIterations = maxIterations;
     this.logPeriod = logPeriod;
     this.serializedBlasConfiguration = configurationSerializer.toString(buildBlasConfiguration(blasLibrary));
+    this.batchSize = neuralNetConf.getBatchSize();
   }
 
   /**
@@ -197,8 +200,7 @@ public final class NeuralNetworkDriverParameters {
     final NeuralNetworkConfigurationBuilder neuralNetConfBuilder =
         NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
 
-    neuralNetConfBuilder.setBatchSize(neuralNetConf.getBatchSize())
-        .setStepsize(neuralNetConf.getStepsize())
+    neuralNetConfBuilder.setStepsize(neuralNetConf.getStepsize())
         .setParameterProviderClass(getParameterProviderClass(neuralNetConf.getParameterProvider().getType()));
 
     // Adds the configuration of each layer.
@@ -243,6 +245,7 @@ public final class NeuralNetworkDriverParameters {
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
         .bindNamedParameter(NeuralNetworkESParameters.SerializedBlasConf.class, serializedBlasConfiguration)
+        .bindNamedParameter(BatchSize.class, String.valueOf(batchSize))
         .build();
   }
 

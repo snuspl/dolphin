@@ -88,7 +88,7 @@ public final class NeuralNetworkGroupCommDriver {
                 .build())
         .addReduce(ParameterGradientReduce.class,
             ReduceOperatorSpec.newBuilder()
-                .setDataCodecClass(LayerParameterArrayListCodec.class)
+                .setDataCodecClass(IntAndLayerParameterArrayPairListCodec.class)
                 .setReduceFunctionClass(ListReduceFunction.class)
                 .setReceiverId(GroupCommParameterServerTask.TASK_ID)
                 .build())
