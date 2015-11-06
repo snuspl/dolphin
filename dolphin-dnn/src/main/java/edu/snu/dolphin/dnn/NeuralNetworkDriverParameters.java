@@ -18,6 +18,8 @@ package edu.snu.dolphin.dnn;
 import com.google.protobuf.TextFormat;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater.LogPeriod;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
@@ -57,6 +59,7 @@ public final class NeuralNetworkDriverParameters {
   private final ProviderType providerType;
   private final String inputShape;
   private final int logPeriod;
+  private final String serializedBlasConfiguration;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
   public static class ConfigurationPath implements Name<String> {
@@ -68,6 +71,10 @@ public final class NeuralNetworkDriverParameters {
 
   @NamedParameter(doc = "the shape of input data")
   public static class InputShape implements Name<String> {
+  }
+
+  @NamedParameter(doc = "backend BLAS library", short_name = "blas", default_value = "jblas")
+  public static class BlasLibrary implements Name<String> {
   }
 
   enum ProviderType {
@@ -108,7 +115,8 @@ public final class NeuralNetworkDriverParameters {
                                         @Parameter(Delimiter.class) final String delimiter,
                                         @Parameter(MaxIterations.class) final int maxIterations,
                                         @Parameter(OnLocal.class) final boolean onLocal,
-                                        @Parameter(LogPeriod.class) final int logPeriod) throws IOException {
+                                        @Parameter(LogPeriod.class) final int logPeriod,
+                                        @Parameter(BlasLibrary.class) final String blasLibrary) throws IOException {
     final NeuralNetworkConfiguration neuralNetConf = loadNeuralNetworkConfiguration(configurationPath, onLocal);
 
     // the method is being called twice: here and in `buildNeuralNetworkConfiguration`
@@ -122,6 +130,7 @@ public final class NeuralNetworkDriverParameters {
 
     // convert to string because Tang configuration serializer does not support List serialization.
     this.inputShape = inputShapeToString(neuralNetConf.getInputShape().getDimList());
+    this.serializedBlasConfiguration = configurationSerializer.toString(buildBlasConfiguration(blasLibrary));
   }
 
   /**
@@ -155,6 +164,19 @@ public final class NeuralNetworkDriverParameters {
       return ParameterServerParameterProvider.class;
     default:
       throw new IllegalArgumentException("Illegal parameter provider: " + parameterProvider);
+    }
+  }
+
+  /**
+   * @param blasLibraryType a BLAS library string
+   * @return the matrix factory class related to the specified BLAS library string
+   */
+  private static Class<? extends MatrixFactory> getMatrixFactoryClass(final String blasLibraryType) {
+    switch (blasLibraryType.toLowerCase()) {
+    case "jblas":
+      return MatrixJBLASFactory.class;
+    default:
+      throw new IllegalArgumentException("Unsupported BLAS library: " + blasLibraryType);
     }
   }
 
@@ -226,6 +248,16 @@ public final class NeuralNetworkDriverParameters {
   }
 
   /**
+   * @param blasLibrary a string that indicates a BLAS library to be used
+   * @return the configuration for BLAS library
+   */
+  private static Configuration buildBlasConfiguration(final String blasLibrary) {
+    return Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, getMatrixFactoryClass(blasLibrary))
+        .build();
+  }
+
+  /**
    * Registers command line parameters for driver.
    * @param cl
    */
@@ -234,6 +266,7 @@ public final class NeuralNetworkDriverParameters {
     cl.registerShortNameOfClass(Delimiter.class);
     cl.registerShortNameOfClass(MaxIterations.class);
     cl.registerShortNameOfClass(LogPeriod.class);
+    cl.registerShortNameOfClass(BlasLibrary.class);
   }
 
   /**
@@ -248,6 +281,7 @@ public final class NeuralNetworkDriverParameters {
         .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
         .bindNamedParameter(InputShape.class, inputShape)
         .bindNamedParameter(LogPeriod.class, String.valueOf(logPeriod))
+        .bindNamedParameter(NeuralNetworkESParameters.SerializedBlasConf.class, serializedBlasConfiguration)
         .build();
   }
 

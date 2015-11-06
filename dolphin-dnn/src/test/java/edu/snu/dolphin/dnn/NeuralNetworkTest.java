@@ -15,45 +15,60 @@
  */
 package edu.snu.dolphin.dnn;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
+import edu.snu.dolphin.dnn.blas.MatrixUtils;
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.layerparam.provider.LocalNeuralNetParameterProvider;
-import edu.snu.dolphin.dnn.util.Nd4jUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.junit.Before;
 import org.junit.Test;
-import org.nd4j.linalg.factory.Nd4j;
 
 import static org.junit.Assert.*;
 
 /**
  * Unit tests for neural network.
  */
-public class NeuralNetworkTest {
+public final class NeuralNetworkTest {
 
-  private final float tolerance = 1e-6f;
+  private static MatrixFactory matrixFactory;
+  private static LayerParameter emptyLayerParam;
+  private static final float TOLERANCE = 1e-7f;
 
-  private final INDArray input = Nd4j.create(new float[]{77, 57, 30, 26, 75, 74, 87, 75});
-  private final INDArray expectedOutput =
-      Nd4j.create(new float[]{5.96001904648e-01f, 5.54388443935e-01f, 4.88766051729e-01f});
-  private final INDArray label = Nd4j.create(new float[]{0, 1, 0});
+  static {
+    final Configuration configuration = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+        .build();
+    try {
+      matrixFactory = Tang.Factory.getTang().newInjector(configuration).getInstance(MatrixFactory.class);
+      emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
+    } catch (final InjectionException e) {
+      throw new RuntimeException("InjectionException while injecting a matrix factory: " + e);
+    }
+  }
+
+  private final Matrix input = matrixFactory.create(new float[]{77, 57, 30, 26, 75, 74, 87, 75});
+  private final Matrix expectedOutput =
+      matrixFactory.create(new float[]{5.61329743164e-01f, 5.97883503916e-01f, 4.79822915984e-01f});
+  private final Matrix label = matrixFactory.create(new float[]{0, 1, 0});
   private final int numHiddenUnits = 5;
 
-  private final INDArray[] expectedActivations = new INDArray[] {
-      Nd4j.create(new float[]{
-          1.37635572407e-02f, 2.03896454414e-02f, 8.84165997677e-03f, 2.93623838992e-02f, -7.07258002822e-03f}),
-      Nd4j.create(new float[]{
-          5.03440834992e-01f, 5.05097234769e-01f, 5.02210400594e-01f, 5.07340068629e-01f, 4.98231862363e-01f}),
-      Nd4j.create(new float[]{
-          3.88833699304e-01f, 2.18417981391e-01f, -4.49433566656e-02f}),
+  private final Matrix[] expectedActivations = new Matrix[] {
+      matrixFactory.create(new float[]{
+          -7.93876278605e-03f,  -3.31747899111e-02f, 3.44120437890e-02f, 1.59688640758e-02f, 1.38468652740e-02f}),
+      matrixFactory.create(new float[]{
+          4.98015319727e-01f, 4.91707063086e-01f, 5.08602162082e-01f, 5.03992131185e-01f, 5.03461661008e-01f}),
+      matrixFactory.create(new float[]{
+          2.46560502863e-01f, 3.96654087576e-01f, -8.07521889872e-02f}),
       expectedOutput};
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
@@ -62,7 +77,7 @@ public class NeuralNetworkTest {
       .setParameterProviderClass(LocalNeuralNetParameterProvider.class)
       .addLayerConfiguration(
           FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
-              .setNumInput(input.length())
+              .setNumInput(input.getLength())
               .setNumOutput(numHiddenUnits)
               .setInitWeight(0.0001f)
               .setInitBias(0.0002f)
@@ -77,59 +92,61 @@ public class NeuralNetworkTest {
       .addLayerConfiguration(
           FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
               .setNumInput(numHiddenUnits)
-              .setNumOutput(expectedOutput.length())
+              .setNumOutput(expectedOutput.getLength())
               .setInitWeight(0.2f)
               .setInitBias(0.3f)
               .setRandomSeed(10)
               .build())
       .addLayerConfiguration(ActivationWithLossLayerConfigurationBuilder.newConfigurationBuilder()
-          .setNumInput(expectedOutput.length())
-          .setNumOutput(expectedOutput.length())
+          .setNumInput(expectedOutput.getLength())
+          .setNumOutput(expectedOutput.getLength())
           .setActivationFunction("sigmoid")
           .setLossFunction("crossentropy")
           .build())
       .build();
 
+  private final Configuration blasConfiguration = Tang.Factory.getTang().newConfigurationBuilder()
+      .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+      .build();
+
   private NeuralNetwork neuralNetwork;
 
-  private final INDArray[] expectedErrors = new INDArray[] {
-      Nd4j.create(new float[]{
-          -1.10814514935e-02f, 4.75458113254e-02f, 2.79511566851e-02f, -3.76325218465e-02f, -6.66430042946e-02f}),
-      Nd4j.create(new float[]{
-          -4.43279052273e-02f, 1.90203012570e-01f, 1.11806811835e-01f, -1.50562534580e-01f, -2.66575350768e-01f}),
-      Nd4j.create(new float[]{5.96001904648e-01f, -4.45611556065e-01f, 4.88766051729e-01f})};
+  private final Matrix[] expectedErrors = new Matrix[] {
+      matrixFactory.create(new float[]{
+          -8.30651912736e-03f, -4.80258488777e-02f, 1.07207504661e-02f, 1.48007835060e-02f, -9.54255943309e-02f}),
+      matrixFactory.create(new float[]{
+          -3.32266000219e-02f, -1.92156256008e-01f, 4.28956985094e-02f, 5.92069083725e-02f, -3.81720674107e-01f}),
+      matrixFactory.create(new float[]{5.61329743164e-01f, -4.02116496084e-01f, 4.79822915984e-01f})};
 
   private final LayerParameter[] expectedParams = new LayerParameter[]{
       LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.create(new float[]{
-              8.43271085004e-03f, 6.30096936863e-03f, 3.39385184743e-03f, 2.77477924060e-03f, 8.53602946125e-03f,
-              8.44699779920e-03f, 9.53429478040e-03f, 8.27071991212e-03f, -3.66582312238e-02f, -2.70532006510e-02f,
-              -1.43677246544e-02f, -1.24133925477e-02f, -3.55010755578e-02f, -3.51333945502e-02f, -4.12985268766e-02f,
-              -3.56029583595e-02f, -2.14895112802e-02f, -1.59334007414e-02f, -8.38015241706e-03f, -7.31539494329e-03f,
-              -2.08851161497e-02f, -2.06472822008e-02f, -2.44371878001e-02f, -2.08418701603e-02f, 2.91009853375e-02f,
-              2.15053585334e-02f, 1.12523984594e-02f, 9.75559048423e-03f, 2.83249945339e-02f, 2.78617690825e-02f,
-              3.28448331050e-02f, 2.82338715978e-02f, 5.12505138331e-02f, 3.79973748138e-02f, 1.96798049550e-02f,
-              1.72828290869e-02f, 5.00290409316e-02f, 4.93010379396e-02f, 5.80023241160e-02f, 5.00251904698e-02f})
-              .reshape(input.length(), numHiddenUnits))
-          .setBiasParam(Nd4j.create(new float[]{
-              3.10814514935e-04f, -2.75458113254e-04f, -7.95115668513e-05f, 5.76325218465e-04f, 8.66430042946e-04f})
-              .reshape(1, numHiddenUnits))
+          .setWeightParam(matrixFactory.create(new float[][]{
+              {6.29601293314e-03f, 3.70347247158e-02f, -8.30645946347e-03f, -1.13498155877e-02f, 7.33580261453e-02f},
+              {4.68675940016e-03f, 2.73855962264e-02f, -6.15892196974e-03f, -8.18972289887e-03f, 5.44971278649e-02f},
+              {2.52483510568e-03f, 1.44771710611e-02f, -3.24509033713e-03f, -4.38972922295e-03f, 2.86505886796e-02f},
+              {2.28363849271e-03f, 1.23827394517e-02f, -2.83174715194e-03f, -3.81162996477e-03f, 2.47702858171e-02f},
+              {6.16528987324e-03f, 3.60245812466e-02f, -7.81562200122e-03f, -1.10868847139e-02f, 7.16255958803e-02f},
+              {6.13136617093e-03f, 3.55017700762e-02f, -7.77507240929e-03f, -1.09673650336e-02f, 7.07364371617e-02f},
+              {7.27458344572e-03f, 4.14693921910e-02f, -9.24880154366e-03f, -1.29832496649e-02f, 8.30297472805e-02f},
+              {6.22864791469e-03f, 3.59129885050e-02f, -7.93995969825e-03f, -1.10342586510e-02f, 7.16121329971e-02f}}))
+          .setBiasParam(matrixFactory.create(new float[]{
+              2.83065191274e-04f, 6.80258488777e-04f, 9.27924953390e-05f, 5.19921649397e-05f, 1.15425594331e-03f}))
           .build(),
-      LayerParameter.EMPTY, // sigmoid activation layer
+      emptyLayerParam, // sigmoid activation layer
       LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.create(new float[]{
-              -2.03014116811e-01f, 2.44876642191e-01f, 9.28304253913e-02f, 1.87009753641e-02f, 7.41970556867e-03f,
-              -9.36696160145e-02f, -1.26948175865e-01f, -2.44954097078e-04f, 1.41093564760e-01f, -7.24960104289e-02f,
-              6.32980868345e-02f, -3.33847090889e-02f, 1.07187527879e-01f, -2.10442219526e-01f, -6.28627854949e-01f})
-              .reshape(numHiddenUnits, expectedOutput.length()))
-          .setBiasParam(Nd4j.create(new float[]{2.94039980954e-01f, 3.04456115561e-01f, 2.95112339483e-01f})
-              .reshape(1, expectedOutput.length()))
+          .setWeightParam(matrixFactory.create(new float[][]{
+              {-2.02809097974e-01f, -2.89133648763e-02f, 1.36443203991e-01f},
+              {-9.86731028695e-02f, 9.78008450420e-02f, -2.10321836138e-01f},
+              {6.29037997313e-02f, -4.37688459799e-04f, 7.94878703128e-03f},
+              {2.45057981449e-01f, 1.11668795437e-01f, -7.71344562636e-02f},
+              {-1.32025024617e-01f, 2.37492346105e-02f, -6.28608389523e-01f}}))
+          .setBiasParam(matrixFactory.create(new float[]{2.94386702568e-01f, 3.04021164961e-01f, 2.95201770840e-01f}))
           .build(),
-      LayerParameter.EMPTY}; // sigmoid activation layer
+      emptyLayerParam}; // sigmoid activation layer
 
   @Before
   public void buildNeuralNetwork() throws InjectionException {
-    final Injector injector = Tang.Factory.getTang().newInjector(neuralNetworkConfiguration);
+    final Injector injector = Tang.Factory.getTang().newInjector(blasConfiguration, neuralNetworkConfiguration);
     neuralNetwork = injector.getInstance(NeuralNetwork.class);
   }
 
@@ -138,9 +155,9 @@ public class NeuralNetworkTest {
    */
   @Test
   public void feedForwardTest() {
-    final INDArray[] activations = neuralNetwork.feedForward(input);
-    assertTrue(Nd4jUtils.equals(activations[activations.length - 1], expectedOutput, tolerance));
-    assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
+    final Matrix[] activations = neuralNetwork.feedForward(input);
+    assertTrue(expectedOutput.compare(activations[activations.length - 1], TOLERANCE));
+    assertTrue(MatrixUtils.compare(activations, expectedActivations, TOLERANCE));
   }
 
   /**
@@ -148,11 +165,34 @@ public class NeuralNetworkTest {
    */
   @Test
   public void backPropagateTest() {
-    final INDArray[] activations = neuralNetwork.feedForward(input);
-    assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
+    final Matrix[] activations = neuralNetwork.feedForward(input);
+    assertTrue(MatrixUtils.compare(activations, expectedActivations, TOLERANCE));
 
-    final INDArray[] errors = neuralNetwork.backPropagate(ArrayUtils.add(activations, 0, input), label);
-    assertTrue(Nd4jUtils.equals(errors, expectedErrors, tolerance));
+    final Matrix[] gradients = neuralNetwork.backPropagate(ArrayUtils.add(activations, 0, input), label);
+    assertTrue(MatrixUtils.compare(expectedErrors, gradients, TOLERANCE));
+  }
+
+  /**
+   * Returns true if each element of weight and bias of a layer parameter is equal to another within tolerance.
+   *
+   * @param a one layer parameter array to be tested for equality.
+   * @param b another layer parameter array to be tested for equality.
+   * @param tolerance the maximum difference for which both numbers are still considered equal.
+   * @return true if two layer parameter arrays are equal.
+   */
+  private static boolean compare(final LayerParameter[] a, final LayerParameter[] b, final float tolerance) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (int i = 0; i < a.length; ++i) {
+      final LayerParameter param = a[i];
+      final LayerParameter other = b[i];
+      if (!param.getBiasParam().compare(other.getBiasParam(), tolerance)
+          || !param.getWeightParam().compare(other.getWeightParam(), tolerance)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -161,11 +201,11 @@ public class NeuralNetworkTest {
    */
   @Test
   public void localNeuralNetParameterProviderTest() throws InjectionException {
-    final INDArray[] activations = ArrayUtils.add(expectedActivations, 0, input);
+    final Matrix[] activations = ArrayUtils.add(expectedActivations, 0, input);
     final LocalNeuralNetParameterProvider localNeuralNetParameterProvider = Tang.Factory.getTang()
-        .newInjector(neuralNetworkConfiguration).getInstance(LocalNeuralNetParameterProvider.class);
+        .newInjector(blasConfiguration, neuralNetworkConfiguration).getInstance(LocalNeuralNetParameterProvider.class);
 
     localNeuralNetParameterProvider.push(neuralNetwork.generateParameterGradients(activations, expectedErrors));
-    assertTrue(Nd4jUtils.equals(localNeuralNetParameterProvider.pull(), expectedParams, tolerance));
+    assertTrue(compare(expectedParams, localNeuralNetParameterProvider.pull(), TOLERANCE));
   }
 }

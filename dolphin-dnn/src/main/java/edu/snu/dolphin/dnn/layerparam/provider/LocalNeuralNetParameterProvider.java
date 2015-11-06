@@ -15,6 +15,8 @@
  */
 package edu.snu.dolphin.dnn.layerparam.provider;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
@@ -25,8 +27,6 @@ import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -43,21 +43,28 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   private final LayerParameter[] deltaLayerParameters;
   private final float stepsize;
   private int numUpdate = 0;
+  private final MatrixFactory matrixFactory;
 
   @Inject
   public LocalNeuralNetParameterProvider(
-      @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
+      @Parameter(SerializedLayerConfigurationSet.class)final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
-      final ConfigurationSerializer configurationSerializer) {
+      final ConfigurationSerializer configurationSerializer,
+      final MatrixFactory matrixFactory) {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
+    this.matrixFactory = matrixFactory;
+
+    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
+        .build();
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
-        final Injector injector = Tang.Factory.getTang().newInjector(initializerConfiguration);
+        final Injector injector = Tang.Factory.getTang().newInjector(initializerConfiguration, matrixFactoryConf);
         final LayerParameterInitializer layerParameterInitializer =
             injector.getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
@@ -78,12 +85,12 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
    */
   private void initDeltaParameters() {
     for (int i = 0; i < layerParameters.length; ++i) {
-      final INDArray biasParam = layerParameters[i].getBiasParam();
-      final INDArray weightParam = layerParameters[i].getWeightParam();
+      final Matrix biasParam = layerParameters[i].getBiasParam();
+      final Matrix weightParam = layerParameters[i].getWeightParam();
 
       deltaLayerParameters[i] = LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.zeros(weightParam.shape()))
-          .setBiasParam(Nd4j.zeros(biasParam.shape()))
+          .setWeightParam(matrixFactory.zeros(weightParam.getRows(), weightParam.getColumns()))
+          .setBiasParam(matrixFactory.zeros(biasParam.getRows(), biasParam.getColumns()))
           .build();
     }
   }
@@ -93,8 +100,8 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
    */
   private void reset() {
     for (final LayerParameter layerParameter : deltaLayerParameters) {
-      layerParameter.getWeightParam().assign(0.0);
-      layerParameter.getBiasParam().assign(0.0);
+      layerParameter.getWeightParam().fill(0.0f);
+      layerParameter.getBiasParam().fill(0.0f);
     }
     numUpdate = 0;
   }

@@ -15,11 +15,11 @@
  */
 package edu.snu.dolphin.dnn.layerparam.initializer;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.tang.annotations.Parameter;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 
@@ -31,6 +31,7 @@ import javax.inject.Inject;
  */
 public final class FullyConnectedLayerParameterInitializer implements LayerParameterInitializer {
 
+  private final MatrixFactory matrixFactory;
   private final int index;
   private final int numInput;
   private final int numOutput;
@@ -40,12 +41,14 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
 
   @Inject
   public FullyConnectedLayerParameterInitializer(
+      final MatrixFactory matrixFactory,
       @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
       @Parameter(LayerConfigurationParameters.NumberOfInput.class) final int numInput,
       @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
       @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
       @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
       @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias) {
+    this.matrixFactory = matrixFactory;
     this.index = index;
     this.randomSeed = randomSeed;
     this.numInput = numInput;
@@ -57,14 +60,10 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateInitialParameter() {
-    final INDArray weight = Nd4j.randn(numInput, numOutput, randomSeed);
-    final INDArray bias = Nd4j.valueArrayOf(1, numOutput, initBias);
+    final Matrix weight = matrixFactory.randn(numInput, numOutput, randomSeed);
+    final Matrix bias = matrixFactory.zeros(numOutput).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
-
-    // Mark arrays persist for the aggressive garbage collection strategy.
-    weight.data().persist();
-    bias.data().persist();
 
     return LayerParameter.newBuilder()
         .setWeightParam(weight)

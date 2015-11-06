@@ -16,6 +16,8 @@
 package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
@@ -32,8 +34,6 @@ import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.apache.reef.task.Task;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -54,6 +54,7 @@ public final class GroupCommParameterServerTask implements Task {
   private static final Logger LOG = Logger.getLogger(GroupCommParameterServerTask.class.getName());
   public static final String TASK_ID = GroupCommParameterServerTask.class.getSimpleName();
 
+  private final MatrixFactory matrixFactory;
   private final LayerParameter[] layerParameters;
   private final LayerParameter[] deltaLayerParameters;
   private final float stepsize;
@@ -64,6 +65,7 @@ public final class GroupCommParameterServerTask implements Task {
 
   @Inject
   private GroupCommParameterServerTask(
+      final MatrixFactory matrixFactory,
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       @Parameter(MaxIterations.class) final int maxIterations,
@@ -79,17 +81,23 @@ public final class GroupCommParameterServerTask implements Task {
     this.validationStatsPairReduceReceiver =
         commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
 
+    this.matrixFactory = matrixFactory;
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
     this.maxIterations = maxIterations;
+
+    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
+        .build();
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
         final LayerParameterInitializer layerParameterInitializer =
-            Tang.Factory.getTang().newInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
+            Tang.Factory.getTang().newInjector(initializerConfiguration, matrixFactoryConf)
+                .getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
         this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();
@@ -109,12 +117,12 @@ public final class GroupCommParameterServerTask implements Task {
    */
   private void initDeltaParameters() {
     for (int i = 0; i < layerParameters.length; ++i) {
-      final INDArray biasParam = layerParameters[i].getBiasParam();
-      final INDArray weightParam = layerParameters[i].getWeightParam();
+      final Matrix biasParam = layerParameters[i].getBiasParam();
+      final Matrix weightParam = layerParameters[i].getWeightParam();
 
       deltaLayerParameters[i] = LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.zeros(weightParam.shape()))
-          .setBiasParam(Nd4j.zeros(biasParam.shape()))
+          .setWeightParam(matrixFactory.zeros(weightParam.getRows(), weightParam.getColumns()))
+          .setBiasParam(matrixFactory.zeros(biasParam.getRows(), biasParam.getColumns()))
           .build();
     }
   }
@@ -124,8 +132,8 @@ public final class GroupCommParameterServerTask implements Task {
    */
   private void resetDeltaLayerParameters() {
     for (final LayerParameter deltaLayerParameter : deltaLayerParameters) {
-      deltaLayerParameter.getWeightParam().assign(0.0);
-      deltaLayerParameter.getBiasParam().assign(0.0);
+      deltaLayerParameter.getWeightParam().fill(0.0f);
+      deltaLayerParameter.getBiasParam().fill(0.0f);
     }
   }
 

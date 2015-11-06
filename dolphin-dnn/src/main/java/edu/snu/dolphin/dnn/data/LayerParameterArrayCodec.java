@@ -15,25 +15,25 @@
  */
 package edu.snu.dolphin.dnn.data;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.io.network.impl.StreamingCodec;
 import org.apache.reef.io.serialization.Codec;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
 import java.io.*;
 
 /**
  * Serialization codec for neural network layer parameters (weights and biases).
- * Internally uses {@link NDArrayCodec}.
+ * Internally uses {@link MatrixCodec}.
  */
 public final class LayerParameterArrayCodec implements StreamingCodec<LayerParameter[]>, Codec<LayerParameter[]> {
 
-  private final NDArrayCodec ndArrayCodec;
+  private final MatrixCodec matrixCodec;
 
   @Inject
-  private LayerParameterArrayCodec(final NDArrayCodec ndArrayCodec) {
-    this.ndArrayCodec = ndArrayCodec;
+  private LayerParameterArrayCodec(final MatrixCodec matrixCodec) {
+    this.matrixCodec = matrixCodec;
   }
 
   @Override
@@ -53,8 +53,8 @@ public final class LayerParameterArrayCodec implements StreamingCodec<LayerParam
     try {
       dstream.writeInt(layerParameters.length);
       for (final LayerParameter layerParameter : layerParameters) {
-        ndArrayCodec.encodeToStream(layerParameter.getWeightParam(), dstream);
-        ndArrayCodec.encodeToStream(layerParameter.getBiasParam(), dstream);
+        matrixCodec.encodeToStream(layerParameter.getWeightParam(), dstream);
+        matrixCodec.encodeToStream(layerParameter.getBiasParam(), dstream);
       }
 
     } catch (final IOException e) {
@@ -77,8 +77,8 @@ public final class LayerParameterArrayCodec implements StreamingCodec<LayerParam
     try {
       final LayerParameter[] layerParameters = new LayerParameter[dstream.readInt()];
       for (int index = 0; index < layerParameters.length; index++) {
-        final INDArray weightParam = ndArrayCodec.decodeFromStream(dstream);
-        final INDArray biasParam = ndArrayCodec.decodeFromStream(dstream);
+        final Matrix weightParam = matrixCodec.decodeFromStream(dstream);
+        final Matrix biasParam = matrixCodec.decodeFromStream(dstream);
         layerParameters[index] = LayerParameter.newBuilder()
             .setWeightParam(weightParam)
             .setBiasParam(biasParam)

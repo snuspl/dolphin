@@ -15,17 +15,24 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 
 /**
  * The parameter of the layer.
  */
 public final class LayerParameter {
-  private final INDArray weightParam;
-  private final INDArray biasParam;
+  private final Matrix weightParam;
+  private final Matrix biasParam;
 
-  public static final LayerParameter EMPTY = new LayerParameter(Nd4j.create(0), Nd4j.create(0));
+  /**
+   * Generates a new instance of a layer parameter.
+   * @param matrixFactory a factory to create the matrices that the layer parameter contains
+   * @return the generated empty layer parameter
+   */
+  public static LayerParameter newEmptyInstance(final MatrixFactory matrixFactory) {
+    return new LayerParameter(matrixFactory.create(0), matrixFactory.create(0));
+  }
 
   /**
    * @return a new LayerParameter builder.
@@ -37,27 +44,27 @@ public final class LayerParameter {
   /**
    * @return the weight matrix of the parameter.
    */
-  public INDArray getWeightParam() {
+  public Matrix getWeightParam() {
     return weightParam;
   }
 
   /**
    * @return the bias vector of the parameter.
    */
-  public INDArray getBiasParam() {
+  public Matrix getBiasParam() {
     return biasParam;
   }
 
   public static final class Builder implements org.apache.reef.util.Builder<LayerParameter> {
-    private INDArray weightParam;
-    private INDArray biasParam;
+    private Matrix weightParam;
+    private Matrix biasParam;
 
-    public Builder setWeightParam(final INDArray weightParam) {
+    public Builder setWeightParam(final Matrix weightParam) {
       this.weightParam = weightParam;
       return this;
     }
 
-    public Builder setBiasParam(final INDArray biasParam) {
+    public Builder setBiasParam(final Matrix biasParam) {
       this.biasParam = biasParam;
       return this;
     }
@@ -68,8 +75,8 @@ public final class LayerParameter {
     }
   }
 
-  private LayerParameter(final INDArray weightParam,
-                 final INDArray biasParam) {
+  private LayerParameter(final Matrix weightParam,
+                         final Matrix biasParam) {
     this.weightParam = weightParam;
     this.biasParam = biasParam;
   }

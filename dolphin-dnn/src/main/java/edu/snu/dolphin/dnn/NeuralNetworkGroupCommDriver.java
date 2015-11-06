@@ -132,7 +132,8 @@ public final class NeuralNetworkGroupCommDriver {
         LOG.log(Level.FINEST, "Submit group comm parameter server context {0} to {1}",
             new Object[]{nnCtrlCtxtId, contextId});
 
-        activeContext.submitContextAndService(groupCommContextConf, groupCommServiceConf);
+        activeContext.submitContextAndService(groupCommContextConf,
+            Configurations.merge(groupCommServiceConf, neuralNetworkESParameters.getServiceConfiguration()));
 
       // Case 2: Evaluator configured with a Data Loading context has been given.
       // We need to add a group comm context for training neural networks above this context.

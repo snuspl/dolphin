@@ -15,7 +15,7 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
+import edu.snu.dolphin.dnn.blas.Matrix;
 
 /**
  * Abstract class for the layer of a neural network.
@@ -78,7 +78,7 @@ public abstract class LayerBase {
    * @param input an input value for this layer.
    * @return an output value for this layer.
    */
-  public abstract INDArray feedForward(final INDArray input);
+  public abstract Matrix feedForward(final Matrix input);
 
   /**
    * Computes an error.
@@ -87,9 +87,9 @@ public abstract class LayerBase {
    * @param nextError an error of the next layer - the one closer to the output layer.
    * @return an error for this layer with the specified input value.
    */
-  public abstract INDArray backPropagate(final INDArray input,
-                                         final INDArray activation,
-                                         final INDArray nextError);
+  public abstract Matrix backPropagate(final Matrix input,
+                                       final Matrix activation,
+                                       final Matrix nextError);
 
   /**
    * Computes a parameter gradient for this layer.
@@ -97,5 +97,5 @@ public abstract class LayerBase {
    * @param error an error for this layer.
    * @return a parameter gradient for this layer or {@code null} if this layer is not learnable.
    */
-  public abstract LayerParameter generateParameterGradient(final INDArray input, final INDArray error);
+  public abstract LayerParameter generateParameterGradient(final Matrix input, final Matrix error);
 }

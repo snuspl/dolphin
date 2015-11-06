@@ -15,6 +15,7 @@
  */
 package edu.snu.dolphin.dnn.layerparam.initializer;
 
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.tang.annotations.Parameter;
@@ -29,18 +30,21 @@ import javax.inject.Inject;
 public final class DefaultLayerParameterInitializer implements LayerParameterInitializer {
 
   private final int index;
+  private final LayerParameter emptyLayerParam;
 
   @Inject
   public DefaultLayerParameterInitializer(
-      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index) {
+      final MatrixFactory matrixFactory,
+      @Parameter(LayerConfigurationParameters.LayerIndex.class)final int index) {
     this.index = index;
+    this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
   }
 
   /**
    * @return the initial parameter of the layer.
    */
   public LayerParameter generateInitialParameter() {
-    return LayerParameter.EMPTY;
+    return emptyLayerParam;
   }
 
   /**
