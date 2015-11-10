@@ -37,6 +37,8 @@ public interface Function {
 
     public static Function getFunction(final String name) {
       switch (name.toLowerCase()) {
+      case "identity":
+        return new Identity();
       case "sigmoid":
         return new Sigmoid();
       case "relu":
