@@ -43,6 +43,8 @@ public interface Function {
         return new Sigmoid();
       case "relu":
         return new ReLU();
+      case "tanh":
+        return new Tanh();
       default:
         throw new IllegalArgumentException("Unsupported function: " + name);
       }

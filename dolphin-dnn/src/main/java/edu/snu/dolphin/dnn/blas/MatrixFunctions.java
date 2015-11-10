@@ -44,4 +44,48 @@ public final class MatrixFunctions {
     }
     return m;
   }
+
+  public static Matrix pow(final Matrix m, final float c) {
+    return powi(m.dup(), c);
+  }
+
+  public static Matrix powi(final Matrix m, final float c) {
+    for (int i = 0; i < m.getLength(); ++i) {
+      m.put(i, (float) Math.pow(m.get(i), c));
+    }
+    return m;
+  }
+
+  public static Matrix abs(final Matrix m) {
+    return absi(m.dup());
+  }
+
+  public static Matrix absi(final Matrix m) {
+    for (int i = 0; i < m.getLength(); ++i) {
+      m.put(i, Math.abs(m.get(i)));
+    }
+    return m;
+  }
+
+  public static Matrix signum(final Matrix m) {
+    return signumi(m.dup());
+  }
+
+  public static Matrix signumi(final Matrix m) {
+    for (int i = 0; i < m.getLength(); ++i) {
+      m.put(i, Math.signum(m.get(i)));
+    }
+    return m;
+  }
+
+  public static Matrix tanh(final Matrix m) {
+    return tanhi(m.dup());
+  }
+
+  public static Matrix tanhi(final Matrix m) {
+    for (int i = 0; i < m.getLength(); ++i) {
+      m.put(i, (float) Math.tanh(m.get(i)));
+    }
+    return m;
+  }
 }
