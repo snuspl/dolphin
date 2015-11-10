@@ -39,6 +39,8 @@ public interface Function {
       switch (name.toLowerCase()) {
       case "sigmoid":
         return new Sigmoid();
+      case "relu":
+        return new ReLU();
       default:
         throw new IllegalArgumentException("Unsupported function: " + name);
       }
