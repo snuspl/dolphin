@@ -404,6 +404,51 @@ public class MatrixJBLASImpl implements Matrix {
   }
 
   @Override
+  public float max() {
+    return matrix.max();
+  }
+
+  @Override
+  public Matrix columnMaxs() {
+    return new MatrixJBLASImpl(matrix.columnMaxs());
+  }
+
+  @Override
+  public Matrix rowMaxs() {
+    return new MatrixJBLASImpl(matrix.rowMaxs());
+  }
+
+  @Override
+  public float min() {
+    return matrix.min();
+  }
+
+  @Override
+  public Matrix columnMins() {
+    return new MatrixJBLASImpl(matrix.columnMins());
+  }
+
+  @Override
+  public Matrix rowMins() {
+    return new MatrixJBLASImpl(matrix.rowMins());
+  }
+
+  @Override
+  public Matrix columnSums() {
+    return new MatrixJBLASImpl(matrix.columnSums());
+  }
+
+  @Override
+  public Matrix rowSums() {
+    return new MatrixJBLASImpl(matrix.rowSums());
+  }
+
+  @Override
+  public float sum() {
+    return matrix.sum();
+  }
+
+  @Override
   public boolean compare(final Matrix m, final float tolerance) {
     if (m instanceof MatrixJBLASImpl) {
       return matrix.compare(((MatrixJBLASImpl) m).matrix, tolerance);

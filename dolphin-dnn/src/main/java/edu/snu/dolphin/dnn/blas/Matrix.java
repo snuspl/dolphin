@@ -342,6 +342,51 @@ public interface Matrix {
   Matrix mmuli(final Matrix m);
 
   /**
+   * Returns the maximum element of the matrix.
+   */
+  float max();
+
+  /**
+   * Returns column-wise maximums.
+   */
+  Matrix columnMaxs();
+
+  /**
+   * Returns row-wise maximums.
+   */
+  Matrix rowMaxs();
+
+  /**
+   * Returns the minimum element of the matrix.
+   */
+  float min();
+
+  /**
+   * Returns column-wise minimums.
+   */
+  Matrix columnMins();
+
+  /**
+   * Returns row-wise minimums.
+   */
+  Matrix rowMins();
+
+  /**
+   * Returns a row vector containing the sum of elements in each column.
+   */
+  Matrix columnSums();
+
+  /**
+   * Returns a column vector containing the sum of elements in each row.
+   */
+  Matrix rowSums();
+
+  /**
+   * Returns the sum of all elements in the matrix.
+   */
+  float sum();
+
+  /**
    * Compares with the given matrix.
    *
    * Returns true if and only if the given matrix has the same size
