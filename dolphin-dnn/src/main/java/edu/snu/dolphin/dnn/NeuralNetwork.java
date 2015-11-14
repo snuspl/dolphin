@@ -147,7 +147,7 @@ public final class NeuralNetwork {
    */
   public INDArray[] feedForward(final int begin, final int end, final INDArray input) {
     if (begin > end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
@@ -172,7 +172,7 @@ public final class NeuralNetwork {
    */
   public INDArray[] backPropagate(final INDArray[] activations,
                                   final INDArray label) {
-    return backPropagateTo(0, activations, label);
+    return backPropagateTo(1, activations, label);
   }
 
   /**
@@ -185,9 +185,14 @@ public final class NeuralNetwork {
   public INDArray[] backPropagateTo(final int end,
                                     final INDArray[] activations,
                                     final INDArray label) {
+    if (end == 0) {
+      throw new IllegalArgumentException("The ending layer cannot be the first layer: " +
+          "the error of an input value does not make sense.");
+    }
+
     final int lastLayerIndex = layers.length - 1;
 
-    // The first element of activations is input data.
+    // The first element of activations is the input data.
     // So, (i + 1)-th element of activations refers to the activation of i-th layer.
     final INDArray error = layers[lastLayerIndex].backPropagate(activations[lastLayerIndex + 1], label);
     return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
@@ -205,29 +210,29 @@ public final class NeuralNetwork {
                                         final INDArray[] activations,
                                         final INDArray nextError) {
     if (begin == layers.length - 1) {
-      throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
+      throw new IllegalArgumentException("The beginning layer of backPropagateFromTo cannot be the output layer");
     }
     if (begin < end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
 
-    checkIndices(begin, end, true);
+    checkIndices(begin, end, false);
 
-    final INDArray[] errors = new INDArray[end - begin + 1];
+    final INDArray[] errors = new INDArray[begin - end + 1];
     INDArray error = nextError;
 
     for (int i = begin; i >= end; --i) {
-      error = layers[i].backPropagate(activations[i + 1], layers[i + 1].getLayerParameter(), error);
-      errors[i - begin] = error;
+      error = layers[i].backPropagate(activations[i], activations[i + 1], error);
+      errors[i - end] = error;
     }
     return errors;
   }
 
   /**
    * Generates parameter gradients for all layers.
-   * @param activations activation values for each layer.
-   * @param errors errors for each layer.
+   * @param activations the activation values for each layer.
+   * @param errors the errors for each layer.
    * @return an array of parameter gradients for each layer.
    */
   public LayerParameter[] generateParameterGradients(final INDArray[] activations,
@@ -239,15 +244,15 @@ public final class NeuralNetwork {
    * Generates parameter gradients for each layer from the specified beginning layer to the specified ending layer.
    * @param begin the index of beginning layer, inclusive.
    * @param end the index of ending layer, inclusive.
-   * @param activations activation values for each layer.
-   * @param errors errors for each layer.
+   * @param activations the activation values for each layer.
+   * @param errors the errors for each layer.
    * @return an array of parameter gradients for each layer.
    */
   public LayerParameter[] generateParameterGradients(final int begin, final int end,
                                                      final INDArray[] activations,
                                                      final INDArray[] errors) {
     if (begin > end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
@@ -255,7 +260,11 @@ public final class NeuralNetwork {
 
     final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
     for (int i = begin; i <= end; ++i) {
-      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
+      if (layers[i].isLearnable()) {
+        parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
+      } else {
+        parameterGradients[i - begin] = LayerParameter.EMPTY;
+      }
     }
     return parameterGradients;
   }
@@ -264,27 +273,28 @@ public final class NeuralNetwork {
    * Check whether the indices for the beginning layer and the ending layer are within layer bound.
    * @param begin the index of the beginning layer, inclusive.
    * @param end the index of the ending layer, inclusive.
-   * @param isFoward the flag for a direction.
+   * @param isForward the flag for a direction.
    */
-  private void checkIndices(final int begin, final int end, final boolean isFoward) {
+  private void checkIndices(final int begin, final int end, final boolean isForward) {
     // Case 1: forward direction
-    if (isFoward) {
+    if (isForward) {
       if (begin < 0) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The beginning index (%d) must be greater than or equal to 0.", begin));
       }
       if (end >= layers.length) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
       }
 
       // Case 2: backward direction
     } else {
       if (end < 0) {
-        throw new RuntimeException(String.format("The ending index (%d) must be greater than or equal to 0.", end));
+        throw new IllegalArgumentException(String.format(
+            "The ending index (%d) must be greater than or equal to 0.", end));
       }
       if (begin >= layers.length) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The beginning index (%d) must be less than the length of layers (%d).", begin, layers.length));
       }
     }

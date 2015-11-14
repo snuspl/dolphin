@@ -74,44 +74,37 @@ public abstract class LayerBase {
   public abstract boolean isLearnable();
 
   /**
-   * Applies a derivative of the activation function of the layer to each element of matrix.
-   * @param activation an activation value of the layer.
-   * @return a derivative for the given activation.
-   */
-  public abstract INDArray derivative(final INDArray activation);
-
-  /**
-   * Computes an activation value.
-   * @param input an input value for the layer.
-   * @return a activation value.
+   * Computes an output value.
+   * @param input an input value for this layer.
+   * @return an output value for this layer.
    */
   public abstract INDArray feedForward(final INDArray input);
 
   /**
    * Computes an error.
-   * @param activation an activation value.
-   * @param nextParameter the parameter of the next layer - the one closer to the output layer.
+   * @param input the input value.
+   * @param activation the activation value.
    * @param nextError an error of the next layer - the one closer to the output layer.
-   * @return an error for this layer with the specified activation value.
+   * @return an error for this layer with the specified input value.
    */
-  public abstract INDArray backPropagate(final INDArray activation,
-                                         final LayerParameter nextParameter,
+  public abstract INDArray backPropagate(final INDArray input,
+                                         final INDArray activation,
                                          final INDArray nextError);
 
   /**
    * Computes the error. (only for output layer)
-   * @param activation an activation for output layer.
+   * @param input an input value for output layer.
    * @param label the expected output.
    * @return an error for the output layer with the specified label.
    */
-  public abstract INDArray backPropagate(final INDArray activation,
+  public abstract INDArray backPropagate(final INDArray input,
                                          final INDArray label);
 
   /**
    * Computes a parameter gradient for this layer.
    * @param input an input value for this layer.
    * @param error an error for this layer.
-   * @return a parameter gradient for this layer.
+   * @return a parameter gradient for this layer or {@code null} if this layer is not learnable.
    */
   public abstract LayerParameter generateParameterGradient(final INDArray input, final INDArray error);
 }

@@ -16,12 +16,10 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.ActivationFunction;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -31,15 +29,11 @@ import java.util.Arrays;
  */
 public final class FullyConnectedLayer extends LayerBase {
 
-  private final String activationFunction;
-
   @Inject
   public FullyConnectedLayer(@Parameter(LayerIndex.class) final int index,
-                             @Parameter(ActivationFunction.class) final String activationFunction,
                              @Parameter(NumberOfOutput.class) final int numOutput,
                              final LayerParameterInitializer layerParameterInitializer) {
     super(index, numOutput);
-    this.activationFunction = activationFunction;
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
   }
 
@@ -47,13 +41,6 @@ public final class FullyConnectedLayer extends LayerBase {
   @Override
   public boolean isLearnable() {
     return true;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public INDArray derivative(final INDArray activation) {
-    return Nd4j.getExecutioner().execAndReturn(
-        Nd4j.getOpFactory().createTransform(activationFunction, activation.dup()).derivative());
   }
 
   /**
@@ -66,37 +53,28 @@ public final class FullyConnectedLayer extends LayerBase {
     // convert input to a row vector.
     final INDArray inputVector = input.reshape(1, input.length());
     // (output row vector) = (input row vector) x (weight matrix) + (bias row vector)
-    final INDArray output =
-        inputVector.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
-    // apply activation function.
-    return Nd4j.getExecutioner().execAndReturn(Nd4j.getOpFactory().createTransform(activationFunction, output));
+    return inputVector.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
   }
 
   /**
    * Computes an error for this fully connected layer.
-   * @param activation an activation row vector.
-   * @param nextParameter the parameter of the next layer - the one closer to the output layer.
+   * @param input the input value.
+   * @param activation the activation value.
    * @param nextError the error of the next layer - the one closer to the output layer.
-   * @return an error row vector.
+   * @return an error for this layer.
    */
   @Override
-  public INDArray backPropagate(final INDArray activation,
-                                final LayerParameter nextParameter,
-                                final INDArray nextError) {
-    if (!activation.isRowVector()) {
-      throw new RuntimeException(String.format("Invalid activation shape %s. " +
-          "An activation for a fully connected layer must be a row vector.", Arrays.toString(activation.shape())));
-    }
+  public INDArray backPropagate(final INDArray input, final INDArray activation, final INDArray nextError) {
     // convert a error of the next layer to a row vector.
     final INDArray nextErrorVector = nextError.reshape(1, nextError.length());
-    // ((next error row vector) x (weight matrix of the next layer)) * (derivative row vector)
-    return nextErrorVector.mmul(nextParameter.getWeightParam().transpose()).muli(derivative(activation));
+    // (next error row vector) x (weight matrix of this layer)
+    return nextErrorVector.mmul(getLayerParameter().getWeightParam().transpose());
   }
 
   /** {@inheritDoc} */
   @Override
-  public INDArray backPropagate(final INDArray activation, final INDArray label) {
-    return activation.sub(label);
+  public INDArray backPropagate(final INDArray input, final INDArray label) {
+    return input.sub(label);
   }
 
   /** {@inheritDoc} */

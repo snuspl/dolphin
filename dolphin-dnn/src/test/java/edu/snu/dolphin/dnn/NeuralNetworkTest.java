@@ -15,6 +15,7 @@
  */
 package edu.snu.dolphin.dnn;
 
+import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
@@ -47,7 +48,11 @@ public class NeuralNetworkTest {
 
   private final INDArray[] expectedActivations = new INDArray[] {
       Nd4j.create(new float[]{
+          1.37635572407e-02f, 2.03896454414e-02f, 8.84165997677e-03f, 2.93623838992e-02f, -7.07258002822e-03f}),
+      Nd4j.create(new float[]{
           5.03440834992e-01f, 5.05097234769e-01f, 5.02210400594e-01f, 5.07340068629e-01f, 4.98231862363e-01f}),
+      Nd4j.create(new float[]{
+          3.88833699304e-01f, 2.18417981391e-01f, -4.49433566656e-02f}),
       expectedOutput};
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
@@ -61,6 +66,11 @@ public class NeuralNetworkTest {
               .setInitWeight(0.0001f)
               .setInitBias(0.0002f)
               .setRandomSeed(10)
+              .build())
+      .addLayerConfiguration(
+          ActivationLayerConfigurationBuilder.newConfigurationBuilder()
+              .setNumInput(numHiddenUnits)
+              .setNumOutput(numHiddenUnits)
               .setActivationFunction("sigmoid")
               .build())
       .addLayerConfiguration(
@@ -70,8 +80,12 @@ public class NeuralNetworkTest {
               .setInitWeight(0.2f)
               .setInitBias(0.3f)
               .setRandomSeed(10)
-              .setActivationFunction("sigmoid")
               .build())
+      .addLayerConfiguration(ActivationLayerConfigurationBuilder.newConfigurationBuilder()
+          .setNumInput(expectedOutput.length())
+          .setNumOutput(expectedOutput.length())
+          .setActivationFunction("sigmoid")
+          .build())
       .build();
 
   private NeuralNetwork neuralNetwork;
@@ -79,6 +93,8 @@ public class NeuralNetworkTest {
   private final INDArray[] expectedErrors = new INDArray[] {
       Nd4j.create(new float[]{
           -1.10814514935e-02f, 4.75458113254e-02f, 2.79511566851e-02f, -3.76325218465e-02f, -6.66430042946e-02f}),
+      Nd4j.create(new float[]{
+          -4.43279052273e-02f, 1.90203012570e-01f, 1.11806811835e-01f, -1.50562534580e-01f, -2.66575350768e-01f}),
       Nd4j.create(new float[]{5.96001904648e-01f, -4.45611556065e-01f, 4.88766051729e-01f})};
 
   private final LayerParameter[] expectedParams = new LayerParameter[]{
@@ -97,6 +113,7 @@ public class NeuralNetworkTest {
               3.10814514935e-04f, -2.75458113254e-04f, -7.95115668513e-05f, 5.76325218465e-04f, 8.66430042946e-04f})
               .reshape(1, numHiddenUnits))
           .build(),
+      LayerParameter.EMPTY, // sigmoid activation layer
       LayerParameter.newBuilder()
           .setWeightParam(Nd4j.create(new float[]{
               -2.03014116811e-01f, 2.44876642191e-01f, 9.28304253913e-02f, 1.87009753641e-02f, 7.41970556867e-03f,
@@ -105,7 +122,8 @@ public class NeuralNetworkTest {
               .reshape(numHiddenUnits, expectedOutput.length()))
           .setBiasParam(Nd4j.create(new float[]{2.94039980954e-01f, 3.04456115561e-01f, 2.95112339483e-01f})
               .reshape(1, expectedOutput.length()))
-          .build()};
+          .build(),
+      LayerParameter.EMPTY}; // sigmoid activation layer
 
   @Before
   public void buildNeuralNetwork() throws InjectionException {
@@ -119,8 +137,8 @@ public class NeuralNetworkTest {
   @Test
   public void feedForwardTest() {
     final INDArray[] activations = neuralNetwork.feedForward(input);
-    assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
     assertTrue(Nd4jUtils.equals(activations[activations.length - 1], expectedOutput, tolerance));
+    assertTrue(Nd4jUtils.equals(activations, expectedActivations, tolerance));
   }
 
   /**
