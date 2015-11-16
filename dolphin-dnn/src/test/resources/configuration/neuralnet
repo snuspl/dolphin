@@ -30,6 +30,13 @@ layer {
   fully_connected_param {
     init_weight: 1e-4
     init_bias: 2e-4
+  }
+}
+layer {
+  type: "Activation"
+  num_input: 50
+  num_output: 50
+  activation_param {
     activation_function: "sigmoid"
   }
 }
@@ -40,6 +47,13 @@ layer {
   fully_connected_param {
     init_weight: 1e-2
     init_bias: 2e-2
+  }
+}
+layer {
+  type: "Activation"
+  num_input: 10
+  num_output: 10
+  activation_param {
     activation_function: "sigmoid"
   }
 }
