@@ -72,8 +72,8 @@ public final class ActivationLayer extends LayerBase {
 
   /** {@inheritDoc} */
   @Override
-  public INDArray backPropagate(final INDArray input, final INDArray label) {
-    return input.sub(label);
+  public INDArray backPropagate(final INDArray activation, final INDArray label) {
+    return activation.sub(label);
   }
 
   /** {@inheritDoc} */

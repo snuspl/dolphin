@@ -93,11 +93,11 @@ public abstract class LayerBase {
 
   /**
    * Computes the error. (only for output layer)
-   * @param input an input value for output layer.
+   * @param activation an activation value for output layer.
    * @param label the expected output.
    * @return an error for the output layer with the specified label.
    */
-  public abstract INDArray backPropagate(final INDArray input,
+  public abstract INDArray backPropagate(final INDArray activation,
                                          final INDArray label);
 
   /**
