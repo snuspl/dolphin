@@ -25,7 +25,7 @@ public interface MatrixFactory {
    * @param length the length of a row vector
    * @return a generated row vector
    */
-  Matrix create(final int length);
+  Matrix create(int length);
 
   /**
    * Creates a matrix.
@@ -33,21 +33,21 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix create(final int rows, final int columns);
+  Matrix create(int rows, int columns);
 
   /**
    * Creates a row vector with the given values.
    * @param data elements of a row vector
    * @return a generated row vector
    */
-  Matrix create(final float[] data);
+  Matrix create(float[] data);
 
   /**
    * Creates a matrix with the given values.
    * @param data elements of a matrix
    * @return a generated matrix
    */
-  Matrix create(final float[][] data);
+  Matrix create(float[][] data);
 
   /**
    * Creates a matrix with the given values.
@@ -56,14 +56,14 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix create(final float[] data, final int rows, final int columns);
+  Matrix create(float[] data, int rows, int columns);
 
   /**
    * Creates a row vector in which all elements are equal to {@code 1}.
    * @param length the length of a row vector
    * @return a generated row vector
    */
-  Matrix ones(final int length);
+  Matrix ones(int length);
 
   /**
    * Creates a matrix in which all elements are equal to {@code 1}.
@@ -71,14 +71,14 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix ones(final int rows, final int columns);
+  Matrix ones(int rows, int columns);
 
   /**
    * Creates a row vector in which all elements are equal to {@code 0}.
    * @param length the length of a row vector
    * @return a generated row vector
    */
-  Matrix zeros(final int length);
+  Matrix zeros(int length);
 
   /**
    * Creates a matrix in which all elements are equal to {@code 0}.
@@ -86,14 +86,14 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix zeros(final int rows, final int columns);
+  Matrix zeros(int rows, int columns);
 
   /**
    * Creates a row vector with random values uniformly distributed in 0..1.
    * @param length the length of a row vector
    * @return a generated row vector
    */
-  Matrix rand(final int length);
+  Matrix rand(int length);
 
   /**
    * Creates a matrix with random values uniformly distributed in 0..1.
@@ -101,7 +101,7 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix rand(final int rows, final int columns);
+  Matrix rand(int rows, int columns);
 
   /**
    * Creates a matrix with random values uniformly distributed in 0..1.
@@ -110,14 +110,14 @@ public interface MatrixFactory {
    * @param seed a random seed
    * @return a generated matrix
    */
-  Matrix rand(final int rows, final int columns, long seed);
+  Matrix rand(int rows, int columns, long seed);
 
   /**
    * Creates a row vector with normally distributed random values.
    * @param length the length of a row vector
    * @return a generated row vector
    */
-  Matrix randn(final int length);
+  Matrix randn(int length);
 
   /**
    * Creates a matrix with normally distributed random values.
@@ -125,7 +125,7 @@ public interface MatrixFactory {
    * @param columns the number of columns
    * @return a generated matrix
    */
-  Matrix randn(final int rows, final int columns);
+  Matrix randn(int rows, int columns);
 
   /**
    * Creates a matrix with normally distributed random values.
@@ -134,7 +134,7 @@ public interface MatrixFactory {
    * @param seed a random seed
    * @return a generated matrix
    */
-  Matrix randn(final int rows, final int columns, long seed);
+  Matrix randn(int rows, int columns, long seed);
 
   /**
    * Concatenates two matrices horizontally.

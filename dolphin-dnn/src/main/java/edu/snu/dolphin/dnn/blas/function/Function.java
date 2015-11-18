@@ -22,13 +22,13 @@ import edu.snu.dolphin.dnn.blas.Matrix;
  */
 public interface Function {
 
-  Matrix apply(final Matrix m);
+  Matrix apply(Matrix m);
 
-  Matrix applyi(final Matrix m);
+  Matrix applyi(Matrix m);
 
-  Matrix derivative(final Matrix m);
+  Matrix derivative(Matrix m);
 
-  Matrix derivativei(final Matrix m);
+  Matrix derivativei(Matrix m);
 
   final class Factory {
 
