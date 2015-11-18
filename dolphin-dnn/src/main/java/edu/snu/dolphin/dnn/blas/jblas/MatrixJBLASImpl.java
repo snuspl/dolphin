@@ -46,7 +46,9 @@ public class MatrixJBLASImpl implements Matrix {
 
   @Override
   public Matrix get(final int[] indices) {
-    return new MatrixJBLASImpl(matrix.get(indices));
+    final FloatMatrix innerVector = matrix.get(indices); // a column vector
+    innerVector.reshape(1, innerVector.getLength()); // convert it to a row vector
+    return new MatrixJBLASImpl(innerVector);
   }
 
   @Override
