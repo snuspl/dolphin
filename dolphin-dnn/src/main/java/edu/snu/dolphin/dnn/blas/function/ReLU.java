@@ -20,7 +20,7 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 /**
  * Rectified linear unit.
  */
-public final class ReLU implements Function {
+final class ReLU implements Function {
 
   /**
    * Applies a rectified linear unit to all elements of the specified matrix.

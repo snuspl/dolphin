@@ -21,7 +21,7 @@ import edu.snu.dolphin.dnn.blas.MatrixFunctions;
 /**
  * Hyperbolic tangent function.
  */
-public final class Tanh implements Function {
+final class Tanh implements Function {
 
   /**
    * Applies a hyperbolic tangent function to all elements of the specified matrix.

@@ -20,7 +20,7 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 /**
  * Identity function.
  */
-public final class Identity implements Function {
+final class Identity implements Function {
 
   /**
    * Applies an identity function to all elements of the specified matrix.
