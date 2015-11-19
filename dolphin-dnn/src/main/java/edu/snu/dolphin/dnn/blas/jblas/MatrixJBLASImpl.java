@@ -21,439 +21,439 @@ import org.jblas.FloatMatrix;
 /**
  * Matrix implementation based on JBLAS.
  */
-public class MatrixJBLASImpl implements Matrix {
+class MatrixJBLASImpl implements Matrix {
 
-  private final FloatMatrix matrix;
+  private final FloatMatrix jblasMatrix;
 
-  MatrixJBLASImpl(final FloatMatrix matrix) {
-    this.matrix = matrix;
+  MatrixJBLASImpl(final FloatMatrix jblasMatrix) {
+    this.jblasMatrix = jblasMatrix;
   }
 
   @Override
   public int getRows() {
-    return matrix.getRows();
+    return jblasMatrix.getRows();
   }
 
   @Override
   public int getColumns() {
-    return matrix.getColumns();
+    return jblasMatrix.getColumns();
   }
 
   @Override
-  public float get(final int i) {
-    return matrix.get(i);
+  public float get(final int index) {
+    return jblasMatrix.get(index);
   }
 
   @Override
   public Matrix get(final int[] indices) {
-    final FloatMatrix innerVector = matrix.get(indices); // a column vector
+    final FloatMatrix innerVector = jblasMatrix.get(indices); // a column vector
     innerVector.reshape(1, innerVector.getLength()); // convert it to a row vector
     return new MatrixJBLASImpl(innerVector);
   }
 
   @Override
   public float get(final int rowIndex, final int columnIndex) {
-    return matrix.get(rowIndex, columnIndex);
+    return jblasMatrix.get(rowIndex, columnIndex);
   }
 
   @Override
-  public Matrix put(final int i, final float v) {
-    matrix.put(i, v);
+  public Matrix put(final int index, final float value) {
+    jblasMatrix.put(index, value);
     return this;
   }
 
   @Override
-  public Matrix put(final int rowIndex, final int columnIndex, final float v) {
-    matrix.put(rowIndex, columnIndex, v);
+  public Matrix put(final int rowIndex, final int columnIndex, final float value) {
+    jblasMatrix.put(rowIndex, columnIndex, value);
     return this;
   }
 
   @Override
-  public void putColumn(final int i, final Matrix v) {
-    checkImpl(v);
-    matrix.putColumn(i, ((MatrixJBLASImpl) v).matrix);
+  public void putColumn(final int index, final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.putColumn(index, ((MatrixJBLASImpl) vector).jblasMatrix);
   }
 
   @Override
-  public void putRow(final int i, final Matrix v) {
-    checkImpl(v);
-    matrix.putRow(i, ((MatrixJBLASImpl) v).matrix);
+  public void putRow(final int index, final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.putRow(index, ((MatrixJBLASImpl) vector).jblasMatrix);
   }
 
   @Override
-  public Matrix getColumn(final int i) {
-    return new MatrixJBLASImpl(matrix.getColumn(i));
+  public Matrix getColumn(final int index) {
+    return new MatrixJBLASImpl(jblasMatrix.getColumn(index));
   }
 
   @Override
-  public Matrix getRow(final int i) {
-    return new MatrixJBLASImpl(matrix.getRow(i));
+  public Matrix getRow(final int index) {
+    return new MatrixJBLASImpl(jblasMatrix.getRow(index));
   }
 
   @Override
   public int getLength() {
-    return matrix.getLength();
+    return jblasMatrix.getLength();
   }
 
   @Override
   public boolean isColumnVector() {
-    return matrix.isColumnVector();
+    return jblasMatrix.isColumnVector();
   }
 
   @Override
   public boolean isRowVector() {
-    return matrix.isRowVector();
+    return jblasMatrix.isRowVector();
   }
 
   @Override
-  public Matrix fill(final float v) {
-    matrix.fill(v);
+  public Matrix fill(final float value) {
+    jblasMatrix.fill(value);
     return this;
   }
 
   @Override
   public Matrix reshape(final int newRows, final int newColumns) {
-    matrix.reshape(newRows, newColumns);
+    jblasMatrix.reshape(newRows, newColumns);
     return this;
   }
 
   @Override
   public String toString() {
-    return matrix.toString();
+    return jblasMatrix.toString();
   }
 
   @Override
   public float[] toFloatArray() {
-    return matrix.toArray();
+    return jblasMatrix.toArray();
   }
 
   @Override
-  public Matrix copy(final Matrix m) {
-    checkImpl(m);
-    matrix.copy(((MatrixJBLASImpl) m).matrix);
-    return m;
+  public Matrix copy(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.copy(((MatrixJBLASImpl) matrix).jblasMatrix);
+    return matrix;
   }
 
   @Override
   public Matrix dup() {
-    return new MatrixJBLASImpl(matrix.dup());
+    return new MatrixJBLASImpl(jblasMatrix.dup());
   }
 
   @Override
   public Matrix transpose() {
-    return new MatrixJBLASImpl(matrix.transpose());
+    return new MatrixJBLASImpl(jblasMatrix.transpose());
   }
 
   @Override
-  public Matrix add(final float v) {
-    return new MatrixJBLASImpl(matrix.add(v));
+  public Matrix add(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.add(value));
   }
 
   @Override
-  public Matrix addi(final float v) {
-    matrix.addi(v);
+  public Matrix addi(final float value) {
+    jblasMatrix.addi(value);
     return this;
   }
 
   @Override
-  public Matrix add(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.add(((MatrixJBLASImpl) m).matrix));
+  public Matrix add(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(this.jblasMatrix.add(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix addi(final Matrix m) {
-    checkImpl(m);
-    matrix.addi(((MatrixJBLASImpl) m).matrix);
+  public Matrix addi(final Matrix matrix) {
+    checkImpl(matrix);
+    this.jblasMatrix.addi(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix addColumnVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.addColumnVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix addColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.addColumnVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix addiColumnVector(final Matrix v) {
-    checkImpl(v);
-    matrix.addiColumnVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix addiColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.addiColumnVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix addRowVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.addRowVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix addRowVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.addRowVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix addiRowVector(final Matrix v) {
-    checkImpl(v);
-    matrix.addiRowVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix addiRowVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.addiRowVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix sub(final float v) {
-    return new MatrixJBLASImpl(matrix.sub(v));
+  public Matrix sub(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.sub(value));
   }
 
   @Override
-  public Matrix subi(final float v) {
-    matrix.subi(v);
+  public Matrix subi(final float value) {
+    jblasMatrix.subi(value);
     return this;
   }
 
   @Override
-  public Matrix sub(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.sub(((MatrixJBLASImpl) m).matrix));
+  public Matrix sub(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.sub(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix subi(final Matrix m) {
-    checkImpl(m);
-    matrix.subi(((MatrixJBLASImpl) m).matrix);
+  public Matrix subi(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.subi(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix subColumnVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.subColumnVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix subColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.subColumnVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix subiColumnVector(final Matrix v) {
-    checkImpl(v);
-    matrix.subiColumnVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix subiColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.subiColumnVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix subRowVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.subRowVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix subRowVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.subRowVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix subiRowVector(final Matrix v) {
-    checkImpl(v);
-    matrix.subiRowVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix subiRowVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.subiRowVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix rsub(final float v) {
-    return new MatrixJBLASImpl(matrix.rsub(v));
+  public Matrix rsub(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.rsub(value));
   }
 
   @Override
-  public Matrix rsubi(final float v) {
-    matrix.rsubi(v);
+  public Matrix rsubi(final float value) {
+    jblasMatrix.rsubi(value);
     return this;
   }
 
   @Override
-  public Matrix rsub(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.rsub(((MatrixJBLASImpl) m).matrix));
+  public Matrix rsub(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.rsub(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix rsubi(final Matrix m) {
-    checkImpl(m);
-    matrix.rsubi(((MatrixJBLASImpl) m).matrix);
+  public Matrix rsubi(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.rsubi(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix mul(final float v) {
-    return new MatrixJBLASImpl(matrix.mul(v));
+  public Matrix mul(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.mul(value));
   }
 
   @Override
-  public Matrix muli(final float v) {
-    matrix.muli(v);
+  public Matrix muli(final float value) {
+    jblasMatrix.muli(value);
     return this;
   }
 
   @Override
-  public Matrix mul(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.mul(((MatrixJBLASImpl) m).matrix));
+  public Matrix mul(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.mul(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix muli(final Matrix m) {
-    checkImpl(m);
-    matrix.muli(((MatrixJBLASImpl) m).matrix);
+  public Matrix muli(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.muli(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix mulColumnVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.mulColumnVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix mulColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.mulColumnVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix muliColumnVector(final Matrix v) {
-    checkImpl(v);
-    matrix.muliColumnVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix muliColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.muliColumnVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix mulRowVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.mulRowVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix mulRowVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.mulRowVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix muliRowVector(final Matrix v) {
-    checkImpl(v);
-    matrix.muliRowVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix muliRowVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.muliRowVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix div(final float v) {
-    return new MatrixJBLASImpl(matrix.div(v));
+  public Matrix div(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.div(value));
   }
 
   @Override
-  public Matrix divi(final float v) {
-    matrix.divi(v);
+  public Matrix divi(final float value) {
+    jblasMatrix.divi(value);
     return this;
   }
 
   @Override
-  public Matrix div(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.div(((MatrixJBLASImpl) m).matrix));
+  public Matrix div(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.div(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix divi(final Matrix m) {
-    checkImpl(m);
-    matrix.divi(((MatrixJBLASImpl) m).matrix);
+  public Matrix divi(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.divi(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix divColumnVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.divColumnVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix divColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.divColumnVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix diviColumnVector(final Matrix v) {
-    checkImpl(v);
-    matrix.diviColumnVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix diviColumnVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.diviColumnVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix divRowVector(final Matrix v) {
-    checkImpl(v);
-    return new MatrixJBLASImpl(matrix.divRowVector(((MatrixJBLASImpl) v).matrix));
+  public Matrix divRowVector(final Matrix vector) {
+    checkImpl(vector);
+    return new MatrixJBLASImpl(jblasMatrix.divRowVector(((MatrixJBLASImpl) vector).jblasMatrix));
   }
 
   @Override
-  public Matrix diviRowVector(final Matrix v) {
-    checkImpl(v);
-    matrix.diviRowVector(((MatrixJBLASImpl) v).matrix);
+  public Matrix diviRowVector(final Matrix vector) {
+    checkImpl(vector);
+    jblasMatrix.diviRowVector(((MatrixJBLASImpl) vector).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix rdiv(final float v) {
-    return new MatrixJBLASImpl(matrix.rdiv(v));
+  public Matrix rdiv(final float value) {
+    return new MatrixJBLASImpl(jblasMatrix.rdiv(value));
   }
 
   @Override
-  public Matrix rdivi(final float v) {
-    matrix.rdivi(v);
+  public Matrix rdivi(final float value) {
+    jblasMatrix.rdivi(value);
     return this;
   }
 
   @Override
-  public Matrix rdiv(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.rdiv(((MatrixJBLASImpl) m).matrix));
+  public Matrix rdiv(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.rdiv(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix rdivi(final Matrix m) {
-    checkImpl(m);
-    matrix.rdivi(((MatrixJBLASImpl) m).matrix);
+  public Matrix rdivi(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.rdivi(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
-  public Matrix mmul(final Matrix m) {
-    checkImpl(m);
-    return new MatrixJBLASImpl(matrix.mmul(((MatrixJBLASImpl) m).matrix));
+  public Matrix mmul(final Matrix matrix) {
+    checkImpl(matrix);
+    return new MatrixJBLASImpl(jblasMatrix.mmul(((MatrixJBLASImpl) matrix).jblasMatrix));
   }
 
   @Override
-  public Matrix mmuli(final Matrix m) {
-    checkImpl(m);
-    matrix.mmuli(((MatrixJBLASImpl) m).matrix);
+  public Matrix mmuli(final Matrix matrix) {
+    checkImpl(matrix);
+    jblasMatrix.mmuli(((MatrixJBLASImpl) matrix).jblasMatrix);
     return this;
   }
 
   @Override
   public float max() {
-    return matrix.max();
+    return jblasMatrix.max();
   }
 
   @Override
   public Matrix columnMaxs() {
-    return new MatrixJBLASImpl(matrix.columnMaxs());
+    return new MatrixJBLASImpl(jblasMatrix.columnMaxs());
   }
 
   @Override
   public Matrix rowMaxs() {
-    return new MatrixJBLASImpl(matrix.rowMaxs());
+    return new MatrixJBLASImpl(jblasMatrix.rowMaxs());
   }
 
   @Override
   public float min() {
-    return matrix.min();
+    return jblasMatrix.min();
   }
 
   @Override
   public Matrix columnMins() {
-    return new MatrixJBLASImpl(matrix.columnMins());
+    return new MatrixJBLASImpl(jblasMatrix.columnMins());
   }
 
   @Override
   public Matrix rowMins() {
-    return new MatrixJBLASImpl(matrix.rowMins());
+    return new MatrixJBLASImpl(jblasMatrix.rowMins());
   }
 
   @Override
   public Matrix columnSums() {
-    return new MatrixJBLASImpl(matrix.columnSums());
+    return new MatrixJBLASImpl(jblasMatrix.columnSums());
   }
 
   @Override
   public Matrix rowSums() {
-    return new MatrixJBLASImpl(matrix.rowSums());
+    return new MatrixJBLASImpl(jblasMatrix.rowSums());
   }
 
   @Override
   public float sum() {
-    return matrix.sum();
+    return jblasMatrix.sum();
   }
 
   @Override
-  public boolean compare(final Matrix m, final float tolerance) {
-    if (m instanceof MatrixJBLASImpl) {
-      return matrix.compare(((MatrixJBLASImpl) m).matrix, tolerance);
+  public boolean compare(final Matrix matrix, final float tolerance) {
+    if (matrix instanceof MatrixJBLASImpl) {
+      return jblasMatrix.compare(((MatrixJBLASImpl) matrix).jblasMatrix, tolerance);
     }
     return false;
   }
@@ -461,26 +461,26 @@ public class MatrixJBLASImpl implements Matrix {
   @Override
   public boolean equals(final Object o) {
     if (o instanceof MatrixJBLASImpl) {
-      return matrix.equals(((MatrixJBLASImpl) o).matrix);
+      return jblasMatrix.equals(((MatrixJBLASImpl) o).jblasMatrix);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return matrix.hashCode();
+    return jblasMatrix.hashCode();
   }
 
   public static MatrixJBLASImpl concatHorizontally(final MatrixJBLASImpl a, final MatrixJBLASImpl b) {
-    return new MatrixJBLASImpl(FloatMatrix.concatHorizontally(a.matrix, b.matrix));
+    return new MatrixJBLASImpl(FloatMatrix.concatHorizontally(a.jblasMatrix, b.jblasMatrix));
   }
 
   public static MatrixJBLASImpl concatVertically(final MatrixJBLASImpl a, final MatrixJBLASImpl b) {
-    return new MatrixJBLASImpl(FloatMatrix.concatVertically(a.matrix, b.matrix));
+    return new MatrixJBLASImpl(FloatMatrix.concatVertically(a.jblasMatrix, b.jblasMatrix));
   }
 
-  private void checkImpl(final Matrix m) {
-    if (!(m instanceof MatrixJBLASImpl)) {
+  private void checkImpl(final Matrix matrix) {
+    if (!(matrix instanceof MatrixJBLASImpl)) {
       throw new IllegalArgumentException("The given matrix should be JBLAS based");
     }
   }

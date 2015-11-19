@@ -16,7 +16,9 @@
 package edu.snu.dolphin.dnn.blas;
 
 /**
- * Matrix interface.
+ * Interface for matrix whose elements are {@code float} values.
+ *
+ * Linear indexing is in column-major order.
  */
 public interface Matrix {
 
@@ -33,10 +35,11 @@ public interface Matrix {
   /**
    * Returns a element specified by the given index (linear indexing).
    */
-  float get(int i);
+  float get(int index);
 
   /**
-   * Returns elements specified by the linear indices.
+   * Returns a row vector in which elements are specified by the given linear indices.
+   * The modification on the returned vector does not affect this matrix.
    */
   Matrix get(int[] indices);
 
@@ -48,32 +51,32 @@ public interface Matrix {
   /**
    * Sets a matrix element (linear indexing).
    */
-  Matrix put(int i, float v);
+  Matrix put(int index, float value);
 
   /**
    * Sets a matrix element.
    */
-  Matrix put(int rowIndex, int columnIndex, float v);
+  Matrix put(int rowIndex, int columnIndex, float value);
 
   /**
    * Sets a column with the given column vector.
    */
-  void putColumn(int i, Matrix v);
+  void putColumn(int index, Matrix vector);
 
   /**
    * Sets a row with the given row vector.
    */
-  void putRow(int i, Matrix v);
+  void putRow(int index, Matrix vector);
 
   /**
    * Returns a copy of a column.
    */
-  Matrix getColumn(int i);
+  Matrix getColumn(int index);
 
   /**
    * Returns a copy of a row.
    */
-  Matrix getRow(int i);
+  Matrix getRow(int index);
 
   /**
    * Returns total number of elements.
@@ -93,7 +96,7 @@ public interface Matrix {
   /**
    * Sets all elements to the specified value.
    */
-  Matrix fill(float v);
+  Matrix fill(float value);
 
   /**
    * Reshapes the matrix.
@@ -112,14 +115,14 @@ public interface Matrix {
   float[] toFloatArray();
 
   /**
-   * Copies {@code Matrix} {@code m} to this.
-   * @param m a source matrix
-   * @return a source matrix {@code m}
+   * Copies {@link Matrix} {@code matrix} to this.
+   * @param matrix a source matrix
+   * @return a source matrix {@code matrix}
    */
-  Matrix copy(Matrix m);
+  Matrix copy(Matrix matrix);
 
   /**
-   * @return a duplicate of this matrix.
+   * Returns a duplicate of this matrix.
    */
   Matrix dup();
 
@@ -132,214 +135,214 @@ public interface Matrix {
   /* Operations */
 
   /**
-   * Adds a scalar.
+   * Adds a scalar to all elements.
    */
-  Matrix add(float v);
+  Matrix add(float value);
 
   /**
-   * Adds a scalar (in place).
+   * Adds a scalar to all elements (in place).
    */
-  Matrix addi(float v);
+  Matrix addi(float value);
 
   /**
-   * Adds a matrix.
+   * Element-wise adds a matrix.
    */
-  Matrix add(Matrix m);
+  Matrix add(Matrix matrix);
 
   /**
-   * Adds a matrix (in place).
+   * Element-wise Adds a matrix (in place).
    */
-  Matrix addi(Matrix m);
+  Matrix addi(Matrix matrix);
 
   /**
-   * Adds a vector to all columns of the matrix.
+   * Element-wise adds a vector to all columns of the matrix.
    */
-  Matrix addColumnVector(Matrix v);
+  Matrix addColumnVector(Matrix vector);
 
   /**
-   * Adds a vector to all columns of the matrix (in place).
+   * Element-wise adds a vector to all columns of the matrix (in place).
    */
-  Matrix addiColumnVector(Matrix v);
+  Matrix addiColumnVector(Matrix vector);
 
   /**
-   * Adds a vector to all rows of the matrix.
+   * Element-wise adds a vector to all rows of the matrix.
    */
-  Matrix addRowVector(Matrix v);
+  Matrix addRowVector(Matrix vector);
 
   /**
-   * Adds a vector to all rows of the matrix (in place).
+   * Element-wise adds a vector to all rows of the matrix (in place).
    */
-  Matrix addiRowVector(Matrix v);
+  Matrix addiRowVector(Matrix vector);
 
   /**
-   * Subtracts a scalar.
+   * Subtracts a scalar to all elements.
    */
-  Matrix sub(float v);
+  Matrix sub(float value);
 
   /**
-   * Subtracts a scalar (in place).
+   * Subtracts a scalar to all elements (in place).
    */
-  Matrix subi(float v);
+  Matrix subi(float value);
 
   /**
-   * Subtracts a matrix.
+   * Element-wise subtracts a matrix.
    */
-  Matrix sub(Matrix m);
+  Matrix sub(Matrix matrix);
 
   /**
-   * Subtracts a matrix (in place).
+   * Element-wise subtracts a matrix (in place).
    */
-  Matrix subi(Matrix m);
+  Matrix subi(Matrix matrix);
 
   /**
-   * Subtracts a vector to all columns of the matrix.
+   * Element-wise subtracts a vector to all columns of the matrix.
    */
-  Matrix subColumnVector(Matrix v);
+  Matrix subColumnVector(Matrix vector);
 
   /**
-   * Subtracts a vector to all columns of the matrix (in place).
+   * Element-wise subtracts a vector to all columns of the matrix (in place).
    */
-  Matrix subiColumnVector(Matrix v);
+  Matrix subiColumnVector(Matrix vector);
 
   /**
-   * Subtracts a vector to all rows of the matrix.
+   * Element-wise subtracts a vector to all rows of the matrix.
    */
-  Matrix subRowVector(Matrix v);
+  Matrix subRowVector(Matrix vector);
 
   /**
-   * Subtracts a vector to all rows of the matrix (in place).
+   * Element-wise subtracts a vector to all rows of the matrix (in place).
    */
-  Matrix subiRowVector(Matrix v);
+  Matrix subiRowVector(Matrix vector);
 
   /**
-   * (right-)subtracts a scalar.
+   * Element-wise (right-)subtracts a scalar to all elements.
    */
-  Matrix rsub(float v);
+  Matrix rsub(float value);
 
   /**
-   * (right-)subtracts a scalar (in place).
+   * Element-wise (right-)subtracts a scalar to all elements (in place).
    */
-  Matrix rsubi(float v);
+  Matrix rsubi(float value);
 
   /**
-   * (right-)subtracts a matrix.
+   * Element-wise (right-)subtracts a matrix.
    */
-  Matrix rsub(Matrix m);
+  Matrix rsub(Matrix matrix);
 
   /**
-   * (right-)subtracts a matrix (in place).
+   * Element-wise (right-)subtracts a matrix (in place).
    */
-  Matrix rsubi(Matrix m);
+  Matrix rsubi(Matrix matrix);
 
   /**
-   * Multiplies a scalar.
+   * Multiplies a scalar to all elements.
    */
-  Matrix mul(float v);
+  Matrix mul(float value);
 
   /**
-   * Multiplies a scalar (in place).
+   * Multiplies a scalar to all elements (in place).
    */
-  Matrix muli(float v);
+  Matrix muli(float value);
 
   /**
-   * Multiplies a matrix.
+   * Element-wise multiplies a matrix.
    */
-  Matrix mul(Matrix m);
+  Matrix mul(Matrix matrix);
 
   /**
-   * Multiplies a matrix (in place).
+   * Element-wise multiplies a matrix (in place).
    */
-  Matrix muli(Matrix m);
+  Matrix muli(Matrix matrix);
 
   /**
-   * Multiplies a vector to all columns of the matrix.
+   * Element-wise multiplies a vector to all columns of the matrix.
    */
-  Matrix mulColumnVector(Matrix v);
+  Matrix mulColumnVector(Matrix vector);
 
   /**
-   * Multiplies a vector to all columns of the matrix (in place).
+   * Element-wise multiplies a vector to all columns of the matrix (in place).
    */
-  Matrix muliColumnVector(Matrix v);
+  Matrix muliColumnVector(Matrix vector);
 
   /**
-   * Multiplies a vector to all rows of the matrix.
+   * Element-wise multiplies a vector to all rows of the matrix.
    */
-  Matrix mulRowVector(Matrix v);
+  Matrix mulRowVector(Matrix vector);
 
   /**
-   * Multiplies a vector to all rows of the matrix (in place).
+   * Element-wise multiplies a vector to all rows of the matrix (in place).
    */
-  Matrix muliRowVector(Matrix v);
+  Matrix muliRowVector(Matrix vector);
 
   /**
-   * Divides by a scalar.
+   * Divides by a scalar to all elements.
    */
-  Matrix div(float v);
+  Matrix div(float value);
 
   /**
-   * Divides by a scalar (in place).
+   * Divides by a scalar to all elements (in place).
    */
-  Matrix divi(float v);
+  Matrix divi(float value);
 
   /**
-   * Divides by a matrix.
+   * Element-wise divides by a matrix.
    */
-  Matrix div(Matrix m);
+  Matrix div(Matrix matrix);
 
   /**
-   * Divides by a matrix (in place).
+   * Element-wise divides by a matrix (in place).
    */
-  Matrix divi(Matrix m);
+  Matrix divi(Matrix matrix);
 
   /**
-   * Divides a vector to all columns of the matrix.
+   * Element-wise divides a vector to all columns of the matrix.
    */
-  Matrix divColumnVector(Matrix v);
+  Matrix divColumnVector(Matrix vector);
 
   /**
-   * Divides a vector to all columns of the matrix (in place).
+   * Element-wise divides a vector to all columns of the matrix (in place).
    */
-  Matrix diviColumnVector(Matrix v);
+  Matrix diviColumnVector(Matrix vector);
 
   /**
-   * Divides a vector to all rows of the matrix.
+   * Element-wise divides a vector to all rows of the matrix.
    */
-  Matrix divRowVector(Matrix v);
+  Matrix divRowVector(Matrix vector);
 
   /**
-   * Divides a vector to all rows of the matrix (in place).
+   * Element-wise divides a vector to all rows of the matrix (in place).
    */
-  Matrix diviRowVector(Matrix v);
+  Matrix diviRowVector(Matrix vector);
 
   /**
-   * (right-)divides by a scalar.
+   * Element-wise (right-)divides by a scalar to all elements.
    */
-  Matrix rdiv(float v);
+  Matrix rdiv(float value);
 
   /**
-   * (right-)divides by a scalar (in place).
+   * Element-wise (right-)divides by a scalar to all elements (in place).
    */
-  Matrix rdivi(float v);
+  Matrix rdivi(float value);
 
   /**
-   * (right-)divides by a matrix.
+   * Element-wise (right-)divides by a matrix.
    */
-  Matrix rdiv(Matrix m);
+  Matrix rdiv(Matrix matrix);
 
   /**
-   * (right-)divides by a matrix (in place).
+   * Element-wise (right-)divides by a matrix (in place).
    */
-  Matrix rdivi(Matrix m);
+  Matrix rdivi(Matrix matrix);
 
   /**
    * Matrix-Matrix multiplication.
    */
-  Matrix mmul(Matrix m);
+  Matrix mmul(Matrix matrix);
 
   /**
    * Matrix-Matrix multiplication (in place).
    */
-  Matrix mmuli(Matrix m);
+  Matrix mmuli(Matrix matrix);
 
   /**
    * Returns the maximum element of the matrix.
@@ -392,5 +395,5 @@ public interface Matrix {
    * Returns true if and only if the given matrix has the same size
    * and the maximal absolute difference in all elements is smaller than the specified tolerance.
    */
-  boolean compare(Matrix m, float tolerance);
+  boolean compare(Matrix matrix, float tolerance);
 }

@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Utility class for {@link edu.snu.dolphin.dnn.blas.Matrix}.
+ * Utility class for {@link Matrix}.
  */
 public final class MatrixUtils {
 
@@ -66,7 +66,7 @@ public final class MatrixUtils {
 
 
   /**
-   * Loads a matrix from a Numpy-compatible plain text file with the specified delimiter.
+   * Loads a matrix from an input stream of a Numpy-compatible plain text file with the specified delimiter.
    * @param matrixFactory a matrix factory used to create a matrix
    * @param inputStream a Numpy-compatible plain text input stream
    * @param delimiter a delimiter
@@ -78,23 +78,24 @@ public final class MatrixUtils {
                                  final String delimiter) throws IOException {
     final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     String line;
-    final List<float[]> data2 = new ArrayList<>();
+    final List<float[]> dataList = new ArrayList<>();
     int numColumns = -1;
     final Matrix ret;
     while ((line = reader.readLine()) != null) {
       final String[] data = line.trim().split(delimiter);
       if (numColumns < 0) {
         numColumns = data.length;
-
       } else {
-        assert data.length == numColumns : "Data has inconsistent number of columns";
+        if (data.length != numColumns) {
+          throw new RuntimeException("Data has inconsistent number of columns");
+        }
       }
-      data2.add(readSplit(data));
+      dataList.add(readSplit(data));
     }
 
-    ret = matrixFactory.create(data2.size(), numColumns);
-    for (int i = 0; i < data2.size(); i++) {
-      ret.putRow(i, matrixFactory.create(data2.get(i)));
+    ret = matrixFactory.create(dataList.size(), numColumns);
+    for (int i = 0; i < dataList.size(); i++) {
+      ret.putRow(i, matrixFactory.create(dataList.get(i)));
     }
     return ret;
   }
@@ -128,7 +129,6 @@ public final class MatrixUtils {
    * @param index an index of the element to be set to {@code}
    * @param length the length of a row vector
    * @return a generated row vector
-   * @return
    */
   public static Matrix createOutputVector(final MatrixFactory matrixFactory, final int index, final int length) {
     return matrixFactory.zeros(length).put(index, 1.0f);

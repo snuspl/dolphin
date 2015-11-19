@@ -44,7 +44,8 @@ public interface MatrixFactory {
 
   /**
    * Creates a matrix with the given values.
-   * @param data elements of a matrix
+   * @param data elements of a matrix.
+   *             rows are numbered by the first index and columns are numbered by the second index.
    * @return a generated matrix
    */
   Matrix create(float[][] data);
@@ -113,14 +114,14 @@ public interface MatrixFactory {
   Matrix rand(int rows, int columns, long seed);
 
   /**
-   * Creates a row vector with normally distributed random values.
+   * Creates a row vector containing normally distributed random values with mean 0.0 and standard deviation 1.0.
    * @param length the length of a row vector
    * @return a generated row vector
    */
   Matrix randn(int length);
 
   /**
-   * Creates a matrix with normally distributed random values.
+   * Creates a matrix containing normally distributed random values with mean 0.0 and standard deviation 1.0.
    * @param rows the number of rows
    * @param columns the number of columns
    * @return a generated matrix

@@ -16,7 +16,7 @@
 package edu.snu.dolphin.dnn.blas;
 
 /**
- * Utility class that provides functions for {@link edu.snu.dolphin.dnn.blas.Matrix}.
+ * Utility class that provides functions for {@link Matrix}.
  */
 public final class MatrixFunctions {
 
