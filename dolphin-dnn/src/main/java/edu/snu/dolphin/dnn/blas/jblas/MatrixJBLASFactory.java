@@ -129,8 +129,19 @@ public final class MatrixJBLASFactory implements MatrixFactory {
   public Matrix concatHorizontally(final Matrix a, final Matrix b) {
     if (a instanceof MatrixJBLASImpl && b instanceof MatrixJBLASImpl) {
       return MatrixJBLASImpl.concatHorizontally((MatrixJBLASImpl) a, (MatrixJBLASImpl) b);
+    }
+
+    if (a.getRows() != b.getRows()) {
+      throw new RuntimeException("Matrices do not have the same number of rows");
     } else {
-      throw new IllegalArgumentException("Matrices for the concatenation should be JBLAS based");
+      final Matrix ret = create(a.getRows(), a.getColumns() + b.getColumns());
+      for (int i = 0; i < a.getColumns(); ++i) {
+        ret.putColumn(i, a.getColumn(i));
+      }
+      for (int i = 0; i < b.getColumns(); ++i) {
+        ret.putColumn(a.getColumns() + i, b.getColumn(i));
+      }
+      return ret;
     }
   }
 
@@ -138,8 +149,19 @@ public final class MatrixJBLASFactory implements MatrixFactory {
   public Matrix concatVertically(final Matrix a, final Matrix b) {
     if (a instanceof MatrixJBLASImpl && b instanceof MatrixJBLASImpl) {
       return MatrixJBLASImpl.concatVertically((MatrixJBLASImpl) a, (MatrixJBLASImpl) b);
+    }
+
+    if (a.getColumns() != b.getColumns()) {
+      throw new RuntimeException("Matrices do not have the same number of columns");
     } else {
-      throw new IllegalArgumentException("Matrices for the concatenation should be JBLAS based");
+      final Matrix ret = create(a.getRows() + b.getRows(), a.getColumns());
+      for (int i = 0; i < a.getRows(); ++i) {
+        ret.putRow(i, a.getRow(i));
+      }
+      for (int i = 0; i < b.getRows(); ++i) {
+        ret.putRow(a.getColumns() + i, b.getRow(i));
+      }
+      return ret;
     }
   }
 }
