@@ -50,7 +50,7 @@ final class Tanh implements Function {
   /**
    * Calculates the matrix in which all elements are derivatives of a hyperbolic tangent function (in place).
    * <p>
-   *   derivatives of tanh: 1 - tanh(x)^2
+   *   derivative of tanh: 1 - tanh(x)^2
    * </p>
    */
   @Override

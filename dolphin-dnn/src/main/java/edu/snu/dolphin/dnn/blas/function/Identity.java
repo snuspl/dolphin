@@ -23,7 +23,7 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 final class Identity implements Function {
 
   /**
-   * Applies an identity function to all elements of the specified matrix.
+   * Applies the identity function to all elements of the specified matrix.
    */
   @Override
   public Matrix apply(final Matrix m) {
@@ -31,7 +31,7 @@ final class Identity implements Function {
   }
 
   /**
-   * Applies an identity function to all elements of the specified matrix (in place).
+   * Applies the identity function to all elements of the specified matrix (in place).
    */
   @Override
   public Matrix applyi(final Matrix m) {
@@ -39,7 +39,7 @@ final class Identity implements Function {
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of an identity function.
+   * Calculates the matrix in which all elements are derivatives of the identity function.
    */
   @Override
   public Matrix derivative(final Matrix m) {
@@ -47,7 +47,7 @@ final class Identity implements Function {
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of an identity function (in place).
+   * Calculates the matrix in which all elements are derivatives of the identity function (in place).
    */
   @Override
   public Matrix derivativei(final Matrix m) {
