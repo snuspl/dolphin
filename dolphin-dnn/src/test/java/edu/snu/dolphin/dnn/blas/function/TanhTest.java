@@ -55,13 +55,13 @@ public final class TanhTest {
 
   @Test
   public void testTanhApply() {
-    final Matrix output = Function.Factory.getFunction("tanh").apply(input);
+    final Matrix output = FunctionFactory.getSingleInstance("tanh").apply(input);
     assertTrue(expectedOutput.compare(output, TOLERANCE));
   }
 
   @Test
   public void testTanhDerivative() {
-    final Matrix derivative = Function.Factory.getFunction("tanh").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("tanh").derivative(expectedOutput);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }

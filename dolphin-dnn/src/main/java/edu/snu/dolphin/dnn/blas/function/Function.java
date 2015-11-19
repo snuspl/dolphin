@@ -29,25 +29,4 @@ public interface Function {
   Matrix derivative(Matrix m);
 
   Matrix derivativei(Matrix m);
-
-  final class Factory {
-
-    private Factory() {
-    }
-
-    public static Function getFunction(final String name) {
-      switch (name.toLowerCase()) {
-      case "identity":
-        return new Identity();
-      case "sigmoid":
-        return new Sigmoid();
-      case "relu":
-        return new ReLU();
-      case "tanh":
-        return new Tanh();
-      default:
-        throw new IllegalArgumentException("Unsupported function: " + name);
-      }
-    }
-  }
 }

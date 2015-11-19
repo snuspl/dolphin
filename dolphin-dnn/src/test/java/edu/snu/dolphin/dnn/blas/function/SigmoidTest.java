@@ -55,13 +55,13 @@ public final class SigmoidTest {
 
   @Test
   public void testSigmoidApply() {
-    final Matrix output = Function.Factory.getFunction("sigmoid").apply(input);
+    final Matrix output = FunctionFactory.getSingleInstance("sigmoid").apply(input);
     assertTrue(expectedOutput.compare(output, TOLERANCE));
   }
 
   @Test
   public void testSigmoidDerivative() {
-    final Matrix derivative = Function.Factory.getFunction("sigmoid").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("sigmoid").derivative(expectedOutput);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }

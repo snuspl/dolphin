@@ -51,13 +51,13 @@ public final class IdentityTest {
 
   @Test
   public void testIdentityApply() {
-    final Matrix output = Function.Factory.getFunction("identity").apply(input);
+    final Matrix output = FunctionFactory.getSingleInstance("identity").apply(input);
     assertTrue(expectedOutput.compare(output, TOLERANCE));
   }
 
   @Test
   public void testIdentityDerivative() {
-    final Matrix derivative = Function.Factory.getFunction("identity").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("identity").derivative(expectedOutput);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }

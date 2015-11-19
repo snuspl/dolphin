@@ -53,13 +53,13 @@ public final class ReLUTest {
 
   @Test
   public void testReLUApply() {
-    final Matrix output = Function.Factory.getFunction("relu").apply(input);
+    final Matrix output = FunctionFactory.getSingleInstance("relu").apply(input);
     assertTrue(expectedOutput.compare(output, TOLERANCE));
   }
 
   @Test
   public void testReLUDerivative() {
-    final Matrix derivative = Function.Factory.getFunction("relu").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("relu").derivative(expectedOutput);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }
