@@ -481,6 +481,7 @@ class MatrixJBLASImpl implements Matrix {
 
   private void checkImpl(final Matrix matrix) {
     if (!(matrix instanceof MatrixJBLASImpl)) {
+      // TODO #147: different matrix implementations
       throw new IllegalArgumentException("The given matrix should be JBLAS based");
     }
   }
