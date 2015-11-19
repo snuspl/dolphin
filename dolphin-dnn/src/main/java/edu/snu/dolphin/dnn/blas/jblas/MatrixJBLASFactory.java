@@ -93,7 +93,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
       data[i] = RANDOM.nextFloat();
     }
 
-    return new MatrixJBLASImpl(new FloatMatrix(rows, columns, data));
+    return create(data, rows, columns);
   }
 
   @Override
@@ -116,7 +116,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
       data[i] = (float) RANDOM.nextGaussian();
     }
 
-    return new MatrixJBLASImpl(new FloatMatrix(rows, columns, data));
+    return create(data, rows, columns);
   }
 
   @Override
