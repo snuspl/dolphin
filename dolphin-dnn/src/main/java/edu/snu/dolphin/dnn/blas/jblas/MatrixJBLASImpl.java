@@ -131,7 +131,7 @@ class MatrixJBLASImpl implements Matrix {
   public Matrix copy(final Matrix matrix) {
     checkImpl(matrix);
     jblasMatrix.copy(((MatrixJBLASImpl) matrix).jblasMatrix);
-    return matrix;
+    return this;
   }
 
   @Override

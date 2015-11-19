@@ -117,7 +117,7 @@ public interface Matrix {
   /**
    * Copies {@link Matrix} {@code matrix} to this.
    * @param matrix a source matrix
-   * @return a source matrix {@code matrix}
+   * @return this matrix.
    */
   Matrix copy(Matrix matrix);
 
