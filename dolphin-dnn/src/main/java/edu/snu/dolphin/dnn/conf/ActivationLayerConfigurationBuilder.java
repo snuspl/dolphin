@@ -15,8 +15,6 @@
  */
 package edu.snu.dolphin.dnn.conf;
 
-import edu.snu.dolphin.dnn.layerparam.initializer.DefaultLayerParameterInitializer;
-import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.ActivationLayer;
 import edu.snu.dolphin.dnn.layers.LayerBase;
 import edu.snu.dolphin.dnn.proto.NeuralNetworkProtos;
@@ -69,7 +67,6 @@ public final class ActivationLayerConfigurationBuilder implements Builder<Config
         .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
         .bindNamedParameter(LayerConfigurationParameters.ActivationFunction.class, String.valueOf(activationFunction))
         .bindImplementation(LayerBase.class, ActivationLayer.class)
-        .bindImplementation(LayerParameterInitializer.class, DefaultLayerParameterInitializer.class)
         .build();
   }
 }

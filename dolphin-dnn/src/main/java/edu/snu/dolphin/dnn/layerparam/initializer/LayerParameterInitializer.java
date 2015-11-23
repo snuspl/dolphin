@@ -16,12 +16,14 @@
 package edu.snu.dolphin.dnn.layerparam.initializer;
 
 import edu.snu.dolphin.dnn.layers.LayerParameter;
+import org.apache.reef.tang.annotations.DefaultImplementation;
 
 /**
  * Interface for parameter initializer.
  *
  * The parameter initializer generates the initial parameter of the layer by the layer configuration.
  */
+@DefaultImplementation(DefaultLayerParameterInitializer.class)
 public interface LayerParameterInitializer {
 
   /**
