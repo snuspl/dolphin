@@ -192,7 +192,12 @@ public final class NeuralNetwork {
     // The first element of activations is the input data.
     // So, (i + 1)-th element of activations refers to the activation of i-th layer.
     final INDArray error = layers[lastLayerIndex].backPropagate(activations[lastLayerIndex + 1], label);
-    return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+
+    if (lastLayerIndex == end) {
+      return new INDArray[]{error};
+    } else {
+      return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+    }
   }
 
   /**
