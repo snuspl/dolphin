@@ -28,6 +28,7 @@ import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.util.FeatureUtil;
 
 import javax.inject.Inject;
@@ -59,6 +60,9 @@ public final class NeuralNetwork {
    * The number of processed training inputs.
    */
   private int trainedCount;
+
+  private static final INDArray EMPTY = Nd4j.create(0);
+
 
   @Inject
   private NeuralNetwork(final ConfigurationSerializer configurationSerializer,
@@ -191,7 +195,7 @@ public final class NeuralNetwork {
 
     // The first element of activations is the input data.
     // So, (i + 1)-th element of activations refers to the activation of i-th layer.
-    final INDArray error = layers[lastLayerIndex].backPropagate(activations[lastLayerIndex + 1], label);
+    final INDArray error = layers[lastLayerIndex].backPropagate(label, activations[lastLayerIndex + 1], EMPTY);
 
     if (lastLayerIndex == end) {
       return new INDArray[]{error};

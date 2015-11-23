@@ -82,7 +82,7 @@ public abstract class LayerBase {
 
   /**
    * Computes an error.
-   * @param input the input value.
+   * @param input the input value for this layer, or the expected output if the layer is a loss layer.
    * @param activation the activation value.
    * @param nextError an error of the next layer - the one closer to the output layer.
    * @return an error for this layer with the specified input value.
@@ -90,15 +90,6 @@ public abstract class LayerBase {
   public abstract INDArray backPropagate(final INDArray input,
                                          final INDArray activation,
                                          final INDArray nextError);
-
-  /**
-   * Computes the error. (only for output layer)
-   * @param activation an activation value for output layer.
-   * @param label the expected output.
-   * @return an error for the output layer with the specified label.
-   */
-  public abstract INDArray backPropagate(final INDArray activation,
-                                         final INDArray label);
 
   /**
    * Computes a parameter gradient for this layer.

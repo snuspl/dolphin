@@ -28,6 +28,10 @@ public final class NeuralNetworkConfigurationParameters {
   private NeuralNetworkConfigurationParameters() {
   }
 
+  @NamedParameter(doc = "a serialized layer configuration")
+  public static final class SerializedLayerConfiguartion implements Name<String> {
+  }
+
   @NamedParameter(doc = "a set of strings that are serializations of network layers")
   public static final class SerializedLayerConfigurationSet implements Name<Set<String>> {
   }

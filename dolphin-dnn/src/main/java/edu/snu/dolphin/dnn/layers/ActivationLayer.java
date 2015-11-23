@@ -72,12 +72,6 @@ public final class ActivationLayer extends LayerBase {
 
   /** {@inheritDoc} */
   @Override
-  public INDArray backPropagate(final INDArray activation, final INDArray label) {
-    return activation.sub(label);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
     throw new RuntimeException("This layer is not learnable");
   }

@@ -54,4 +54,8 @@ public final class LayerConfigurationParameters {
   @NamedParameter(doc = "activation function of layer node", short_name = "activationFunc")
   public static final class ActivationFunction implements Name<String> {
   }
+
+  @NamedParameter(doc = "loss function of loss layer", short_name = "lossFunc")
+  public static final class LossFunction implements Name<String> {
+  }
 }

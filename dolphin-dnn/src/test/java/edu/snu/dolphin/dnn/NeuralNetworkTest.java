@@ -16,6 +16,7 @@
 package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
+import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
@@ -81,10 +82,11 @@ public class NeuralNetworkTest {
               .setInitBias(0.3f)
               .setRandomSeed(10)
               .build())
-      .addLayerConfiguration(ActivationLayerConfigurationBuilder.newConfigurationBuilder()
+      .addLayerConfiguration(ActivationWithLossLayerConfigurationBuilder.newConfigurationBuilder()
           .setNumInput(expectedOutput.length())
           .setNumOutput(expectedOutput.length())
           .setActivationFunction("sigmoid")
+          .setLossFunction("cross-entropy")
           .build())
       .build();
 

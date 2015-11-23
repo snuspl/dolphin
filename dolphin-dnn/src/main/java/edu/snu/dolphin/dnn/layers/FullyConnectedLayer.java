@@ -73,12 +73,6 @@ public final class FullyConnectedLayer extends LayerBase {
 
   /** {@inheritDoc} */
   @Override
-  public INDArray backPropagate(final INDArray activation, final INDArray label) {
-    return activation.sub(label);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
     if (!error.isRowVector()) {
       throw new RuntimeException(String.format("Invalid error shape %s. " +

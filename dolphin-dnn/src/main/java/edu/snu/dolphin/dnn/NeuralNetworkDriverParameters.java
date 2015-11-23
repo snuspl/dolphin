@@ -19,6 +19,7 @@ import com.google.protobuf.TextFormat;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater.LogPeriod;
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
+import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
@@ -169,6 +170,9 @@ public final class NeuralNetworkDriverParameters {
           .fromProtoConfiguration(layerConf).build();
     case "activation":
       return ActivationLayerConfigurationBuilder.newConfigurationBuilder()
+          .fromProtoConfiguration(layerConf).build();
+    case "activationwithloss":
+      return ActivationWithLossLayerConfigurationBuilder.newConfigurationBuilder()
           .fromProtoConfiguration(layerConf).build();
     default:
       throw new IllegalArgumentException("Illegal layer type: " + layerConf.getType());
