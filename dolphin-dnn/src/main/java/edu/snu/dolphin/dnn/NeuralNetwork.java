@@ -172,6 +172,8 @@ public final class NeuralNetwork {
    */
   public INDArray[] backPropagate(final INDArray[] activations,
                                   final INDArray label) {
+    // Process backpropagation to the second layer
+    // because the error the first layer generates, is not needed to generate a gradient for learning the first layer.
     return backPropagateTo(1, activations, label);
   }
 
@@ -185,11 +187,6 @@ public final class NeuralNetwork {
   public INDArray[] backPropagateTo(final int end,
                                     final INDArray[] activations,
                                     final INDArray label) {
-    if (end == 0) {
-      throw new IllegalArgumentException("The ending layer cannot be the first layer: " +
-          "the error of an input value does not make sense.");
-    }
-
     final int lastLayerIndex = layers.length - 1;
 
     // The first element of activations is the input data.
@@ -211,6 +208,11 @@ public final class NeuralNetwork {
                                         final INDArray nextError) {
     if (begin == layers.length - 1) {
       throw new IllegalArgumentException("The beginning layer of backPropagateFromTo cannot be the output layer");
+    }
+    if (end == 0) {
+      // The errors for generating gradients of the first layer are calculated by the next layer, not the first layer.
+      throw new IllegalArgumentException("The ending layer cannot be the first layer: " +
+          "The error that is propagated to the input is unnecessary to generate gradients for the first layer");
     }
     if (begin < end) {
       throw new IllegalArgumentException(String.format(
