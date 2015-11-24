@@ -159,7 +159,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
         ret.putRow(i, a.getRow(i));
       }
       for (int i = 0; i < b.getRows(); ++i) {
-        ret.putRow(a.getColumns() + i, b.getRow(i));
+        ret.putRow(a.getRows() + i, b.getRow(i));
       }
       return ret;
     }
