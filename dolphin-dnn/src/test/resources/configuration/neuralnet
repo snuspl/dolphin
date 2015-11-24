@@ -55,6 +55,6 @@ layer {
   num_output: 10
   activation_with_loss_param {
     activation_function: "sigmoid"
-    loss_function: "cross-entropy"
+    loss_function: "crossentropy"
   }
 }

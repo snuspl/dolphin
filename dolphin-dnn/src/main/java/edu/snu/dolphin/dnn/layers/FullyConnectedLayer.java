@@ -25,7 +25,11 @@ import javax.inject.Inject;
 import java.util.Arrays;
 
 /**
- * Fully connected Layer.
+ * Fully connected layer.
+ *
+ * This layer is learnable having the updatable parameter (weight and bias).
+ * This layer computes the inner product between an input and its weight matrix,
+ * and adds the bias vector to its output.
  */
 public final class FullyConnectedLayer extends LayerBase {
 

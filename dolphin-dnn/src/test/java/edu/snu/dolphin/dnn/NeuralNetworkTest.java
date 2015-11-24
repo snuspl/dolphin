@@ -86,7 +86,7 @@ public class NeuralNetworkTest {
           .setNumInput(expectedOutput.length())
           .setNumOutput(expectedOutput.length())
           .setActivationFunction("sigmoid")
-          .setLossFunction("cross-entropy")
+          .setLossFunction("crossentropy")
           .build())
       .build();
 

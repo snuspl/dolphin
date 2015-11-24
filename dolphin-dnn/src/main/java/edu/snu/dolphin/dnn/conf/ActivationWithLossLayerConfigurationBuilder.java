@@ -28,7 +28,7 @@ import org.apache.reef.util.Builder;
 /**
  * Configuration builder for activation with loss layer.
  *
- * The configuration that this builder generates is used to create an activation with layer instance.
+ * The configuration that this builder generates is used to create an activation with loss layer instance.
  */
 public final class ActivationWithLossLayerConfigurationBuilder implements Builder<Configuration> {
 

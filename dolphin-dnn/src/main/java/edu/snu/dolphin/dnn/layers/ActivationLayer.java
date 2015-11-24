@@ -25,7 +25,10 @@ import org.nd4j.linalg.factory.Nd4j;
 import javax.inject.Inject;
 
 /**
- * Activation Layer.
+ * Activation layer.
+ *
+ * This layer applies the specified activation function to each element of an input, maintaining the input's shape.
+ * This layer does not have parameters, in other words, is not learnable.
  */
 public final class ActivationLayer extends LayerBase {
 

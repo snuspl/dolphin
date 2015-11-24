@@ -30,7 +30,15 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 /**
- * Loss Layer with activation function.
+ * Loss layer with activation function.
+ *
+ * This layer is intended to be the last layer, in most cases.
+ * This layer is not learnable.
+ * <br/>
+ * In a forward pass,
+ * this layer applies the specified activation function to each element of an input (same to {@link ActivationLayer}).
+ * In a backward pass,
+ * this layer computes the derivative of the specified loss function.
  */
 public final class ActivationWithLossLayer extends LayerBase {
 
@@ -79,7 +87,7 @@ public final class ActivationWithLossLayer extends LayerBase {
   @Override
   public INDArray backPropagate(final INDArray label, final INDArray activation, final INDArray nextError) {
     switch (lossFunction.toLowerCase()) {
-    case "cross-entropy":
+    case "crossentropy":
       return activation.sub(label);
     default:
       throw new IllegalArgumentException("Unsupported loss function");

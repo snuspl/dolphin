@@ -169,20 +169,25 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Computes errors from output layer to input layer.
+   * Computes errors from the output layer to the input layer.
+   * This returns an empty array when the network model has zero or one layer.
    * @param activations an array of activations for each layer.
    * @param label the expected output.
    * @return an array of errors for each layer.
    */
   public INDArray[] backPropagate(final INDArray[] activations,
                                   final INDArray label) {
-    // Process backpropagation to the second layer
-    // because the error the first layer generates, is not needed to generate a gradient for learning the first layer.
+    // Process backpropagation to the second layer.
+    // because the error returned by the first layer's backpropagation, is not needed
+    // to generate gradients for learning the first layer.
+    // The errors for generating gradients used to update the first layer's parameter, are calculated
+    // in the next layer's backpropagation.
     return backPropagateTo(1, activations, label);
   }
 
   /**
-   * Computes errors from output layer to the specified ending layer.
+   * Computes errors from the output layer to the specified ending layer.
+   * This returns an empty array when the network model has zero or one layer.
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
    * @param label the expected output.
@@ -191,16 +196,25 @@ public final class NeuralNetwork {
   public INDArray[] backPropagateTo(final int end,
                                     final INDArray[] activations,
                                     final INDArray label) {
-    final int lastLayerIndex = layers.length - 1;
-
-    // The first element of activations is the input data.
-    // So, (i + 1)-th element of activations refers to the activation of i-th layer.
-    final INDArray error = layers[lastLayerIndex].backPropagate(label, activations[lastLayerIndex + 1], EMPTY);
-
-    if (lastLayerIndex == end) {
-      return new INDArray[]{error};
+    // Case 1: Only one layer
+    if (layers.length < 2) {
+      // If a neural network has only one layer, the network does not process backpropagation for this layer because
+      // this layer cannot generate gradients for updating its parameter.
+      // Generating gradients requires the error computed by the next layer.
+      return new INDArray[0];
     } else {
-      return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+      final int lastLayerIndex = layers.length - 1;
+      // The first element of activations is the input data.
+      // So, (i + 1)-th element of activations refers to the activation of i-th layer.
+      final INDArray error = layers[lastLayerIndex].backPropagate(label, activations[lastLayerIndex + 1], EMPTY);
+
+      // Case 2: Two layers
+      if (lastLayerIndex == end) {
+        return new INDArray[]{error};
+      // Case 3: More than two layers
+      } else {
+        return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+      }
     }
   }
 
