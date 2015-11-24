@@ -21,7 +21,7 @@ import org.jblas.FloatMatrix;
 /**
  * Matrix implementation based on JBLAS.
  */
-class MatrixJBLASImpl implements Matrix {
+final class MatrixJBLASImpl implements Matrix {
 
   private final FloatMatrix jblasMatrix;
 
