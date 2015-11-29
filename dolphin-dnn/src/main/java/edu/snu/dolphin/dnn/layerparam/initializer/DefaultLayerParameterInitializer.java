@@ -15,24 +15,38 @@
  */
 package edu.snu.dolphin.dnn.layerparam.initializer;
 
+import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
-import org.apache.reef.tang.annotations.DefaultImplementation;
+import org.apache.reef.tang.annotations.Parameter;
+
+import javax.inject.Inject;
 
 /**
- * Interface for parameter initializer.
+ * Default parameter initializer.
  *
- * The parameter initializer generates the initial parameter of the layer by the layer configuration.
+ * This initializer is for layers which do not have layer parameters (i.e. not learnable layer).
  */
-@DefaultImplementation(DefaultLayerParameterInitializer.class)
-public interface LayerParameterInitializer {
+public final class DefaultLayerParameterInitializer implements LayerParameterInitializer {
+
+  private final int index;
+
+  @Inject
+  public DefaultLayerParameterInitializer(
+      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index) {
+    this.index = index;
+  }
 
   /**
    * @return the initial parameter of the layer.
    */
-  LayerParameter generateInitialParameter();
+  public LayerParameter generateInitialParameter() {
+    return LayerParameter.EMPTY;
+  }
 
   /**
    * @return the index of the layer.
    */
-  int getIndex();
+  public int getIndex() {
+    return index;
+  }
 }

@@ -20,7 +20,15 @@ message FullyConnectedLayerConfiguration {
   required float init_bias = 1;
   required float init_weight = 2;
   optional uint32 random_seed = 3;
-  required string activation_function = 4;
+}
+
+message ActivationLayerConfiguration {
+  required string activation_function = 1;
+}
+
+message ActivationWithLossLayerConfiguration {
+  required string activation_function = 1;
+  required string loss_function = 2;
 }
 
 message LayerConfiguration {
@@ -28,6 +36,8 @@ message LayerConfiguration {
   required uint32 num_input = 2;
   required uint32 num_output = 3;
   optional FullyConnectedLayerConfiguration fully_connected_param = 4;
+  optional ActivationLayerConfiguration activation_param = 5;
+  optional ActivationWithLossLayerConfiguration activation_with_loss_param = 6;
 }
 
 message ParameterProviderConfiguration {

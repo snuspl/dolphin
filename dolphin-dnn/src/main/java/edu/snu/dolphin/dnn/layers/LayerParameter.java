@@ -16,6 +16,7 @@
 package edu.snu.dolphin.dnn.layers;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 /**
  * The parameter of the layer.
@@ -23,6 +24,8 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 public final class LayerParameter {
   private final INDArray weightParam;
   private final INDArray biasParam;
+
+  public static final LayerParameter EMPTY = new LayerParameter(Nd4j.create(0), Nd4j.create(0));
 
   /**
    * @return a new LayerParameter builder.

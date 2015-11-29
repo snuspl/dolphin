@@ -28,6 +28,7 @@ import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.util.FeatureUtil;
 
 import javax.inject.Inject;
@@ -59,6 +60,9 @@ public final class NeuralNetwork {
    * The number of processed training inputs.
    */
   private int trainedCount;
+
+  private static final INDArray EMPTY = Nd4j.create(0);
+
 
   @Inject
   private NeuralNetwork(final ConfigurationSerializer configurationSerializer,
@@ -147,7 +151,7 @@ public final class NeuralNetwork {
    */
   public INDArray[] feedForward(final int begin, final int end, final INDArray input) {
     if (begin > end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
@@ -165,18 +169,25 @@ public final class NeuralNetwork {
   }
 
   /**
-   * Computes errors from output layer to input layer.
+   * Computes errors from the output layer to the input layer.
+   * This returns an empty array when the network model has zero or one layer.
    * @param activations an array of activations for each layer.
    * @param label the expected output.
    * @return an array of errors for each layer.
    */
   public INDArray[] backPropagate(final INDArray[] activations,
                                   final INDArray label) {
-    return backPropagateTo(0, activations, label);
+    // Process backpropagation to the second layer.
+    // because the error returned by the first layer's backpropagation, is not needed
+    // to generate gradients for learning the first layer.
+    // The errors for generating gradients used to update the first layer's parameter, are calculated
+    // in the next layer's backpropagation.
+    return backPropagateTo(1, activations, label);
   }
 
   /**
-   * Computes errors from output layer to the specified ending layer.
+   * Computes errors from the output layer to the specified ending layer.
+   * This returns an empty array when the network model has zero or one layer.
    * @param end the index of ending layer, inclusive.
    * @param activations an array of activations of each layer.
    * @param label the expected output.
@@ -185,12 +196,26 @@ public final class NeuralNetwork {
   public INDArray[] backPropagateTo(final int end,
                                     final INDArray[] activations,
                                     final INDArray label) {
-    final int lastLayerIndex = layers.length - 1;
+    // Case 1: Only one layer
+    if (layers.length < 2) {
+      // If a neural network has only one layer, the network does not process backpropagation for this layer because
+      // this layer cannot generate gradients for updating its parameter.
+      // Generating gradients requires the error computed by the next layer.
+      return new INDArray[0];
+    } else {
+      final int lastLayerIndex = layers.length - 1;
+      // The first element of activations is the input data.
+      // So, (i + 1)-th element of activations refers to the activation of i-th layer.
+      final INDArray error = layers[lastLayerIndex].backPropagate(label, activations[lastLayerIndex + 1], EMPTY);
 
-    // The first element of activations is input data.
-    // So, (i + 1)-th element of activations refers to the activation of i-th layer.
-    final INDArray error = layers[lastLayerIndex].backPropagate(activations[lastLayerIndex + 1], label);
-    return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+      // Case 2: Two layers
+      if (lastLayerIndex == end) {
+        return new INDArray[]{error};
+      // Case 3: More than two layers
+      } else {
+        return ArrayUtils.add(backPropagateFromTo(lastLayerIndex - 1, end, activations, error), error);
+      }
+    }
   }
 
   /**
@@ -205,29 +230,34 @@ public final class NeuralNetwork {
                                         final INDArray[] activations,
                                         final INDArray nextError) {
     if (begin == layers.length - 1) {
-      throw new RuntimeException("The beginning layer of backPropagateFromTo cannot be output layer");
+      throw new IllegalArgumentException("The beginning layer of backPropagateFromTo cannot be the output layer");
+    }
+    if (end == 0) {
+      // The errors for generating gradients of the first layer are calculated by the next layer, not the first layer.
+      throw new IllegalArgumentException("The ending layer cannot be the first layer: " +
+          "The error that is propagated to the input is unnecessary to generate gradients for the first layer");
     }
     if (begin < end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be greater than or equal to the ending index (%d).", begin, end));
     }
 
-    checkIndices(begin, end, true);
+    checkIndices(begin, end, false);
 
-    final INDArray[] errors = new INDArray[end - begin + 1];
+    final INDArray[] errors = new INDArray[begin - end + 1];
     INDArray error = nextError;
 
     for (int i = begin; i >= end; --i) {
-      error = layers[i].backPropagate(activations[i + 1], layers[i + 1].getLayerParameter(), error);
-      errors[i - begin] = error;
+      error = layers[i].backPropagate(activations[i], activations[i + 1], error);
+      errors[i - end] = error;
     }
     return errors;
   }
 
   /**
    * Generates parameter gradients for all layers.
-   * @param activations activation values for each layer.
-   * @param errors errors for each layer.
+   * @param activations the activation values for each layer.
+   * @param errors the errors for each layer.
    * @return an array of parameter gradients for each layer.
    */
   public LayerParameter[] generateParameterGradients(final INDArray[] activations,
@@ -239,15 +269,15 @@ public final class NeuralNetwork {
    * Generates parameter gradients for each layer from the specified beginning layer to the specified ending layer.
    * @param begin the index of beginning layer, inclusive.
    * @param end the index of ending layer, inclusive.
-   * @param activations activation values for each layer.
-   * @param errors errors for each layer.
+   * @param activations the activation values for each layer.
+   * @param errors the errors for each layer.
    * @return an array of parameter gradients for each layer.
    */
   public LayerParameter[] generateParameterGradients(final int begin, final int end,
                                                      final INDArray[] activations,
                                                      final INDArray[] errors) {
     if (begin > end) {
-      throw new RuntimeException(String.format(
+      throw new IllegalArgumentException(String.format(
           "The beginning index (%d) must be less than or equal to the ending index (%d).", begin, end));
     }
 
@@ -255,7 +285,11 @@ public final class NeuralNetwork {
 
     final LayerParameter[] parameterGradients = new LayerParameter[end - begin + 1];
     for (int i = begin; i <= end; ++i) {
-      parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
+      if (layers[i].isLearnable()) {
+        parameterGradients[i - begin] = layers[i].generateParameterGradient(activations[i], errors[i]);
+      } else {
+        parameterGradients[i - begin] = LayerParameter.EMPTY;
+      }
     }
     return parameterGradients;
   }
@@ -264,27 +298,28 @@ public final class NeuralNetwork {
    * Check whether the indices for the beginning layer and the ending layer are within layer bound.
    * @param begin the index of the beginning layer, inclusive.
    * @param end the index of the ending layer, inclusive.
-   * @param isFoward the flag for a direction.
+   * @param isForward the flag for a direction.
    */
-  private void checkIndices(final int begin, final int end, final boolean isFoward) {
+  private void checkIndices(final int begin, final int end, final boolean isForward) {
     // Case 1: forward direction
-    if (isFoward) {
+    if (isForward) {
       if (begin < 0) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The beginning index (%d) must be greater than or equal to 0.", begin));
       }
       if (end >= layers.length) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The ending index (%d) must be less than the length of layers (%d).", end, layers.length));
       }
 
       // Case 2: backward direction
     } else {
       if (end < 0) {
-        throw new RuntimeException(String.format("The ending index (%d) must be greater than or equal to 0.", end));
+        throw new IllegalArgumentException(String.format(
+            "The ending index (%d) must be greater than or equal to 0.", end));
       }
       if (begin >= layers.length) {
-        throw new RuntimeException(String.format(
+        throw new IllegalArgumentException(String.format(
             "The beginning index (%d) must be less than the length of layers (%d).", begin, layers.length));
       }
     }

@@ -13,26 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.dnn.layerparam.initializer;
-
-import edu.snu.dolphin.dnn.layers.LayerParameter;
-import org.apache.reef.tang.annotations.DefaultImplementation;
-
 /**
- * Interface for parameter initializer.
- *
- * The parameter initializer generates the initial parameter of the layer by the layer configuration.
+ * Classes for testing neural network layers.
  */
-@DefaultImplementation(DefaultLayerParameterInitializer.class)
-public interface LayerParameterInitializer {
-
-  /**
-   * @return the initial parameter of the layer.
-   */
-  LayerParameter generateInitialParameter();
-
-  /**
-   * @return the index of the layer.
-   */
-  int getIndex();
-}
+package edu.snu.dolphin.dnn.layers;
