@@ -69,7 +69,7 @@ public final class ActivationLayer extends LayerBase {
    */
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
-    final Matrix derivative = activationFunction.derivative(activation);
+    final Matrix derivative = activationFunction.derivative(input);
     return nextError.mul(derivative);
   }
 

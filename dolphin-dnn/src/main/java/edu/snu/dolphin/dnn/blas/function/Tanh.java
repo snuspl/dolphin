@@ -55,6 +55,7 @@ final class Tanh implements Function {
    */
   @Override
   public Matrix derivativei(final Matrix m) {
+    applyi(m);
     MatrixFunctions.powi(m, 2);
     return m.rsubi(1);
   }

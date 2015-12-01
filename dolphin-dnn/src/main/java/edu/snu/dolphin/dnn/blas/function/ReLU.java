@@ -57,7 +57,7 @@ final class ReLU implements Function {
   @Override
   public Matrix derivativei(final Matrix m) {
     for (int i = 0; i < m.getLength(); ++i) {
-      if (m.get(i) == 0) {
+      if (m.get(i) < 0) {
         m.put(i, 0.0f);
       } else {
         m.put(i, 1.0f);

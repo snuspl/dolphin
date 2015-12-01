@@ -61,7 +61,7 @@ public final class SigmoidTest {
 
   @Test
   public void testSigmoidDerivative() {
-    final Matrix derivative = FunctionFactory.getSingleInstance("sigmoid").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("sigmoid").derivative(input);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }

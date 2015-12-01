@@ -61,7 +61,7 @@ public final class TanhTest {
 
   @Test
   public void testTanhDerivative() {
-    final Matrix derivative = FunctionFactory.getSingleInstance("tanh").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("tanh").derivative(input);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }
