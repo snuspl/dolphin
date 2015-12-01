@@ -37,7 +37,7 @@ layer {
   num_input: 50
   num_output: 50
   activation_param {
-    activation_function: "sigmoid"
+    activation_function: "relu"
   }
 }
 layer {
@@ -54,7 +54,7 @@ layer {
   num_input: 10
   num_output: 10
   activation_with_loss_param {
-    activation_function: "sigmoid"
+    activation_function: "softmax"
     loss_function: "crossentropy"
   }
 }
