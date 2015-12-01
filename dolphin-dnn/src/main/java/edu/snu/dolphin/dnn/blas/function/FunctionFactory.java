@@ -28,6 +28,8 @@ public final class FunctionFactory {
   private static final Function IDENTITY = new Identity();
   private static final Function RELU = new ReLU();
   private static final Function TANH = new Tanh();
+  private static final Function POWER = new Power(); // the square function
+  private static final Function ABSOLUTE = new Absolute();
 
   public static Function getSingleInstance(final String name) {
     switch (name.toLowerCase()) {
@@ -39,6 +41,10 @@ public final class FunctionFactory {
       return RELU;
     case "tanh":
       return TANH;
+    case "pow":
+      return POWER;
+    case "abs":
+      return ABSOLUTE;
     default:
       throw new IllegalArgumentException("Unsupported function: " + name);
     }
