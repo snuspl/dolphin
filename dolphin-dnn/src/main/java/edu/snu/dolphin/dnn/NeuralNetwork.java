@@ -26,7 +26,6 @@ import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
-import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
@@ -79,7 +78,8 @@ public final class NeuralNetwork {
                         final ConfigurationSerializer configurationSerializer,
                         @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
                         @Parameter(BatchSize.class) final int batchSize,
-                        final ParameterProvider parameterProvider) {
+                        final ParameterProvider parameterProvider,
+                        final Injector injector) {
     this.matrixFactory = matrixFactory;
     this.batchSize = batchSize;
     this.parameterProvider = parameterProvider;
@@ -87,15 +87,10 @@ public final class NeuralNetwork {
     this.emptyMatrix = matrixFactory.create(0);
     this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
 
-    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
-        .build();
-
     for (final String serializedLayerConfiguration : serializedLayerConfSets) {
       try {
         final Configuration layerConfiguration = configurationSerializer.fromString(serializedLayerConfiguration);
-        final Injector injector = Tang.Factory.getTang().newInjector(layerConfiguration, matrixFactoryConf);
-        final LayerBase layer = injector.getInstance(LayerBase.class);
+        final LayerBase layer = injector.forkInjector(layerConfiguration).getInstance(LayerBase.class);
         this.layers[layer.getIndex()] = layer;
 
       } catch (final IOException exception) {

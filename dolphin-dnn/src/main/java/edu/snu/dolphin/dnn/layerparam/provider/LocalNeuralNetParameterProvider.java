@@ -23,7 +23,6 @@ import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
-import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
@@ -50,23 +49,19 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
-      final MatrixFactory matrixFactory) {
+      final MatrixFactory matrixFactory,
+      final Injector injector) {
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
     this.matrixFactory = matrixFactory;
 
-    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
-        .build();
-
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
-        final Injector injector = Tang.Factory.getTang().newInjector(initializerConfiguration, matrixFactoryConf);
         final LayerParameterInitializer layerParameterInitializer =
-            injector.getInstance(LayerParameterInitializer.class);
+            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
         this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();

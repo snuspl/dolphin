@@ -29,7 +29,7 @@ import org.apache.reef.io.network.group.api.task.CommunicationGroupClient;
 import org.apache.reef.io.network.group.api.task.GroupCommClient;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
-import org.apache.reef.tang.Tang;
+import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
@@ -70,7 +70,8 @@ public final class GroupCommParameterServerTask implements Task {
       @Parameter(Stepsize.class) final float stepsize,
       @Parameter(MaxIterations.class) final int maxIterations,
       final ConfigurationSerializer configurationSerializer,
-      final GroupCommClient groupCommClient) {
+      final GroupCommClient groupCommClient,
+      final Injector injector) {
 
     final CommunicationGroupClient commGroup =
         groupCommClient.getCommunicationGroup(NeuralNetworkGroupCommDriver.NeuralNetworkCommGroup.class);
@@ -87,17 +88,12 @@ public final class GroupCommParameterServerTask implements Task {
     this.stepsize = stepsize;
     this.maxIterations = maxIterations;
 
-    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
-        .build();
-
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
         final LayerParameterInitializer layerParameterInitializer =
-            Tang.Factory.getTang().newInjector(initializerConfiguration, matrixFactoryConf)
-                .getInstance(LayerParameterInitializer.class);
+            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
         this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();

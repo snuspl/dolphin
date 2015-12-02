@@ -27,7 +27,6 @@ import edu.snu.dolphin.ps.server.ParameterUpdater;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
-import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 import org.apache.reef.tang.annotations.Parameter;
@@ -70,6 +69,7 @@ public final class NeuralNetworkParameterUpdater
   private final float stepsize;
   private final ConfigurationSerializer configurationSerializer;
   private final int logPeriod;
+  private final Injector injector;
   private int iteration;
 
   @Inject
@@ -78,7 +78,8 @@ public final class NeuralNetworkParameterUpdater
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
-      @Parameter(LogPeriod.class) final int logPeriod) {
+      @Parameter(LogPeriod.class) final int logPeriod,
+      final Injector injector) {
     this.matrixFactory = matrixFactory;
     this.serializedLayerConfigurationSet = serializedLayerConfigurationSet;
     this.stepsize = stepsize;
@@ -88,6 +89,7 @@ public final class NeuralNetworkParameterUpdater
       throw new RuntimeException("Log period is too small");
     }
     this.logPeriod = logPeriod;
+    this.injector = injector;
     this.iteration = 0;
   }
 
@@ -238,17 +240,13 @@ public final class NeuralNetworkParameterUpdater
    */
   private List<LayerParameter[]> initValueLayerParameters() {
     final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    final Configuration matrixFactoryConf = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindImplementation(MatrixFactory.class, matrixFactory.getClass())
-        .build();
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
-        final Injector injector = Tang.Factory.getTang().newInjector(initializerConfiguration, matrixFactoryConf);
         final LayerParameterInitializer layerParameterInitializer =
-            injector.getInstance(LayerParameterInitializer.class);
+            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
         layerParameters[index] = layerParameterInitializer.generateInitialParameter();
