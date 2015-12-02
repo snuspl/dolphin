@@ -47,7 +47,7 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
 
   @Inject
   public LocalNeuralNetParameterProvider(
-      @Parameter(SerializedLayerConfigurationSet.class)final Set<String> serializedLayerConfigurationSet,
+      @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
       final MatrixFactory matrixFactory) {

@@ -35,7 +35,7 @@ public final class DefaultLayerParameterInitializer implements LayerParameterIni
   @Inject
   public DefaultLayerParameterInitializer(
       final MatrixFactory matrixFactory,
-      @Parameter(LayerConfigurationParameters.LayerIndex.class)final int index) {
+      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index) {
     this.index = index;
     this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
   }
