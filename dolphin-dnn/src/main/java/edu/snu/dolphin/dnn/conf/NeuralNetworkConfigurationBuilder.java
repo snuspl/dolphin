@@ -64,8 +64,8 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
   }
 
   public synchronized NeuralNetworkConfigurationBuilder setParameterProviderClass(
-      final Class<? extends ParameterProvider> newParameterProviderClass) {
-    this.parameterProviderClass = newParameterProviderClass;
+      final Class<? extends ParameterProvider> parameterProviderClass) {
+    this.parameterProviderClass = parameterProviderClass;
     return this;
   }
 

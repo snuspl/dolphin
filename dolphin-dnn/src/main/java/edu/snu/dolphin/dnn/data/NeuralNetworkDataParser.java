@@ -105,7 +105,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
     }
     final int num = end - begin;
     if (num == 0) {
-      return new int[]{begin};
+      return new int[0];
     }
     final int[] ret = new int[num];
     for (int i = 0; i < num; ++i) {

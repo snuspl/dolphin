@@ -67,6 +67,7 @@ public final class NeuralNetwork {
    * This is used as the next error of the last layer's backpropagation.
    */
   private final Matrix emptyMatrix;
+
   /**
    * The empty layer parameter.
    * This is used as the gradients of layers that are not learnable.
