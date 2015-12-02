@@ -1,6 +1,6 @@
 # Dolphin - Deep Neural Network
 
-`dolphin-dnn` is a deep learning framework built on [Apache REEF](https://reef.incubator.apache.org). It is capable of both BSP-style synchronous deep learning and parameter server-backed asynchronous deep learning. `dolphin-dnn` is designed for training large neural network models on big data by supporting data partitioning as well as model partitioning, inspired by Google's [DistBelief](http://papers.nips.cc/paper/4687-large-scale-distributed-deep-networks.pdf), although the current codebase only contains methods for data partitioning; model partitioning is on-going work.
+`dolphin-dnn` is a deep learning framework built on [Apache REEF](https://reef.apache.org). It is capable of both BSP-style synchronous deep learning and parameter server-backed asynchronous deep learning. `dolphin-dnn` is designed for training large neural network models on big data by supporting data partitioning as well as model partitioning, inspired by Google's [DistBelief](http://papers.nips.cc/paper/4687-large-scale-distributed-deep-networks.pdf), although the current codebase only contains methods for data partitioning; model partitioning is on-going work.
 
 * Data partitioning: Input data are distributed across evaluators, each of which has a replica of the whole neural network model. Every replica independently trains its model on its own data, and the updated models are shared between replicas periodically. The model sharing can be done either synchronously or asynchronously, depending on the implementation.
 
@@ -51,7 +51,7 @@ parameter_provider {
 ```
 
 ##### Group Communication Parameter Provider
-Group communication providers are used for BSP-style network training. The group communication provider communicates with a group communication parameter server using [Apache REEF](https://reef.incubator.apache.org)'s Group Communication Service. The server aggregates parameter gradients received from providers using the MPI Reduce operation. After updating parameters, the server broadcasts the updated parameters back to all providers. All operations are done synchronously, hence the name group communication.
+Group communication providers are used for BSP-style network training. The group communication provider communicates with a group communication parameter server using [Apache REEF](https://reef.apache.org)'s Group Communication Service. The server aggregates parameter gradients received from providers using the MPI Reduce operation. After updating parameters, the server broadcasts the updated parameters back to all providers. All operations are done synchronously, hence the name group communication.
 
 ```
 parameter_provider {
