@@ -15,12 +15,16 @@
  */
 package edu.snu.dolphin.dnn.data;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
+import org.apache.reef.tang.Configuration;
+import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.Random;
 
@@ -32,10 +36,17 @@ import static org.junit.Assert.assertArrayEquals;
 public final class LayerParameterArrayCodecTest {
 
   private LayerParameterArrayCodec layerParameterArrayCodec;
+  private MatrixFactory matrixFactory;
 
   @Before
   public void setUp() throws InjectionException {
-    this.layerParameterArrayCodec = Tang.Factory.getTang().newInjector().getInstance(LayerParameterArrayCodec.class);
+    final Configuration conf = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+        .build();
+    final Injector injector = Tang.Factory.getTang().newInjector(conf);
+
+    this.layerParameterArrayCodec = injector.getInstance(LayerParameterArrayCodec.class);
+    this.matrixFactory = injector.getInstance(MatrixFactory.class);
   }
 
   /**
@@ -43,7 +54,7 @@ public final class LayerParameterArrayCodecTest {
    */
   @Test
   public void testEncodeDecodeLayerParameters() {
-    final LayerParameter[] inputLayerParameters = generateRandomLayerParameterArray();
+    final LayerParameter[] inputLayerParameters = generateRandomLayerParameterArray(matrixFactory);
     final LayerParameter[] outputLayerParameters =
         layerParameterArrayCodec.decode(layerParameterArrayCodec.encode(inputLayerParameters));
 
@@ -54,8 +65,8 @@ public final class LayerParameterArrayCodecTest {
   /**
    * @return a random 10-element array of layer parameters.
    */
-  public static LayerParameter[] generateRandomLayerParameterArray() {
-    return generateRandomLayerParameterArray(new Random(), 10);
+  public static LayerParameter[] generateRandomLayerParameterArray(final MatrixFactory matrixFactory) {
+    return generateRandomLayerParameterArray(matrixFactory, new Random(), 10);
   }
 
   /**
@@ -63,12 +74,13 @@ public final class LayerParameterArrayCodecTest {
    * @param numElements the number of array elements
    * @return a random array of layer parameters.
    */
-  public static LayerParameter[] generateRandomLayerParameterArray(final Random random,
+  public static LayerParameter[] generateRandomLayerParameterArray(final MatrixFactory matrixFactory,
+                                                                   final Random random,
                                                                    final int numElements) {
     final LayerParameter[] retLayerParameters = new LayerParameter[numElements];
     for (int index = 0; index < retLayerParameters.length; index++) {
-      final INDArray weightParam = NDArrayGenerator.generateRandomNDArray(random, 2);
-      final INDArray biasParam = NDArrayGenerator.generateRandomNDArray(random, 2);
+      final Matrix weightParam = MatrixGenerator.generateRandomMatrix(matrixFactory, random);
+      final Matrix biasParam = MatrixGenerator.generateRandomMatrix(matrixFactory, random);
       retLayerParameters[index] = LayerParameter.newBuilder()
           .setWeightParam(weightParam)
           .setBiasParam(biasParam)

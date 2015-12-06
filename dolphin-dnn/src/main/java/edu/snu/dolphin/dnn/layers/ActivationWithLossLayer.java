@@ -15,6 +15,7 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LossFunction;
@@ -24,7 +25,6 @@ import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public final class ActivationWithLossLayer extends LayerBase {
   }
 
   @Override
-  public INDArray feedForward(final INDArray input) {
+  public Matrix feedForward(final Matrix input) {
     return activationLayer.feedForward(input);
   }
 
@@ -85,7 +85,7 @@ public final class ActivationWithLossLayer extends LayerBase {
    * @return the error with respect to the activation and label values.
    */
   @Override
-  public INDArray backPropagate(final INDArray label, final INDArray activation, final INDArray nextError) {
+  public Matrix backPropagate(final Matrix label, final Matrix activation, final Matrix nextError) {
     switch (lossFunction.toLowerCase()) {
     case "crossentropy":
       return activation.sub(label);
@@ -96,7 +96,7 @@ public final class ActivationWithLossLayer extends LayerBase {
   }
 
   @Override
-  public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
+  public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
     throw new RuntimeException("This layer is not learnable");
   }
 }

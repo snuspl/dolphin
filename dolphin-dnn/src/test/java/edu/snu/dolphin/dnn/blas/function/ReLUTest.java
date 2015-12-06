@@ -59,7 +59,7 @@ public final class ReLUTest {
 
   @Test
   public void testReLUDerivative() {
-    final Matrix derivative = FunctionFactory.getSingleInstance("relu").derivative(expectedOutput);
+    final Matrix derivative = FunctionFactory.getSingleInstance("relu").derivative(input);
     assertTrue(expectedDerivative.compare(derivative, TOLERANCE));
   }
 }

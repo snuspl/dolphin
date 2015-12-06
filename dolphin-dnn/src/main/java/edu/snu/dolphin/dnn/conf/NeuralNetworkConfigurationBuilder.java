@@ -31,6 +31,7 @@ import java.util.Collection;
  * Configuration builder for neural network.
  *
  * The configuration that this builder generates is used to create a neural network instance.
+ * The generated configuration should be merged with the BLAS configuration.
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 

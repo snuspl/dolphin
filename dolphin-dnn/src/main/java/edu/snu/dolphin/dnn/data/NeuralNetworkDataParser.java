@@ -18,14 +18,13 @@ package edu.snu.dolphin.dnn.data;
 import edu.snu.dolphin.bsp.core.DataParser;
 import edu.snu.dolphin.bsp.core.ParseException;
 import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.Delimiter;
-import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.InputShape;
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.reef.io.data.loading.api.DataSet;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -33,34 +32,33 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.snu.dolphin.dnn.util.Nd4jUtils.readNumpy;
-import static edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.inputShapeFromString;
+import static edu.snu.dolphin.dnn.blas.MatrixUtils.readNumpy;
 
 /**
  * Data parser for neural network.
  *
  * Parses Numpy compatible plain text file.
  */
-public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> {
+public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> {
 
+  private final MatrixFactory matrixFactory;
   private final DataSet<LongWritable, Text> dataSet;
   private final String delimiter;
-  private final int[] inputShape;
-  private List<Pair<Pair<INDArray, Integer>, Boolean>> result;
+  private List<Pair<Pair<Matrix, Integer>, Boolean>> result;
   private ParseException parseException;
 
   @Inject
-  private NeuralNetworkDataParser(final DataSet<LongWritable, Text> dataSet,
-                                  @Parameter(Delimiter.class) final String delimiter,
-                                  @Parameter(InputShape.class) final String inputShape) {
+  private NeuralNetworkDataParser(final MatrixFactory matrixFactory,
+                                  final DataSet<LongWritable, Text> dataSet,
+                                  @Parameter(Delimiter.class)final String delimiter) {
+    this.matrixFactory = matrixFactory;
     this.dataSet = dataSet;
     this.delimiter = delimiter;
-    this.inputShape = inputShapeFromString(inputShape);
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<Pair<Pair<INDArray, Integer>, Boolean>> get() throws ParseException {
+  public List<Pair<Pair<Matrix, Integer>, Boolean>> get() throws ParseException {
     if (result == null) {
       parse();
     }
@@ -73,7 +71,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   /** {@inheritDoc} */
   @Override
   public void parse() {
-    final List<Pair<Pair<INDArray, Integer>, Boolean>> trainingData = new ArrayList<>();
+    final List<Pair<Pair<Matrix, Integer>, Boolean>> trainingData = new ArrayList<>();
 
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
       final String text = keyValue.getSecond().toString().trim();
@@ -81,11 +79,10 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
         continue;
       }
       try {
-        final INDArray input = readNumpy(
-            new ByteArrayInputStream(text.getBytes()), delimiter);
-        final INDArray data = input.get(NDArrayIndex.interval(0, input.columns() - 2)).reshape(inputShape);
-        final int label = (int) input.getFloat(input.columns() - 2);
-        final boolean isValidation = ((int) input.getFloat(input.columns() - 1) == 1);
+        final Matrix input = readNumpy(matrixFactory, new ByteArrayInputStream(text.getBytes()), delimiter);
+        final Matrix data = input.get(range(0, input.getColumns() - 2));
+        final int label = (int) input.get(input.getColumns() - 2);
+        final boolean isValidation = ((int) input.get(input.getColumns() - 1) == 1);
         trainingData.add(new Pair<>(new Pair<>(data, label), isValidation));
       } catch (final IOException e) {
         parseException = new ParseException("IOException: " + e.toString());
@@ -93,5 +90,27 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       }
     }
     result = trainingData;
+  }
+
+  /**
+   * Generates an array of integers from begin (inclusive) to end (exclusive).
+   *
+   * @param begin the beginning value, inclusive
+   * @param end the ending value, exclusive
+   * @return a generated array.
+   */
+  private int[] range(final int begin, final int end) {
+    if (begin > end) {
+      throw new IllegalArgumentException("The beginning value should be less than or equal to the ending value");
+    }
+    final int num = end - begin;
+    if (num == 0) {
+      return new int[0];
+    }
+    final int[] ret = new int[num];
+    for (int i = 0; i < num; ++i) {
+      ret[i] = begin + i;
+    }
+    return ret;
   }
 }

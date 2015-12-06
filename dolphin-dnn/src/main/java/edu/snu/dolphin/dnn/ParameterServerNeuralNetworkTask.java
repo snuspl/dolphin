@@ -17,6 +17,7 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.core.DataParser;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.util.Validator;
 import edu.snu.dolphin.ps.worker.ParameterWorker;
@@ -24,7 +25,6 @@ import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.task.Task;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -44,13 +44,13 @@ public final class ParameterServerNeuralNetworkTask implements Task {
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
-  private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
+  private final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
   private final ParameterWorker<String, NeuralNetParamServerData, ?> worker;
 
   @Inject
-  ParameterServerNeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
+  ParameterServerNeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser,
                                    final NeuralNetwork neuralNetwork,
                                    @Parameter(MaxIterations.class) final int maxIterations,
                                    final ParameterWorker<String, NeuralNetParamServerData, ?> worker) {
@@ -67,7 +67,7 @@ public final class ParameterServerNeuralNetworkTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
-    final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
+    final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
 

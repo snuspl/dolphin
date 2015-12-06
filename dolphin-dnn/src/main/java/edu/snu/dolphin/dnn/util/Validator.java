@@ -16,7 +16,7 @@
 package edu.snu.dolphin.dnn.util;
 
 import edu.snu.dolphin.dnn.NeuralNetwork;
-import org.nd4j.linalg.api.ndarray.INDArray;
+import edu.snu.dolphin.dnn.blas.Matrix;
 
 /**
  * Class for validating a neural network model using a given data input.
@@ -31,16 +31,16 @@ public final class Validator {
     this.validationStats = new ValidationStats();
   }
 
-  public void validate(final INDArray input, final int label) {
-    final INDArray[] activations = network.feedForward(input);
-    final INDArray output = activations[activations.length - 1];
-    float maxValue = output.getFloat(0);
+  public void validate(final Matrix input, final int label) {
+    final Matrix[] activations = network.feedForward(input);
+    final Matrix output = activations[activations.length - 1];
+    float maxValue = output.get(0);
 
     // Find the index with highest probability.
     int maxIndex = 0;
-    for (int i = 1; i < output.length(); ++i) {
-      if (output.getFloat(i) > maxValue) {
-        maxValue = output.getFloat(i);
+    for (int i = 1; i < output.getLength(); ++i) {
+      if (output.get(i) > maxValue) {
+        maxValue = output.get(i);
         maxIndex = i;
       }
     }

@@ -52,6 +52,7 @@ final class Sigmoid implements Function {
    */
   @Override
   public Matrix derivativei(final Matrix m) {
+    applyi(m);
     return m.muli(m.rsub(1.0f));
   }
 }

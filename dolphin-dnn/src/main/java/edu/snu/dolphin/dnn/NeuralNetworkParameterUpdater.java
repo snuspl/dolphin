@@ -15,6 +15,8 @@
  */
 package edu.snu.dolphin.dnn;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
@@ -25,13 +27,11 @@ import edu.snu.dolphin.ps.server.ParameterUpdater;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
-import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -64,18 +64,23 @@ public final class NeuralNetworkParameterUpdater
   public static final String WHOLE_MODEL = "WHOLE_MODEL";
   public static final String VALIDATION = "VALIDATION";
 
+  private final MatrixFactory matrixFactory;
   private final Set<String> serializedLayerConfigurationSet;
   private final float stepsize;
   private final ConfigurationSerializer configurationSerializer;
   private final int logPeriod;
+  private final Injector injector;
   private int iteration;
 
   @Inject
   private NeuralNetworkParameterUpdater(
+      final MatrixFactory matrixFactory,
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
-      @Parameter(LogPeriod.class) final int logPeriod) {
+      @Parameter(LogPeriod.class) final int logPeriod,
+      final Injector injector) {
+    this.matrixFactory = matrixFactory;
     this.serializedLayerConfigurationSet = serializedLayerConfigurationSet;
     this.stepsize = stepsize;
     this.configurationSerializer = configurationSerializer;
@@ -84,6 +89,7 @@ public final class NeuralNetworkParameterUpdater
       throw new RuntimeException("Log period is too small");
     }
     this.logPeriod = logPeriod;
+    this.injector = injector;
     this.iteration = 0;
   }
 
@@ -114,9 +120,12 @@ public final class NeuralNetworkParameterUpdater
 
     final LayerParameter[] aggregatedParameterGradients = new LayerParameter[parameterGradientsList.get(0).length];
     for (int index = 0; index < aggregatedParameterGradients.length; index++) {
+      final Matrix weight = parameterGradientsList.get(0)[index].getWeightParam();
+      final Matrix bias = parameterGradientsList.get(0)[index].getBiasParam();
+
       aggregatedParameterGradients[index] = LayerParameter.newBuilder()
-          .setWeightParam(Nd4j.zeros(parameterGradientsList.get(0)[index].getWeightParam().shape()))
-          .setBiasParam(Nd4j.zeros(parameterGradientsList.get(0)[index].getBiasParam().shape()))
+          .setWeightParam(matrixFactory.zeros(weight.getRows(), weight.getColumns()))
+          .setBiasParam(matrixFactory.zeros(bias.getRows(), bias.getColumns()))
           .build();
     }
 
@@ -236,9 +245,8 @@ public final class NeuralNetworkParameterUpdater
       try {
         final Configuration initializerConfiguration =
             configurationSerializer.fromString(serializedInitializerConfiguration);
-        final Injector injector = Tang.Factory.getTang().newInjector(initializerConfiguration);
         final LayerParameterInitializer layerParameterInitializer =
-            injector.getInstance(LayerParameterInitializer.class);
+            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
         final int index = layerParameterInitializer.getIndex();
 
         layerParameters[index] = layerParameterInitializer.generateInitialParameter();

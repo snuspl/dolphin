@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# name: neuralnet
-# description: neural network configuration for MNIST database
-batch_size: 10
+# name: neuralnet_groupcomm
+# description: neural network configuration for MNIST database using REEF's group communication
+batch_size: 3
 stepsize: 1e-3
 input_shape {
   dim: 28
   dim: 28
 }
 parameter_provider {
-  type: "local"
+  type: "groupcomm"
 }
 layer {
   type: "FullyConnected"

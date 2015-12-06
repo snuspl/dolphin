@@ -15,12 +15,16 @@
  */
 package edu.snu.dolphin.dnn.data;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
 import org.apache.reef.io.network.util.Pair;
+import org.apache.reef.tang.Configuration;
+import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +39,18 @@ public final class ActivationErrorListCodecTest {
 
   private ActivationErrorListCodec activationErrorListCodec;
   private Random random;
+  private MatrixFactory matrixFactory;
 
   @Before
   public void setUp() throws InjectionException {
-    this.activationErrorListCodec =
-        Tang.Factory.getTang().newInjector().getInstance(ActivationErrorListCodec.class);
+    final Configuration conf = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+        .build();
+    final Injector injector = Tang.Factory.getTang().newInjector(conf);
+
+    this.activationErrorListCodec = injector.getInstance(ActivationErrorListCodec.class);
     this.random = new Random();
+    this.matrixFactory = injector.getInstance(MatrixFactory.class);
   }
 
   /**
@@ -48,22 +58,22 @@ public final class ActivationErrorListCodecTest {
    */
   @Test
   public void testEncodeDecodeActivationError() {
-    final List<Pair<List<INDArray>, List<INDArray>>> inputList = new ArrayList<>(10);
+    final List<Pair<List<Matrix>, List<Matrix>>> inputList = new ArrayList<>(10);
     for (int index = 0; index < inputList.size(); index++) {
-      final List<INDArray> activation = new ArrayList<>(10);
+      final List<Matrix> activation = new ArrayList<>(10);
       for (int activationIndex = 0; activationIndex < activation.size(); activationIndex++) {
-        activation.add(NDArrayGenerator.generateRandomNDArray(random, 2));
+        activation.add(MatrixGenerator.generateRandomMatrix(matrixFactory, random));
       }
 
-      final List<INDArray> error = new ArrayList<>(10);
+      final List<Matrix> error = new ArrayList<>(10);
       for (int errorIndex = 0; errorIndex < error.size(); errorIndex++) {
-        error.add(NDArrayGenerator.generateRandomNDArray(random, 2));
+        error.add(MatrixGenerator.generateRandomMatrix(matrixFactory, random));
       }
 
       inputList.add(new Pair<>(activation, error));
     }
 
-    final List<Pair<List<INDArray>, List<INDArray>>> retList =
+    final List<Pair<List<Matrix>, List<Matrix>>> retList =
         activationErrorListCodec.decode(activationErrorListCodec.encode(inputList));
 
     assertEquals("Encode-decode result is different from expected list", inputList, retList);

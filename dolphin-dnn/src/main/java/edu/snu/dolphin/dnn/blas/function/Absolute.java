@@ -19,12 +19,12 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFunctions;
 
 /**
- * Hyperbolic tangent function.
+ * Absolute function.
  */
-final class Tanh implements Function {
+final class Absolute implements Function {
 
   /**
-   * Applies a hyperbolic tangent function to all elements of the specified matrix.
+   * Applies the absolute function to all elements of the specified matrix.
    */
   @Override
   public Matrix apply(final Matrix m) {
@@ -32,15 +32,15 @@ final class Tanh implements Function {
   }
 
   /**
-   * Applies a hyperbolic tangent function to all elements of the specified matrix (in place).
+   * Applies the absolute function to all elements of the specified matrix (in place).
    */
   @Override
   public Matrix applyi(final Matrix m) {
-    return MatrixFunctions.tanhi(m);
+    return MatrixFunctions.absi(m);
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of a hyperbolic tangent function.
+   * Calculates the matrix in which all elements are derivatives of the absolute function.
    */
   @Override
   public Matrix derivative(final Matrix m) {
@@ -48,15 +48,10 @@ final class Tanh implements Function {
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of a hyperbolic tangent function (in place).
-   * <p>
-   *   derivative of tanh: 1 - tanh(x)^2
-   * </p>
+   * Calculates the matrix in which all elements are derivatives of the absolute function (in place).
    */
   @Override
   public Matrix derivativei(final Matrix m) {
-    applyi(m);
-    MatrixFunctions.powi(m, 2);
-    return m.rsubi(1);
+    return MatrixFunctions.signumi(m);
   }
 }

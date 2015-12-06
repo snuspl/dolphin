@@ -19,12 +19,12 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFunctions;
 
 /**
- * Hyperbolic tangent function.
+ * Softmax function.
  */
-final class Tanh implements Function {
+final class Softmax implements Function {
 
   /**
-   * Applies a hyperbolic tangent function to all elements of the specified matrix.
+   * Applies the softmax function to all elements of the specified matrix.
    */
   @Override
   public Matrix apply(final Matrix m) {
@@ -32,15 +32,20 @@ final class Tanh implements Function {
   }
 
   /**
-   * Applies a hyperbolic tangent function to all elements of the specified matrix (in place).
+   * Applies the softmax function to all elements of the specified matrix (in place).
    */
   @Override
   public Matrix applyi(final Matrix m) {
-    return MatrixFunctions.tanhi(m);
+    // subtract the maximum values of each row
+    m.subiColumnVector(m.rowMaxs());
+    // exponentiation
+    MatrixFunctions.expi(m);
+    // divide by the sum of each row
+    return m.diviColumnVector(m.rowSums());
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of a hyperbolic tangent function.
+   * Calculates the matrix in which all elements are derivatives of the softmax function.
    */
   @Override
   public Matrix derivative(final Matrix m) {
@@ -48,15 +53,14 @@ final class Tanh implements Function {
   }
 
   /**
-   * Calculates the matrix in which all elements are derivatives of a hyperbolic tangent function (in place).
+   * Calculates the matrix in which all elements are derivatives of the softmax function (in place).
    * <p>
-   *   derivative of tanh: 1 - tanh(x)^2
+   *   derivative of softmax (dy_i/dx_i): softmax(x) * (1 - softmax(x))
    * </p>
    */
   @Override
   public Matrix derivativei(final Matrix m) {
     applyi(m);
-    MatrixFunctions.powi(m, 2);
-    return m.rsubi(1);
+    return m.muli(m.rsub(1.0f));
   }
 }

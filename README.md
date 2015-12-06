@@ -1,7 +1,7 @@
 Dolphin
 =======
 
-Dolphin is a machine learning platform built on top of [Apache REEF](http://reef.incubator.apache.org/). Dolphin consists of a BSP-style machine learning framework (`dolphin-bsp`), a deep learning framework (`dolphin-dnn`), and a parameter server module (`dolphin-ps`).
+Dolphin is a machine learning platform built on top of [Apache REEF](http://reef.apache.org/). Dolphin consists of a BSP-style machine learning framework (`dolphin-bsp`), a deep learning framework (`dolphin-dnn`), and a parameter server module (`dolphin-ps`).
 
 ### Submodules
 
@@ -10,7 +10,11 @@ Dolphin is a machine learning platform built on top of [Apache REEF](http://reef
 * [`dolphin-ps`](dolphin-ps/README.md): Parameter server module for asynchronous machine learning algorithms.
 
 ### How to build and run Dolphin
-1. Build Dolphin:
+
+1. Build REEF: check https://cwiki.apache.org/confluence/display/REEF/Compiling+REEF
+  Currently, Dolphin depends on REEF `0.14.0-SNAPSHOT`, which means you must build the current snapshot of REEF before building Dolphin. We will move to the release version `0.14.0` once it's out.
+
+2. Build Dolphin:
     ```
     git clone https://github.com/cmssnu/dolphin
     cd dolphin
@@ -18,7 +22,7 @@ Dolphin is a machine learning platform built on top of [Apache REEF](http://reef
     ```
 
 
-2. Run Dolphin: check the READMEs in the submodules for more details.
+3. Run Dolphin: check the READMEs in the submodules for more details.
 
 ### Dolphin Mailing List
 Bug reports and feature requests are welcome, as well as even simple questions!  

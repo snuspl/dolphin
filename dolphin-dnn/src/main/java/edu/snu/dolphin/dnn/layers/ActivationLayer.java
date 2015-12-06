@@ -15,12 +15,13 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.function.Function;
+import edu.snu.dolphin.dnn.blas.function.FunctionFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.ActivationFunction;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
 import org.apache.reef.tang.annotations.Parameter;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import javax.inject.Inject;
 
@@ -32,14 +33,14 @@ import javax.inject.Inject;
  */
 public final class ActivationLayer extends LayerBase {
 
-  private final String activationFunction;
+  private final Function activationFunction;
 
   @Inject
   public ActivationLayer(@Parameter(LayerIndex.class) final int index,
                          @Parameter(ActivationFunction.class) final String activationFunction,
                          @Parameter(NumberOfOutput.class) final int numOutput) {
     super(index, numOutput);
-    this.activationFunction = activationFunction;
+    this.activationFunction = FunctionFactory.getSingleInstance(activationFunction);
   }
 
   /** {@inheritDoc} */
@@ -54,9 +55,9 @@ public final class ActivationLayer extends LayerBase {
    * @return the activation.
    */
   @Override
-  public INDArray feedForward(final INDArray input) {
+  public Matrix feedForward(final Matrix input) {
     // apply activation function.
-    return Nd4j.getExecutioner().execAndReturn(Nd4j.getOpFactory().createTransform(activationFunction, input.dup()));
+    return activationFunction.apply(input);
   }
 
   /**
@@ -67,15 +68,14 @@ public final class ActivationLayer extends LayerBase {
    * @return an error for this activation layer.
    */
   @Override
-  public INDArray backPropagate(final INDArray input, final INDArray activation, final INDArray nextError) {
-    final INDArray derivative = Nd4j.getExecutioner().execAndReturn(
-        Nd4j.getOpFactory().createTransform(activationFunction, activation.dup()).derivative());
+  public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
+    final Matrix derivative = activationFunction.derivative(input);
     return nextError.mul(derivative);
   }
 
   /** {@inheritDoc} */
   @Override
-  public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
+  public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
     throw new RuntimeException("This layer is not learnable");
   }
 }

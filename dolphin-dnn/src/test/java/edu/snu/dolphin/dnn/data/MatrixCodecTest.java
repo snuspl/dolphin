@@ -15,9 +15,9 @@
  */
 package edu.snu.dolphin.dnn.data;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
-import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -25,45 +25,50 @@ import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Random;
 
-import static edu.snu.dolphin.dnn.data.LayerParameterArrayCodecTest.generateRandomLayerParameterArray;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Test class for testing {@link LayerParameterArrayListCodec}'s encoding and decoding features.
+ * Test class for testing {@link MatrixCodec}'s encoding and decoding functions.
  */
-public final class LayerParameterArrayListCodecTest {
+public final class MatrixCodecTest {
 
-  private LayerParameterArrayListCodec layerParameterArrayListCodec;
+  private MatrixCodec matrixCodec;
+  private Random random;
   private MatrixFactory matrixFactory;
 
   @Before
   public void setUp() throws InjectionException {
-
     final Configuration conf = Tang.Factory.getTang().newConfigurationBuilder()
         .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
         .build();
     final Injector injector = Tang.Factory.getTang().newInjector(conf);
 
-    this.layerParameterArrayListCodec = injector.getInstance(LayerParameterArrayListCodec.class);
+    this.matrixCodec = injector.getInstance(MatrixCodec.class);
+    this.random = new Random();
     this.matrixFactory = injector.getInstance(MatrixFactory.class);
   }
 
   /**
-   * Checks that a random list of layer parameter arrays does not change after encoding and decoding it, sequentially.
+   * Checks that a random row vector does not change after encoding and decoding it, sequentially.
    */
   @Test
-  public void testEncodeDecodeLayerParameters() {
-    final List<LayerParameter[]> inputLayerParameterArrayList = new ArrayList<>(5);
-    for (int i = 0; i < inputLayerParameterArrayList.size(); ++i) {
-      inputLayerParameterArrayList.add(generateRandomLayerParameterArray(matrixFactory));
-    }
-    final List<LayerParameter[]> outputLayerParameterArrayList =
-        layerParameterArrayListCodec.decode(layerParameterArrayListCodec.encode(inputLayerParameterArrayList));
+   public void testEncodeDecodeVector() {
+    final Matrix inputVector = MatrixGenerator.generateRandomVector(matrixFactory, random);
+    final Matrix retVector = matrixCodec.decode(matrixCodec.encode(inputVector));
 
-    assertArrayEquals("Encode-decode result is different from the expected list of LayerParameter arrays",
-        inputLayerParameterArrayList.toArray(), outputLayerParameterArrayList.toArray());
+    assertEquals(inputVector, retVector);
+  }
+  /**
+   *
+   * Checks that a random matrix does not change after encoding and decoding it, sequentially.
+   */
+  @Test
+  public void testEncodeDecodeMatrix() {
+    final Matrix inputMatrix = MatrixGenerator.generateRandomMatrix(matrixFactory, random);
+    final Matrix retMatrix = matrixCodec.decode(matrixCodec.encode(inputMatrix));
+
+    assertEquals("Encode-decode result is different from expected array", inputMatrix, retMatrix);
   }
 }

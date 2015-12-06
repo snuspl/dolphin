@@ -125,7 +125,7 @@ public final class MatrixUtils {
   /**
    * Creates a row vector in which only element at the specified position is {@code 1} and other elements are {@code 0}.
    *
-   * @param matrixFactory a matrix factor used to create a matrix
+   * @param matrixFactory a matrix factory used to create a matrix
    * @param index an index of the element to be set to {@code}
    * @param length the length of a row vector
    * @return a generated row vector

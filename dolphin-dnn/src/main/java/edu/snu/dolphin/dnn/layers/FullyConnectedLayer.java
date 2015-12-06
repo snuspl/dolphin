@@ -15,14 +15,13 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 
 /**
  * Fully connected layer.
@@ -53,11 +52,9 @@ public final class FullyConnectedLayer extends LayerBase {
    * @return an activation row vector.
    */
   @Override
-  public INDArray feedForward(final INDArray input) {
-    // convert input to a row vector.
-    final INDArray inputVector = input.reshape(1, input.length());
+  public Matrix feedForward(final Matrix input) {
     // (output row vector) = (input row vector) x (weight matrix) + (bias row vector)
-    return inputVector.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
+    return input.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
   }
 
   /**
@@ -68,22 +65,20 @@ public final class FullyConnectedLayer extends LayerBase {
    * @return an error for this layer.
    */
   @Override
-  public INDArray backPropagate(final INDArray input, final INDArray activation, final INDArray nextError) {
-    // convert a error of the next layer to a row vector.
-    final INDArray nextErrorVector = nextError.reshape(1, nextError.length());
+  public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
     // (next error row vector) x (weight matrix of this layer)
-    return nextErrorVector.mmul(getLayerParameter().getWeightParam().transpose());
+    return nextError.mmul(getLayerParameter().getWeightParam().transpose());
   }
 
   /** {@inheritDoc} */
   @Override
-  public LayerParameter generateParameterGradient(final INDArray input, final INDArray error) {
+  public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
     if (!error.isRowVector()) {
-      throw new RuntimeException(String.format("Invalid error shape %s. " +
-          "An error of a fully connected layer must be a row vector.", Arrays.toString(error.shape())));
+      throw new RuntimeException(String.format("Invalid error (rows=%d columns=%d). " +
+          "An error for a fully connected layer must be a row vector.",  error.getRows(), error.getColumns()));
     }
     return LayerParameter.newBuilder()
-        .setWeightParam(input.reshape(1, input.length()).transpose().mmul(error))
+        .setWeightParam(input.transpose().mmul(error))
         .setBiasParam(error)
         .build();
   }

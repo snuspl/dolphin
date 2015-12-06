@@ -33,14 +33,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <reef.version>0.13.0-incubating</reef.version>
+    <reef.version>0.14.0-SNAPSHOT</reef.version>
     <hadoop.version>2.4.0</hadoop.version>
     <mahout.version>0.9</mahout.version>
     <rat.version>0.11</rat.version>
     <maven-checkstyle-plugin.version>2.15</maven-checkstyle-plugin.version>
     <checkstyle.version>6.6</checkstyle.version>
     <protobuf.version>2.5.0</protobuf.version>
-    <nd4j.version>0.0.3.5.5.5</nd4j.version>
     <avro.version>1.7.7</avro.version>
     <mockito.version>1.10.19</mockito.version>
     <junit.version>4.11</junit.version>
@@ -114,11 +113,6 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
         <version>${protobuf.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.nd4j</groupId>
-        <artifactId>nd4j-java</artifactId>
-        <version>${nd4j.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.avro</groupId>

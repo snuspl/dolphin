@@ -17,9 +17,7 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.Delimiter;
-import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.InputShape;
 import org.apache.reef.tang.Configuration;
-import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
@@ -35,33 +33,36 @@ import java.io.IOException;
 public final class NeuralNetworkESParameters {
 
   private final Configuration neuralNetworkConfiguration;
+  private final Configuration blasConfiguration;
   private final String delimiter;
   private final int maxIterations;
-  private final String inputShape;
 
   @NamedParameter(doc = "serialized neural network configuration")
   public static class SerializedNeuralNetConf implements Name<String> {
   }
 
+  @NamedParameter(doc = "serialized BLAS configuration")
+  public static class SerializedBlasConf implements Name<String> {
+  }
+
   @Inject
   private NeuralNetworkESParameters(final ConfigurationSerializer configurationSerializer,
                                     @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
+                                    @Parameter(SerializedBlasConf.class) final String serializedBlasConf,
                                     @Parameter(Delimiter.class) final String delimiter,
-                                    @Parameter(MaxIterations.class) final int maxIterations,
-                                    @Parameter(InputShape.class) final String inputShape) throws IOException {
+                                    @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetConf);
+    this.blasConfiguration = configurationSerializer.fromString(serializedBlasConf);
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
-    this.inputShape = inputShape;
   }
 
   /**
    * @return the configuration for service.
    */
   public Configuration getServiceConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder()
+    return Tang.Factory.getTang().newConfigurationBuilder(blasConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
-        .bindNamedParameter(InputShape.class, inputShape)
         .build();
   }
 
@@ -69,9 +70,8 @@ public final class NeuralNetworkESParameters {
    * @return the configuration for services, including the neural network configuration
    */
   public Configuration getServiceAndNeuralNetworkConfiguration() {
-    return Tang.Factory.getTang().newConfigurationBuilder(neuralNetworkConfiguration)
+    return Tang.Factory.getTang().newConfigurationBuilder(blasConfiguration, neuralNetworkConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
-        .bindNamedParameter(InputShape.class, inputShape)
         .build();
   }
 
@@ -79,10 +79,8 @@ public final class NeuralNetworkESParameters {
    * @return the configuration for task.
    */
   public Configuration getTaskConfiguration() {
-    return Configurations.merge(
-        Tang.Factory.getTang().newConfigurationBuilder()
-            .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
-            .build(),
-        neuralNetworkConfiguration);
+    return Tang.Factory.getTang().newConfigurationBuilder(neuralNetworkConfiguration)
+        .bindNamedParameter(MaxIterations.class, String.valueOf(maxIterations))
+        .build();
   }
 }

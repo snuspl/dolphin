@@ -15,16 +15,16 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
+import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
-import edu.snu.dolphin.dnn.util.Nd4jUtils;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import static org.junit.Assert.assertTrue;
 
@@ -33,23 +33,34 @@ import static org.junit.Assert.assertTrue;
  */
 public final class ActivationLayerTest {
 
+  private static MatrixFactory matrixFactory;
   private static final float TOLERANCE = 1e-6f;
 
-  private final INDArray input = Nd4j.create(new float[][]{{-1.0f, -0.5f, 0.5f, 1.0f}, {-0.6f, -0.3f, 0.3f, 0.6f}});
-  private final INDArray expectedSigmoidActivation = Nd4j.create(new float[][]{
+  static {
+    final Configuration configuration = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+        .build();
+    try {
+      matrixFactory = Tang.Factory.getTang().newInjector(configuration).getInstance(MatrixFactory.class);
+    } catch (final InjectionException e) {
+      throw new RuntimeException("InjectionException while injecting a matrix factory: " + e);
+    }
+  }
+
+  private final Matrix input = matrixFactory.create(new float[][]{
+      {-1.0f, -0.5f, 0.5f, 1.0f},
+      {-0.6f, -0.3f, 0.3f, 0.6f}});
+  private final Matrix expectedSigmoidActivation = matrixFactory.create(new float[][]{
       {2.689414214e-01f, 3.775406688e-01f, 6.224593312e-01f, 7.310585786e-01f},
       {3.543436938e-01f, 4.255574832e-01f, 5.744425168e-01f, 6.456563062e-01f}});
-  private final INDArray nextError = Nd4j.create(new float[][]{
+  private final Matrix nextError = matrixFactory.create(new float[][]{
       {0.1f, 0.5f, -0.2f, 0.3f},
       {0.18f, -0.23f, 0.195f, -0.076f}});
-  private final INDArray expectedSigmoidError = Nd4j.create(new float[][]{
+  private final Matrix expectedSigmoidError = matrixFactory.create(new float[][]{
       {1.96611933241e-02f, 1.17501856101e-01f, -4.70007424403e-02f, 5.89835799724e-02f},
       {4.11811632822e-02f, -5.62254116889e-02f, 4.76693707797e-02f, -1.73876022747e-02f}});
 
   private LayerBase sigmoidActivationLayer;
-
-  public ActivationLayerTest() {
-  }
 
   @Before
   public void setup() throws InjectionException {
@@ -58,8 +69,8 @@ public final class ActivationLayerTest {
         .build();
 
     final ActivationLayerConfigurationBuilder builder = ActivationLayerConfigurationBuilder.newConfigurationBuilder()
-        .setNumInput(input.length())
-        .setNumOutput(expectedSigmoidActivation.length());
+        .setNumInput(input.getLength())
+        .setNumOutput(expectedSigmoidActivation.getLength());
 
     this.sigmoidActivationLayer =
         Tang.Factory.getTang().newInjector(layerConf, builder.setActivationFunction("sigmoid").build())
@@ -68,13 +79,13 @@ public final class ActivationLayerTest {
 
   @Test
   public void testSigmoidActivation() {
-    final INDArray activation = sigmoidActivationLayer.feedForward(input);
-    assertTrue(Nd4jUtils.equals(expectedSigmoidActivation, activation, TOLERANCE));
+    final Matrix activation = sigmoidActivationLayer.feedForward(input);
+    assertTrue(expectedSigmoidActivation.compare(activation, TOLERANCE));
   }
 
   @Test
   public void testSigmoidBackPropagate() {
-    final INDArray error = sigmoidActivationLayer.backPropagate(input, expectedSigmoidActivation, nextError);
-    assertTrue(Nd4jUtils.equals(expectedSigmoidError, error, TOLERANCE));
+    final Matrix error = sigmoidActivationLayer.backPropagate(input, expectedSigmoidActivation, nextError);
+    assertTrue(expectedSigmoidError.compare(error, TOLERANCE));
   }
 }

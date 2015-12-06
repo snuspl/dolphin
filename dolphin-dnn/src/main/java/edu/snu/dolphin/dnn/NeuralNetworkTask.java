@@ -17,13 +17,13 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.core.DataParser;
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
+import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.util.ValidationStats;
 import edu.snu.dolphin.dnn.util.Validator;
 import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.task.Task;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -43,12 +43,12 @@ public final class NeuralNetworkTask implements Task {
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
-  private final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser;
+  private final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
 
   @Inject
-  NeuralNetworkTask(final DataParser<List<Pair<Pair<INDArray, Integer>, Boolean>>> dataParser,
+  NeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser,
                     final NeuralNetwork neuralNetwork,
                     @Parameter(MaxIterations.class) final int maxIterations) {
     super();
@@ -64,7 +64,7 @@ public final class NeuralNetworkTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
-    final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet = dataParser.get();
+    final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
       LOG.log(Level.INFO, generateIterationLog(trainingValidator.getValidationStats(),
@@ -77,12 +77,12 @@ public final class NeuralNetworkTask implements Task {
     return null;
   }
 
-  public static void runIteration(final List<Pair<Pair<INDArray, Integer>, Boolean>> dataSet,
+  public static void runIteration(final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet,
                                   final NeuralNetwork neuralNetwork,
                                   final Validator trainingValidator,
                                   final Validator crossValidator) {
-    for (final Pair<Pair<INDArray, Integer>, Boolean> data : dataSet) {
-      final INDArray input = data.getFirst().getFirst();
+    for (final Pair<Pair<Matrix, Integer>, Boolean> data : dataSet) {
+      final Matrix input = data.getFirst().getFirst();
       final int label = data.getFirst().getSecond();
       final boolean isValidation = data.getSecond();
       if (isValidation) {
