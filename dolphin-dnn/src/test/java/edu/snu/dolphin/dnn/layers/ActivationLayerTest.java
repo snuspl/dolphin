@@ -19,13 +19,14 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
 import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
+import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
 
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeToString;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -65,15 +66,16 @@ public final class ActivationLayerTest {
   @Before
   public void setup() throws InjectionException {
     final Configuration layerConf = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerConfigurationParameters.LayerIndex.class, String.valueOf(0))
+        .bindNamedParameter(LayerIndex.class, String.valueOf(0))
+        .bindNamedParameter(LayerInputShape.class, shapeToString(new int[]{input.getLength()}))
         .build();
 
-    final ActivationLayerConfigurationBuilder builder = ActivationLayerConfigurationBuilder.newConfigurationBuilder()
-        .setNumInput(input.getLength())
-        .setNumOutput(expectedSigmoidActivation.getLength());
+    final Configuration sigmoidActivationLayerConf = ActivationLayerConfigurationBuilder.newConfigurationBuilder()
+        .setActivationFunction("sigmoid")
+        .build();
 
     this.sigmoidActivationLayer =
-        Tang.Factory.getTang().newInjector(layerConf, builder.setActivationFunction("sigmoid").build())
+        Tang.Factory.getTang().newInjector(layerConf, sigmoidActivationLayerConf)
         .getInstance(LayerBase.class);
   }
 

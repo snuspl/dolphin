@@ -26,6 +26,7 @@ import org.apache.reef.util.Builder;
  * Configuration builder for activation layer.
  *
  * The configuration that this builder generates is used to create an activation layer instance.
+ * The generate configuration need to bind the implementation for matrix factory, in order to inject layer instance.
  */
 public final class ActivationLayerConfigurationBuilder implements Builder<Configuration> {
 
@@ -33,19 +34,7 @@ public final class ActivationLayerConfigurationBuilder implements Builder<Config
     return new ActivationLayerConfigurationBuilder();
   }
 
-  private int numInput;
-  private int numOutput;
   private String activationFunction;
-
-  public synchronized ActivationLayerConfigurationBuilder setNumInput(final int numInput) {
-    this.numInput = numInput;
-    return this;
-  }
-
-  public synchronized ActivationLayerConfigurationBuilder setNumOutput(final int numOutput) {
-    this.numOutput = numOutput;
-    return this;
-  }
 
   public synchronized ActivationLayerConfigurationBuilder setActivationFunction(final String activationFunction) {
     this.activationFunction = activationFunction;
@@ -54,8 +43,6 @@ public final class ActivationLayerConfigurationBuilder implements Builder<Config
 
   public synchronized ActivationLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    numInput = protoConf.getNumInput();
-    numOutput = protoConf.getNumOutput();
     activationFunction = protoConf.getActivationParam().getActivationFunction();
     return this;
   }
@@ -63,8 +50,6 @@ public final class ActivationLayerConfigurationBuilder implements Builder<Config
   @Override
   public synchronized Configuration build() {
     return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerConfigurationParameters.NumberOfInput.class, String.valueOf(numInput))
-        .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
         .bindNamedParameter(LayerConfigurationParameters.ActivationFunction.class, String.valueOf(activationFunction))
         .bindImplementation(LayerBase.class, ActivationLayer.class)
         .build();

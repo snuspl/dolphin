@@ -15,19 +15,18 @@
  */
 package edu.snu.dolphin.dnn.layerparam.provider;
 
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
-import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.annotations.Parameter;
-import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Set;
+
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.getInitialLayerParameters;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.deserializeLayerConfSetToArray;
 
 /**
  * Parameter provider for a neural network on the local environment.
@@ -43,27 +42,13 @@ public final class LocalNeuralNetParameterProvider implements ParameterProvider 
   public LocalNeuralNetParameterProvider(
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
+      @Parameter(InputShape.class) final String inputShape,
       final ConfigurationSerializer configurationSerializer,
       final Injector injector) {
-    this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
+    final Configuration[] layerParamInitializerConfs =
+        deserializeLayerConfSetToArray(configurationSerializer, serializedLayerConfigurationSet);
+    this.layerParameters = getInitialLayerParameters(injector, layerParamInitializerConfs, inputShape);
     this.stepsize = stepsize;
-
-    for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
-      try {
-        final Configuration initializerConfiguration =
-            configurationSerializer.fromString(serializedInitializerConfiguration);
-        final LayerParameterInitializer layerParameterInitializer =
-            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
-        final int index = layerParameterInitializer.getIndex();
-
-        this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();
-
-      } catch (final IOException exception) {
-        throw new RuntimeException("IOException", exception);
-      } catch (final InjectionException exception) {
-        throw new RuntimeException("InjectionException", exception);
-      }
-    }
   }
 
   /** {@inheritDoc} */

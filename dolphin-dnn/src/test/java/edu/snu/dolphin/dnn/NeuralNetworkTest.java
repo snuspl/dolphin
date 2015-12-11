@@ -72,11 +72,11 @@ public final class NeuralNetworkTest {
       expectedOutput};
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
+      .setInputShape(input.getLength())
       .setStepsize(1e-2f)
       .setParameterProviderClass(LocalNeuralNetParameterProvider.class)
       .addLayerConfiguration(
           FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
-              .setNumInput(input.getLength())
               .setNumOutput(numHiddenUnits)
               .setInitWeight(0.0001f)
               .setInitBias(0.0002f)
@@ -84,21 +84,16 @@ public final class NeuralNetworkTest {
               .build())
       .addLayerConfiguration(
           ActivationLayerConfigurationBuilder.newConfigurationBuilder()
-              .setNumInput(numHiddenUnits)
-              .setNumOutput(numHiddenUnits)
               .setActivationFunction("sigmoid")
               .build())
       .addLayerConfiguration(
           FullyConnectedLayerConfigurationBuilder.newConfigurationBuilder()
-              .setNumInput(numHiddenUnits)
               .setNumOutput(expectedOutput.getLength())
               .setInitWeight(0.2f)
               .setInitBias(0.3f)
               .setRandomSeed(10)
               .build())
       .addLayerConfiguration(ActivationWithLossLayerConfigurationBuilder.newConfigurationBuilder()
-          .setNumInput(expectedOutput.getLength())
-          .setNumOutput(expectedOutput.getLength())
           .setActivationFunction("sigmoid")
           .setLossFunction("crossentropy")
           .build())

@@ -61,7 +61,7 @@ public final class NeuralNetworkDriverParameters {
   private final int batchSize;
 
   @NamedParameter(doc = "neural network configuration file path", short_name = "conf")
-  public static class ConfigurationPath implements Name<String> {
+  public static final class ConfigurationPath implements Name<String> {
   }
 
   @NamedParameter(doc = "delimiter that is used in input file", short_name = "delim", default_value = ",")
@@ -201,7 +201,8 @@ public final class NeuralNetworkDriverParameters {
         NeuralNetworkConfigurationBuilder.newConfigurationBuilder();
 
     neuralNetConfBuilder.setStepsize(neuralNetConf.getStepsize())
-        .setParameterProviderClass(getParameterProviderClass(neuralNetConf.getParameterProvider().getType()));
+        .setParameterProviderClass(getParameterProviderClass(neuralNetConf.getParameterProvider().getType()))
+        .setInputShape(neuralNetConf.getInputShape().getDimList());
 
     // Adds the configuration of each layer.
     for (final LayerConfiguration layerConf : neuralNetConf.getLayerList()) {

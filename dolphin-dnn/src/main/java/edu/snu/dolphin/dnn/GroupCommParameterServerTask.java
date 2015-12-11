@@ -16,9 +16,7 @@
 package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
-import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.ValidationStats;
 import org.apache.reef.io.network.group.api.operators.Broadcast;
@@ -29,17 +27,16 @@ import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.annotations.Parameter;
-import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.apache.reef.task.Task;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.snu.dolphin.dnn.NeuralNetworkTask.*;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.*;
 
 /**
  * Task that acts as a parameter server for {@link GroupCommNeuralNetworkTask}s using REEF Group Communication.
@@ -63,6 +60,7 @@ public final class GroupCommParameterServerTask implements Task {
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       @Parameter(MaxIterations.class) final int maxIterations,
+      @Parameter(InputShape.class) final String inputShape,
       final ConfigurationSerializer configurationSerializer,
       final GroupCommClient groupCommClient,
       final Injector injector) {
@@ -76,26 +74,11 @@ public final class GroupCommParameterServerTask implements Task {
     this.validationStatsPairReduceReceiver =
         commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
 
-    this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
+    final Configuration[] layerParamInitializerConfs =
+        deserializeLayerConfSetToArray(configurationSerializer, serializedLayerConfigurationSet);
+    this.layerParameters = getInitialLayerParameters(injector, layerParamInitializerConfs, inputShape);
     this.stepsize = stepsize;
     this.maxIterations = maxIterations;
-
-    for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
-      try {
-        final Configuration initializerConfiguration =
-            configurationSerializer.fromString(serializedInitializerConfiguration);
-        final LayerParameterInitializer layerParameterInitializer =
-            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
-        final int index = layerParameterInitializer.getIndex();
-
-        this.layerParameters[index] = layerParameterInitializer.generateInitialParameter();
-
-      } catch (final IOException e) {
-        throw new RuntimeException("IOException while deserializing configuration", e);
-      } catch (final InjectionException e) {
-        throw new RuntimeException("InjectionException while injecting LayerParameterInitializer", e);
-      }
-    }
   }
 
   @Override

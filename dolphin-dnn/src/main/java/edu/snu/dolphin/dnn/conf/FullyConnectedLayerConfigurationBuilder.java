@@ -28,6 +28,8 @@ import org.apache.reef.util.Builder;
  * Configuration builder for fully connected layer.
  *
  * The configuration that this builder generates is used to create a fully connected layer instance.
+ * The generate configuration need to bind the implementation for matrix factory and
+ * the parameter for layer input shape, to inject layer instance.
  */
 public final class FullyConnectedLayerConfigurationBuilder implements Builder<Configuration> {
 
@@ -35,16 +37,10 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
     return new FullyConnectedLayerConfigurationBuilder();
   }
 
-  private int numInput;
   private int numOutput;
   private long randomSeed = System.currentTimeMillis();
   private float initWeight;
   private float initBias;
-
-  public synchronized FullyConnectedLayerConfigurationBuilder setNumInput(final int numInput) {
-    this.numInput = numInput;
-    return this;
-  }
 
   public synchronized FullyConnectedLayerConfigurationBuilder setNumOutput(final int numOutput) {
     this.numOutput = numOutput;
@@ -68,9 +64,7 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
 
   public synchronized FullyConnectedLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    numInput = protoConf.getNumInput();
-    numOutput = protoConf.getNumOutput();
-
+    numOutput = protoConf.getFullyConnectedParam().getNumOutput();
     if (protoConf.getFullyConnectedParam().hasRandomSeed()) {
       randomSeed = protoConf.getFullyConnectedParam().getRandomSeed();
     }
@@ -82,7 +76,6 @@ public final class FullyConnectedLayerConfigurationBuilder implements Builder<Co
   @Override
   public synchronized Configuration build() {
     return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerConfigurationParameters.NumberOfInput.class, String.valueOf(numInput))
         .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
         .bindNamedParameter(LayerConfigurationParameters.RandomSeed.class, String.valueOf(randomSeed))
         .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))

@@ -43,4 +43,8 @@ public final class NeuralNetworkConfigurationParameters {
   @NamedParameter(doc = "step size")
   public static final class Stepsize implements Name<Float> {
   }
+
+  @NamedParameter(doc = "the shape of input data")
+  public static final class InputShape implements Name<String> {
+  }
 }

@@ -18,9 +18,7 @@ package edu.snu.dolphin.dnn.layers;
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.function.Function;
 import edu.snu.dolphin.dnn.blas.function.FunctionFactory;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.ActivationFunction;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
+import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -37,10 +35,15 @@ public final class ActivationLayer extends LayerBase {
 
   @Inject
   public ActivationLayer(@Parameter(LayerIndex.class) final int index,
-                         @Parameter(ActivationFunction.class) final String activationFunction,
-                         @Parameter(NumberOfOutput.class) final int numOutput) {
-    super(index, numOutput);
+                         @Parameter(LayerInputShape.class) final String inputShape,
+                         @Parameter(ActivationFunction.class) final String activationFunction) {
+    super(index, inputShape);
     this.activationFunction = FunctionFactory.getSingleInstance(activationFunction);
+  }
+
+  @Override
+  public int[] getOutputShape() {
+    return getInputShape();
   }
 
   /** {@inheritDoc} */
