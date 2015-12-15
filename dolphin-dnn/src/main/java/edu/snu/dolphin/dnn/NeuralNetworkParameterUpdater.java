@@ -15,7 +15,6 @@
  */
 package edu.snu.dolphin.dnn;
 
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
@@ -61,7 +60,6 @@ public final class NeuralNetworkParameterUpdater
   public static final String WHOLE_MODEL = "WHOLE_MODEL";
   public static final String VALIDATION = "VALIDATION";
 
-  private final MatrixFactory matrixFactory;
   private final Set<String> serializedLayerConfigurationSet;
   private final float stepsize;
   private final ConfigurationSerializer configurationSerializer;
@@ -71,13 +69,11 @@ public final class NeuralNetworkParameterUpdater
 
   @Inject
   private NeuralNetworkParameterUpdater(
-      final MatrixFactory matrixFactory,
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
       @Parameter(LogPeriod.class) final int logPeriod,
       final Injector injector) {
-    this.matrixFactory = matrixFactory;
     this.serializedLayerConfigurationSet = serializedLayerConfigurationSet;
     this.stepsize = stepsize;
     this.configurationSerializer = configurationSerializer;
