@@ -105,7 +105,7 @@ public final class NeuralNetworkParameterUpdater
    */
   private LayerParameter[] processLayerParameters(final String key,
                                                   final LayerParameter[] parameterGradients) {
-    if (parameterGradients == null || parameterGradients.length == 0 || !key.equals(WHOLE_MODEL)) {
+    if (parameterGradients == null || !key.equals(WHOLE_MODEL)) {
       return null;
     }
 
@@ -171,6 +171,10 @@ public final class NeuralNetworkParameterUpdater
    */
   private LayerParameter[] updateLayerParameter(final LayerParameter[] layerParameters,
                                                 final LayerParameter[] parameterGradients) {
+    if (layerParameters.length != parameterGradients.length) {
+      throw new RuntimeException("The number of parameter gradients is not equal to the number of layers.");
+    }
+
     for (int index = 0; index < layerParameters.length; ++index) {
       final LayerParameter layerParameter = layerParameters[index];
       final LayerParameter parameterGradient = parameterGradients[index];

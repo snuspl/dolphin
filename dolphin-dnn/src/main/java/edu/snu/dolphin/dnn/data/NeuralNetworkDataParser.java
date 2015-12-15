@@ -53,7 +53,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   @Inject
   private NeuralNetworkDataParser(final MatrixFactory matrixFactory,
                                   final DataSet<LongWritable, Text> dataSet,
-                                  @Parameter(Delimiter.class)final String delimiter,
+                                  @Parameter(Delimiter.class) final String delimiter,
                                   @Parameter(BatchSize.class) final int batchSize) {
     this.matrixFactory = matrixFactory;
     this.dataSet = dataSet;
@@ -77,8 +77,8 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   @Override
   public void parse() {
     final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList = new ArrayList<>();
-    final BatchGenerator trainingBatchGenerator = new BatchGenerator(matrixFactory, batchSize);
-    final BatchGenerator validationBatchGenerator = new BatchGenerator(matrixFactory, batchSize);
+    final BatchGenerator trainingBatchGenerator = new BatchGenerator();
+    final BatchGenerator validationBatchGenerator = new BatchGenerator();
 
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
       final String text = keyValue.getSecond().toString().trim();
@@ -92,14 +92,14 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
         final boolean isValidation = ((int) input.get(input.getColumns() - 1) == 1);
 
         if (isValidation) {
-          final Pair<Matrix, int[]> batch = validationBatchGenerator.push(data, label);
-          if (batch != null) {
-            dataList.add(new Pair<>(batch, true));
+          validationBatchGenerator.push(data, label);
+          if (validationBatchGenerator.check()) {
+            dataList.add(new Pair<>(validationBatchGenerator.pull(), true));
           }
         } else {
-          final Pair<Matrix, int[]> batch = trainingBatchGenerator.push(data, label);
-          if (batch != null) {
-            dataList.add(new Pair<>(batch, false));
+          trainingBatchGenerator.push(data, label);
+          if (trainingBatchGenerator.check()) {
+            dataList.add(new Pair<>(trainingBatchGenerator.pull(), false));
           }
         }
       } catch (final IOException e) {
@@ -109,7 +109,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
     }
 
     if (validationBatchGenerator.size() > 0) {
-      dataList.add(new Pair<>(validationBatchGenerator.pull(), false));
+      dataList.add(new Pair<>(validationBatchGenerator.pull(), true));
     }
 
     if (trainingBatchGenerator.size() > 0) {
@@ -144,15 +144,11 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   /**
    * Class for generating batch matrix and an array of labels with the specified batch size.
    */
-  public static final class BatchGenerator {
-    private final MatrixFactory matrixFactory;
-    private final int batchSize;
+  private class BatchGenerator {
     private final List<Matrix> dataList;
     private final List<Integer> labelList;
 
-    public BatchGenerator(final MatrixFactory matrixFactory, final int batchSize) {
-      this.matrixFactory = matrixFactory;
-      this.batchSize = batchSize;
+    public BatchGenerator() {
       this.dataList = new ArrayList<>(batchSize);
       this.labelList = new ArrayList<>(batchSize);
     }
@@ -168,18 +164,18 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
      * Pushes a data and label.
      * @param data a single datum
      * @param label a label for the datum.
-     * @return a pair of a batch input matrix and an array of labels, if data have been pushed
-     *         with the specified batch size. or {@code null}, otherwise.
      */
-    public Pair<Matrix, int[]> push(final Matrix data, final int label) {
+    public void push(final Matrix data, final int label) {
       dataList.add(data);
       labelList.add(label);
+    }
 
-      if (dataList.size() == batchSize) {
-        return pull();
-      } else {
-        return null;
-      }
+    /**
+     * @return whether a batch input matrix is ready or not.
+     *         In other words, inputs has been pushed for generating a batch input matrix with the specified batch size.
+     */
+    public boolean check() {
+      return dataList.size() == batchSize;
     }
 
     /**
@@ -207,7 +203,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
         }
         return ret;
       } else {
-        throw new IllegalArgumentException("At least one ndarray is needed to make batch");
+        throw new IllegalArgumentException("At least one input is needed to make batch");
       }
     }
   }
