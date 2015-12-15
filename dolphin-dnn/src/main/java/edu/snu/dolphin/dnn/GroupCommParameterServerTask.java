@@ -157,9 +157,9 @@ public final class GroupCommParameterServerTask implements Task {
 
       // aggregate parameter gradients
       int batchSizeSum = 0;
-      for (final Pair<Integer, LayerParameter[]> integerAndParameterGradientPair : result) {
-        batchSizeSum += integerAndParameterGradientPair.getFirst();
-        final LayerParameter[] parameterGradient = integerAndParameterGradientPair.getSecond();
+      for (final Pair<Integer, LayerParameter[]> intAndParameterGradientPair : result) {
+        batchSizeSum += intAndParameterGradientPair.getFirst();
+        final LayerParameter[] parameterGradient = intAndParameterGradientPair.getSecond();
         for (int index = 0; index < deltaLayerParameters.length; index++) {
           deltaLayerParameters[index].getWeightParam().addi(parameterGradient[index].getWeightParam());
           deltaLayerParameters[index].getBiasParam().addi(parameterGradient[index].getBiasParam());

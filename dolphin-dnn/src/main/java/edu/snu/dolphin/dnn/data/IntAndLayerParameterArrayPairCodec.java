@@ -38,24 +38,24 @@ public final class IntAndLayerParameterArrayPairCodec
   }
 
   @Override
-  public byte[] encode(final Pair<Integer, LayerParameter[]> integerAndLayerParametersPair) {
+  public byte[] encode(final Pair<Integer, LayerParameter[]> intAndLayerParametersPair) {
     try (final ByteArrayOutputStream bstream = new ByteArrayOutputStream();
          final DataOutputStream dstream = new DataOutputStream(bstream)) {
-      encodeToStream(integerAndLayerParametersPair, dstream);
+      encodeToStream(intAndLayerParametersPair, dstream);
       return bstream.toByteArray();
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during IntegerAndLayerParameterArrayPairCodec.encode()", e);
+      throw new RuntimeException("IOException during IntAndLayerParameterArrayPairCodec.encode()", e);
     }
   }
 
   @Override
-  public void encodeToStream(final Pair<Integer, LayerParameter[]> integerAndLayerParametersPair,
+  public void encodeToStream(final Pair<Integer, LayerParameter[]> intAndLayerParametersPair,
                              final DataOutputStream dstream) {
     try {
-      dstream.writeInt(integerAndLayerParametersPair.getFirst());
-      layerParameterArrayCodec.encodeToStream(integerAndLayerParametersPair.getSecond(), dstream);
+      dstream.writeInt(intAndLayerParametersPair.getFirst());
+      layerParameterArrayCodec.encodeToStream(intAndLayerParametersPair.getSecond(), dstream);
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during IntegerAndLayerParameterArrayPairCodec.encodeToStream()", e);
+      throw new RuntimeException("IOException during IntAndLayerParameterArrayPairCodec.encodeToStream()", e);
     }
   }
 
@@ -64,7 +64,7 @@ public final class IntAndLayerParameterArrayPairCodec
     try (final DataInputStream dstream = new DataInputStream(new ByteArrayInputStream(data))) {
       return decodeFromStream(dstream);
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during IntegerAndLayerParameterArrayPairCodec.decode()", e);
+      throw new RuntimeException("IOException during IntAndLayerParameterArrayPairCodec.decode()", e);
     }
   }
 
@@ -74,7 +74,7 @@ public final class IntAndLayerParameterArrayPairCodec
       final int firstValue = dstream.readInt();
       return new Pair<>(firstValue, layerParameterArrayCodec.decodeFromStream(dstream));
     } catch (final IOException e) {
-      throw new RuntimeException("IOException during IntegerAndLayerParameterArrayPairCodec.decodeFromStream()", e);
+      throw new RuntimeException("IOException during IntAndLayerParameterArrayPairCodec.decodeFromStream()", e);
     }
   }
 }
