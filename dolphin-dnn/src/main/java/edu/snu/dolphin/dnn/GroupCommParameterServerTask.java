@@ -16,8 +16,6 @@
 package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
-import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.Stepsize;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
@@ -37,7 +35,6 @@ import org.apache.reef.task.Task;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,18 +51,15 @@ public final class GroupCommParameterServerTask implements Task {
   private static final Logger LOG = Logger.getLogger(GroupCommParameterServerTask.class.getName());
   public static final String TASK_ID = GroupCommParameterServerTask.class.getSimpleName();
 
-  private final MatrixFactory matrixFactory;
   private final LayerParameter[] layerParameters;
-  private final LayerParameter[] deltaLayerParameters;
   private final float stepsize;
   private final int maxIterations;
   private final Broadcast.Sender<LayerParameter[]> layerParamBroadcastSender;
-  private final Reduce.Receiver<List<Pair<Integer, LayerParameter[]>>> parameterGradientReduceReceiver;
+  private final Reduce.Receiver<Pair<Integer, LayerParameter[]>> parameterGradientReduceReceiver;
   private final Reduce.Receiver<Pair<ValidationStats, ValidationStats>> validationStatsPairReduceReceiver;
 
   @Inject
   private GroupCommParameterServerTask(
-      final MatrixFactory matrixFactory,
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(Stepsize.class) final float stepsize,
       @Parameter(MaxIterations.class) final int maxIterations,
@@ -82,9 +76,7 @@ public final class GroupCommParameterServerTask implements Task {
     this.validationStatsPairReduceReceiver =
         commGroup.getReduceReceiver(NeuralNetworkGroupCommDriver.ValidationStatsPairReduce.class);
 
-    this.matrixFactory = matrixFactory;
     this.layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-    this.deltaLayerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
     this.stepsize = stepsize;
     this.maxIterations = maxIterations;
 
@@ -104,33 +96,6 @@ public final class GroupCommParameterServerTask implements Task {
         throw new RuntimeException("InjectionException while injecting LayerParameterInitializer", e);
       }
     }
-
-    initDeltaParameters();
-  }
-
-  /**
-   * Initializes delta parameters with zero matrices.
-   */
-  private void initDeltaParameters() {
-    for (int i = 0; i < layerParameters.length; ++i) {
-      final Matrix biasParam = layerParameters[i].getBiasParam();
-      final Matrix weightParam = layerParameters[i].getWeightParam();
-
-      deltaLayerParameters[i] = LayerParameter.newBuilder()
-          .setWeightParam(matrixFactory.zeros(weightParam.getRows(), weightParam.getColumns()))
-          .setBiasParam(matrixFactory.zeros(biasParam.getRows(), biasParam.getColumns()))
-          .build();
-    }
-  }
-
-  /**
-   * Resets the number of updates and delta parameters by filling zeros.
-   */
-  private void resetDeltaLayerParameters() {
-    for (final LayerParameter deltaLayerParameter : deltaLayerParameters) {
-      deltaLayerParameter.getWeightParam().fill(0.0f);
-      deltaLayerParameter.getBiasParam().fill(0.0f);
-    }
   }
 
   @Override
@@ -143,9 +108,9 @@ public final class GroupCommParameterServerTask implements Task {
     // Rather, `iteration` tracks the number of iterations `GroupCommNeuralNetworkTask`s have finished up until now.
     while (iteration < maxIterations) {
       LOG.log(Level.INFO, "GroupCommParameterServerTask.call() loop {0}....", loopIndex++);
-      final List<Pair<Integer, LayerParameter[]>> result = parameterGradientReduceReceiver.reduce();
+      final Pair<Integer, LayerParameter[]> result = parameterGradientReduceReceiver.reduce();
 
-      if (result.size() == 0) {
+      if (result.getFirst() == 0) {
         // All Tasks have finished this iteration. Let's end the iteration.
         layerParamBroadcastSender.send(new LayerParameter[0]);
         final Pair<ValidationStats, ValidationStats> validationStatsPair = validationStatsPairReduceReceiver.reduce();
@@ -155,19 +120,11 @@ public final class GroupCommParameterServerTask implements Task {
         continue;
       }
 
-      // aggregate parameter gradients
-      int batchSizeSum = 0;
-      for (final Pair<Integer, LayerParameter[]> intAndParameterGradientPair : result) {
-        batchSizeSum += intAndParameterGradientPair.getFirst();
-        final LayerParameter[] parameterGradient = intAndParameterGradientPair.getSecond();
-        for (int index = 0; index < deltaLayerParameters.length; index++) {
-          deltaLayerParameters[index].getWeightParam().addi(parameterGradient[index].getWeightParam());
-          deltaLayerParameters[index].getBiasParam().addi(parameterGradient[index].getBiasParam());
-        }
-      }
+      final int batchSizeSum = result.getFirst();
+      final LayerParameter[] deltaLayerParameters = result.getSecond();
 
       // apply the updates, regarding the size of the batch and the step size
-      for (int index = 0; index < deltaLayerParameters.length; ++index) {
+      for (int index = 0; index < layerParameters.length; ++index) {
         final LayerParameter layerParameter = layerParameters[index];
         final LayerParameter deltaLayerParameter = deltaLayerParameters[index];
         final float factor = stepsize / batchSizeSum;
@@ -175,7 +132,6 @@ public final class GroupCommParameterServerTask implements Task {
         layerParameter.getBiasParam().subi(deltaLayerParameter.getBiasParam().muli(factor));
       }
 
-      resetDeltaLayerParameters();
       layerParamBroadcastSender.send(layerParameters);
     }
 

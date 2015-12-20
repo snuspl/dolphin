@@ -39,7 +39,7 @@ import java.util.*;
 public final class GroupCommParameterProvider implements ParameterProvider {
 
   private final Broadcast.Receiver<LayerParameter[]> layerParamBroadcastReceiver;
-  private final Reduce.Sender<List<Pair<Integer, LayerParameter[]>>> parameterGradientReduceSender;
+  private final Reduce.Sender<Pair<Integer, LayerParameter[]>> parameterGradientReduceSender;
   private final Reduce.Sender<Pair<ValidationStats, ValidationStats>> validationStatsReduceSender;
 
   @Inject
@@ -59,9 +59,9 @@ public final class GroupCommParameterProvider implements ParameterProvider {
   public synchronized void push(final int batchSize, final LayerParameter[] parameterGradients) {
     try {
       if (batchSize == 0 || parameterGradients == null || parameterGradients.length == 0) {
-        parameterGradientReduceSender.send(Collections.<Pair<Integer, LayerParameter[]>>emptyList());
+        parameterGradientReduceSender.send(new Pair<>(0, new LayerParameter[0]));
       } else {
-        parameterGradientReduceSender.send(Collections.singletonList(new Pair<>(batchSize, parameterGradients)));
+        parameterGradientReduceSender.send(new Pair<>(batchSize, parameterGradients));
       }
     } catch (final NetworkException e) {
       throw new RuntimeException("NetworkException while trying to send reduce", e);
