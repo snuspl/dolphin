@@ -77,8 +77,8 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   @Override
   public void parse() {
     final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList = new ArrayList<>();
-    final BatchGenerator trainingBatchGenerator = new BatchGenerator();
-    final BatchGenerator validationBatchGenerator = new BatchGenerator();
+    final BatchGenerator trainingBatchGenerator = new BatchGenerator(dataList, false);
+    final BatchGenerator validationBatchGenerator = new BatchGenerator(dataList, true);
 
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
       final String text = keyValue.getSecond().toString().trim();
@@ -93,14 +93,8 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
 
         if (isValidation) {
           validationBatchGenerator.push(data, label);
-          if (validationBatchGenerator.check()) {
-            dataList.add(new Pair<>(validationBatchGenerator.pull(), true));
-          }
         } else {
           trainingBatchGenerator.push(data, label);
-          if (trainingBatchGenerator.check()) {
-            dataList.add(new Pair<>(trainingBatchGenerator.pull(), false));
-          }
         }
       } catch (final IOException e) {
         parseException = new ParseException("IOException: " + e.toString());
@@ -108,13 +102,8 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       }
     }
 
-    if (validationBatchGenerator.size() > 0) {
-      dataList.add(new Pair<>(validationBatchGenerator.pull(), true));
-    }
-
-    if (trainingBatchGenerator.size() > 0) {
-      dataList.add(new Pair<>(trainingBatchGenerator.pull(), false));
-    }
+    trainingBatchGenerator.cleanUp();
+    validationBatchGenerator.cleanUp();
 
     result = dataList;
   }
@@ -145,11 +134,16 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
    * Class for generating batch matrix and an array of labels with the specified batch size.
    */
   private class BatchGenerator {
-    private final List<Matrix> dataList;
+    private final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList;
+    private final boolean isValidation;
+    private final List<Matrix> matrixList;
     private final List<Integer> labelList;
 
-    public BatchGenerator() {
-      this.dataList = new ArrayList<>(batchSize);
+    public BatchGenerator(final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList,
+                          final boolean isValidation) {
+      this.dataList = dataList;
+      this.isValidation = isValidation;
+      this.matrixList = new ArrayList<>(batchSize);
       this.labelList = new ArrayList<>(batchSize);
     }
 
@@ -157,36 +151,42 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
      * @return the number of aggregated data.
      */
     public int size() {
-      return dataList.size();
+      return matrixList.size();
     }
 
     /**
-     * Pushes a data and label.
+     * Pushes a matrix and label. When the specified batch size of matrix and label data have been gathered,
+     * a new batch data is pushed to the list of data.
      * @param data a single datum
      * @param label a label for the datum.
      */
     public void push(final Matrix data, final int label) {
-      dataList.add(data);
+      matrixList.add(data);
       labelList.add(label);
+      if (size() == batchSize) {
+        makeAndAddBatch();
+      }
     }
 
     /**
-     * @return whether a batch input matrix is ready or not.
-     *         In other words, inputs has been pushed for generating a batch input matrix with the specified batch size.
+     * Makes a batch with the matrix and label data that have been pushed and adds it to the list of data,
+     * if the matrix and label data that has not been added exist.
      */
-    public boolean check() {
-      return dataList.size() == batchSize;
+    public void cleanUp() {
+      if (size() > 0) {
+        makeAndAddBatch();
+      }
     }
 
     /**
-     * @return a pair of a batch input matrix and an array of labels that have been pushed.
+     * Makes a batch with the matrix and label data that have been pushed and adds it to the list of data.
      */
-    public Pair<Matrix, int[]> pull() {
-      final Pair<Matrix, int[]> ret = new Pair<>(makeBatch(dataList),
+    private void makeAndAddBatch() {
+      final Pair<Matrix, int[]> batch = new Pair<>(makeBatch(matrixList),
           ArrayUtils.toPrimitive(labelList.toArray(new Integer[labelList.size()])));
-      dataList.clear();
+      dataList.add(new Pair<>(batch, isValidation));
+      matrixList.clear();
       labelList.clear();
-      return ret;
     }
 
     /**
