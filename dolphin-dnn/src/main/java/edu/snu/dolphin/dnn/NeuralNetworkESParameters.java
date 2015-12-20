@@ -17,6 +17,7 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.Delimiter;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.annotations.Name;
@@ -36,6 +37,7 @@ public final class NeuralNetworkESParameters {
   private final Configuration blasConfiguration;
   private final String delimiter;
   private final int maxIterations;
+  private final int batchSize;
 
   @NamedParameter(doc = "serialized neural network configuration")
   public static class SerializedNeuralNetConf implements Name<String> {
@@ -50,11 +52,13 @@ public final class NeuralNetworkESParameters {
                                     @Parameter(SerializedNeuralNetConf.class) final String serializedNeuralNetConf,
                                     @Parameter(SerializedBlasConf.class) final String serializedBlasConf,
                                     @Parameter(Delimiter.class) final String delimiter,
-                                    @Parameter(MaxIterations.class) final int maxIterations) throws IOException {
+                                    @Parameter(MaxIterations.class) final int maxIterations,
+                                    @Parameter(BatchSize.class) final int batchSize) throws IOException {
     this.neuralNetworkConfiguration = configurationSerializer.fromString(serializedNeuralNetConf);
     this.blasConfiguration = configurationSerializer.fromString(serializedBlasConf);
     this.delimiter = delimiter;
     this.maxIterations = maxIterations;
+    this.batchSize = batchSize;
   }
 
   /**
@@ -63,6 +67,7 @@ public final class NeuralNetworkESParameters {
   public Configuration getServiceConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder(blasConfiguration)
         .bindNamedParameter(Delimiter.class, delimiter)
+        .bindNamedParameter(BatchSize.class, String.valueOf(batchSize))
         .build();
   }
 

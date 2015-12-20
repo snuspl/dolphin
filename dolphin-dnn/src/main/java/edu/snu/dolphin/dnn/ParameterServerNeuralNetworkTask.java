@@ -44,13 +44,13 @@ public final class ParameterServerNeuralNetworkTask implements Task {
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
-  private final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser;
+  private final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
   private final ParameterWorker<String, NeuralNetParamServerData, ?> worker;
 
   @Inject
-  ParameterServerNeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser,
+  ParameterServerNeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser,
                                    final NeuralNetwork neuralNetwork,
                                    @Parameter(MaxIterations.class) final int maxIterations,
                                    final ParameterWorker<String, NeuralNetParamServerData, ?> worker) {
@@ -67,7 +67,7 @@ public final class ParameterServerNeuralNetworkTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
-    final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet = dataParser.get();
+    final List<Pair<Pair<Matrix, int[]>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
 

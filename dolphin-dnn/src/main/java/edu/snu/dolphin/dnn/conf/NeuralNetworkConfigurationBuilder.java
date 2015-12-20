@@ -36,7 +36,6 @@ import java.util.Collection;
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
   private Collection<String> layerConfigurations = new ArrayList<>();
-  private int batchSize = 1;
   private int index = 0;
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
@@ -58,11 +57,6 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
-  public synchronized NeuralNetworkConfigurationBuilder setBatchSize(final int batchSize) {
-    this.batchSize = batchSize;
-    return this;
-  }
-
   public synchronized NeuralNetworkConfigurationBuilder setParameterProviderClass(
       final Class<? extends ParameterProvider> parameterProviderClass) {
     this.parameterProviderClass = parameterProviderClass;
@@ -76,8 +70,7 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
 
   @Override
   public synchronized Configuration build() {
-    final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(NeuralNetworkConfigurationParameters.BatchSize.class, String.valueOf(batchSize));
+    final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder();
 
     for (final String layerConfiguration : layerConfigurations) {
       jb.bindSetEntry(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class, layerConfiguration);

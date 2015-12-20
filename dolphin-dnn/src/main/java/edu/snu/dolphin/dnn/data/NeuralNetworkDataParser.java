@@ -20,6 +20,8 @@ import edu.snu.dolphin.bsp.core.ParseException;
 import edu.snu.dolphin.dnn.NeuralNetworkDriverParameters.Delimiter;
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.reef.io.data.loading.api.DataSet;
@@ -39,26 +41,29 @@ import static edu.snu.dolphin.dnn.blas.MatrixUtils.readNumpy;
  *
  * Parses Numpy compatible plain text file.
  */
-public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> {
+public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> {
 
   private final MatrixFactory matrixFactory;
   private final DataSet<LongWritable, Text> dataSet;
   private final String delimiter;
-  private List<Pair<Pair<Matrix, Integer>, Boolean>> result;
+  private final int batchSize;
+  private List<Pair<Pair<Matrix, int[]>, Boolean>> result;
   private ParseException parseException;
 
   @Inject
   private NeuralNetworkDataParser(final MatrixFactory matrixFactory,
                                   final DataSet<LongWritable, Text> dataSet,
-                                  @Parameter(Delimiter.class)final String delimiter) {
+                                  @Parameter(Delimiter.class) final String delimiter,
+                                  @Parameter(BatchSize.class) final int batchSize) {
     this.matrixFactory = matrixFactory;
     this.dataSet = dataSet;
     this.delimiter = delimiter;
+    this.batchSize = batchSize;
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<Pair<Pair<Matrix, Integer>, Boolean>> get() throws ParseException {
+  public List<Pair<Pair<Matrix, int[]>, Boolean>> get() throws ParseException {
     if (result == null) {
       parse();
     }
@@ -71,7 +76,9 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
   /** {@inheritDoc} */
   @Override
   public void parse() {
-    final List<Pair<Pair<Matrix, Integer>, Boolean>> trainingData = new ArrayList<>();
+    final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList = new ArrayList<>();
+    final BatchGenerator trainingBatchGenerator = new BatchGenerator(dataList, false);
+    final BatchGenerator validationBatchGenerator = new BatchGenerator(dataList, true);
 
     for (final Pair<LongWritable, Text> keyValue : dataSet) {
       final String text = keyValue.getSecond().toString().trim();
@@ -83,13 +90,22 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
         final Matrix data = input.get(range(0, input.getColumns() - 2));
         final int label = (int) input.get(input.getColumns() - 2);
         final boolean isValidation = ((int) input.get(input.getColumns() - 1) == 1);
-        trainingData.add(new Pair<>(new Pair<>(data, label), isValidation));
+
+        if (isValidation) {
+          validationBatchGenerator.push(data, label);
+        } else {
+          trainingBatchGenerator.push(data, label);
+        }
       } catch (final IOException e) {
         parseException = new ParseException("IOException: " + e.toString());
         return;
       }
     }
-    result = trainingData;
+
+    trainingBatchGenerator.cleanUp();
+    validationBatchGenerator.cleanUp();
+
+    result = dataList;
   }
 
   /**
@@ -112,5 +128,83 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       ret[i] = begin + i;
     }
     return ret;
+  }
+
+  /**
+   * Class for generating batch matrix and an array of labels with the specified batch size.
+   */
+  private class BatchGenerator {
+    private final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList;
+    private final boolean isValidation;
+    private final List<Matrix> matrixList;
+    private final List<Integer> labelList;
+
+    public BatchGenerator(final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList,
+                          final boolean isValidation) {
+      this.dataList = dataList;
+      this.isValidation = isValidation;
+      this.matrixList = new ArrayList<>(batchSize);
+      this.labelList = new ArrayList<>(batchSize);
+    }
+
+    /**
+     * @return the number of aggregated data.
+     */
+    public int size() {
+      return matrixList.size();
+    }
+
+    /**
+     * Pushes a matrix and label. When the specified batch size of matrix and label data have been gathered,
+     * a new batch data is pushed to the list of data.
+     * @param data a single datum
+     * @param label a label for the datum.
+     */
+    public void push(final Matrix data, final int label) {
+      matrixList.add(data);
+      labelList.add(label);
+      if (size() == batchSize) {
+        makeAndAddBatch();
+      }
+    }
+
+    /**
+     * Makes a batch with the matrix and label data that have been pushed and adds it to the list of data,
+     * if the matrix and label data that has not been added exist.
+     */
+    public void cleanUp() {
+      if (size() > 0) {
+        makeAndAddBatch();
+      }
+    }
+
+    /**
+     * Makes a batch with the matrix and label data that have been pushed and adds it to the list of data.
+     */
+    private void makeAndAddBatch() {
+      final Pair<Matrix, int[]> batch = new Pair<>(makeBatch(matrixList),
+          ArrayUtils.toPrimitive(labelList.toArray(new Integer[labelList.size()])));
+      dataList.add(new Pair<>(batch, isValidation));
+      matrixList.clear();
+      labelList.clear();
+    }
+
+    /**
+     * Generates a batch input matrix with the specified list of input data.
+     * @param inputs a list of input data
+     * @return a batch input matrix
+     */
+    private Matrix makeBatch(final List<Matrix> inputs) {
+      if (inputs.size() > 0) {
+        final Matrix ret = matrixFactory.create(inputs.size(), inputs.get(0).getLength());
+        int i = 0;
+        for (final Matrix vector : inputs) {
+          ret.putRow(i++, vector);
+        }
+        return ret;
+      } else {
+        throw new IllegalArgumentException("At least one input is needed to make batch");
+      }
+    }
   }
 }

@@ -133,4 +133,19 @@ public final class MatrixUtils {
   public static Matrix createOutputVector(final MatrixFactory matrixFactory, final int index, final int length) {
     return matrixFactory.zeros(length).put(index, 1.0f);
   }
+
+  /**
+   * Creates a matrix of which each row is a one-hot vector specified by each element of the given indices array.
+   * @param matrixFactory a matrix factory used to create a matrix
+   * @param indices the array of indices that indicate the one-hot positions
+   * @param length the length of each row vector, in other words, the number of columns of the return matrix
+   * @return the generated matrix
+   */
+  public static Matrix createOutputMatrix(final MatrixFactory matrixFactory, final int[] indices, final int length) {
+    final Matrix ret = matrixFactory.zeros(indices.length, length);
+    for (int i = 0; i < indices.length; ++i) {
+      ret.put(i, indices[i], 1.0f);
+    }
+    return ret;
+  }
 }

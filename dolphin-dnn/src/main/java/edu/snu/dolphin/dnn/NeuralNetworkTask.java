@@ -43,12 +43,12 @@ public final class NeuralNetworkTask implements Task {
 
   private final Validator crossValidator;
   private final Validator trainingValidator;
-  private final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser;
+  private final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser;
   private final NeuralNetwork neuralNetwork;
   private final int maxIterations;
 
   @Inject
-  NeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, Integer>, Boolean>>> dataParser,
+  NeuralNetworkTask(final DataParser<List<Pair<Pair<Matrix, int[]>, Boolean>>> dataParser,
                     final NeuralNetwork neuralNetwork,
                     @Parameter(MaxIterations.class) final int maxIterations) {
     super();
@@ -64,7 +64,7 @@ public final class NeuralNetworkTask implements Task {
   public byte[] call(final byte[] bytes) throws Exception {
     LOG.log(Level.INFO, "ComputeTask.call() commencing....");
 
-    final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet = dataParser.get();
+    final List<Pair<Pair<Matrix, int[]>, Boolean>> dataSet = dataParser.get();
     for (int i = 0; i < maxIterations; ++i) {
       runIteration(dataSet, neuralNetwork, trainingValidator, crossValidator);
       LOG.log(Level.INFO, generateIterationLog(trainingValidator.getValidationStats(),
@@ -77,19 +77,24 @@ public final class NeuralNetworkTask implements Task {
     return null;
   }
 
-  public static void runIteration(final List<Pair<Pair<Matrix, Integer>, Boolean>> dataSet,
+  public static void runIteration(final List<Pair<Pair<Matrix, int[]>, Boolean>> dataSet,
                                   final NeuralNetwork neuralNetwork,
                                   final Validator trainingValidator,
                                   final Validator crossValidator) {
-    for (final Pair<Pair<Matrix, Integer>, Boolean> data : dataSet) {
+    for (final Pair<Pair<Matrix, int[]>, Boolean> data : dataSet) {
       final Matrix input = data.getFirst().getFirst();
-      final int label = data.getFirst().getSecond();
+      final int[] labels = data.getFirst().getSecond();
       final boolean isValidation = data.getSecond();
+
+      if (input.getRows() != labels.length) {
+        throw new RuntimeException("The number of inputs is not equal to the number of labels");
+      }
+
       if (isValidation) {
-        crossValidator.validate(input, label);
+        crossValidator.validate(input, labels);
       } else {
-        neuralNetwork.train(input, label);
-        trainingValidator.validate(input, label);
+        neuralNetwork.train(input, labels);
+        trainingValidator.validate(input, labels);
       }
     }
   }

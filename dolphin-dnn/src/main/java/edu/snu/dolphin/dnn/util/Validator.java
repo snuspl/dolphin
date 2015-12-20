@@ -31,24 +31,28 @@ public final class Validator {
     this.validationStats = new ValidationStats();
   }
 
-  public void validate(final Matrix input, final int label) {
+  public void validate(final Matrix input, final int[] labels) {
     final Matrix[] activations = network.feedForward(input);
-    final Matrix output = activations[activations.length - 1];
-    float maxValue = output.get(0);
+    final Matrix outputMatrix = activations[activations.length - 1];
 
-    // Find the index with highest probability.
-    int maxIndex = 0;
-    for (int i = 1; i < output.getLength(); ++i) {
-      if (output.get(i) > maxValue) {
-        maxValue = output.get(i);
-        maxIndex = i;
+    for (int i = 0; i < outputMatrix.getRows(); ++i) {
+      final Matrix output = outputMatrix.getRow(i);
+      float maxValue = output.get(0);
+
+      // Find the index with highest probability.
+      int maxIndex = 0;
+      for (int j = 1; j < output.getLength(); ++j) {
+        if (output.get(j) > maxValue) {
+          maxValue = output.get(j);
+          maxIndex = j;
+        }
       }
-    }
 
-    if (maxIndex == label) {
-      validationStats.validationCorrect();
-    } else {
-      validationStats.validationIncorrect();
+      if (maxIndex == labels[i]) {
+        validationStats.validationCorrect();
+      } else {
+        validationStats.validationIncorrect();
+      }
     }
   }
 

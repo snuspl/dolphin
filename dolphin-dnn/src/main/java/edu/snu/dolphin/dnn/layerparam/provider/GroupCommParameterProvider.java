@@ -16,7 +16,6 @@
 package edu.snu.dolphin.dnn.layerparam.provider;
 
 import edu.snu.dolphin.dnn.NeuralNetworkGroupCommDriver;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.ValidationStats;
 import org.apache.reef.exception.evaluator.NetworkException;
@@ -25,7 +24,6 @@ import org.apache.reef.io.network.group.api.operators.Reduce;
 import org.apache.reef.io.network.group.api.task.CommunicationGroupClient;
 import org.apache.reef.io.network.group.api.task.GroupCommClient;
 import org.apache.reef.io.network.util.Pair;
-import org.apache.reef.tang.annotations.Parameter;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
@@ -34,27 +32,18 @@ import java.util.*;
 /**
  * Parameter provider for a neural network that uses REEF Group Communication.
  * <p/>
- * Sends parameter gradients to the server with a certain batch size.
+ * Sends parameter gradients to the server.
  * Receives updated parameters from the server.
  */
 @ThreadSafe
 public final class GroupCommParameterProvider implements ParameterProvider {
 
-  private final List<LayerParameter[]> parameterGradientList;
-  private final int batchSize;
   private final Broadcast.Receiver<LayerParameter[]> layerParamBroadcastReceiver;
-  private final Reduce.Sender<List<LayerParameter[]>> parameterGradientReduceSender;
+  private final Reduce.Sender<Pair<Integer, LayerParameter[]>> parameterGradientReduceSender;
   private final Reduce.Sender<Pair<ValidationStats, ValidationStats>> validationStatsReduceSender;
-  private int pushCount;
 
   @Inject
-  private GroupCommParameterProvider(
-      @Parameter(NeuralNetworkConfigurationParameters.BatchSize.class) final int batchSize,
-      final GroupCommClient groupCommClient) {
-
-    this.parameterGradientList = new ArrayList<>(batchSize);
-    this.batchSize = batchSize;
-    this.pushCount = 0;
+  private GroupCommParameterProvider(final GroupCommClient groupCommClient) {
 
     final CommunicationGroupClient commGroup =
         groupCommClient.getCommunicationGroup(NeuralNetworkGroupCommDriver.NeuralNetworkCommGroup.class);
@@ -67,23 +56,17 @@ public final class GroupCommParameterProvider implements ParameterProvider {
   }
 
   @Override
-  public synchronized void push(final LayerParameter[] parameterGradients) {
-    // do not store the input if it is not valid
-    if (!(parameterGradients == null || parameterGradients.length == 0)) {
-      parameterGradientList.add(parameterGradients);
-    }
-
-    if (++pushCount >= batchSize) {
-      pushCount = 0;
-
-      try {
-        parameterGradientReduceSender.send(parameterGradientList);
-      } catch (final NetworkException e) {
-        throw new RuntimeException("NetworkException while trying to send reduce", e);
-      } catch (final InterruptedException e) {
-        throw new RuntimeException("InterruptedException while trying to send reduce", e);
+  public synchronized void push(final int batchSize, final LayerParameter[] parameterGradients) {
+    try {
+      if (batchSize == 0 || parameterGradients == null || parameterGradients.length == 0) {
+        parameterGradientReduceSender.send(new Pair<>(0, new LayerParameter[0]));
+      } else {
+        parameterGradientReduceSender.send(new Pair<>(batchSize, parameterGradients));
       }
-      parameterGradientList.clear();
+    } catch (final NetworkException e) {
+      throw new RuntimeException("NetworkException while trying to send reduce", e);
+    } catch (final InterruptedException e) {
+      throw new RuntimeException("InterruptedException while trying to send reduce", e);
     }
   }
 

@@ -15,8 +15,6 @@
  */
 package edu.snu.dolphin.dnn;
 
-import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
@@ -35,8 +33,6 @@ import org.apache.reef.tang.formats.ConfigurationSerializer;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +60,6 @@ public final class NeuralNetworkParameterUpdater
   public static final String WHOLE_MODEL = "WHOLE_MODEL";
   public static final String VALIDATION = "VALIDATION";
 
-  private final MatrixFactory matrixFactory;
   private final Set<String> serializedLayerConfigurationSet;
   private final float stepsize;
   private final ConfigurationSerializer configurationSerializer;
@@ -74,13 +69,11 @@ public final class NeuralNetworkParameterUpdater
 
   @Inject
   private NeuralNetworkParameterUpdater(
-      final MatrixFactory matrixFactory,
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
       @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
       @Parameter(LogPeriod.class) final int logPeriod,
       final Injector injector) {
-    this.matrixFactory = matrixFactory;
     this.serializedLayerConfigurationSet = serializedLayerConfigurationSet;
     this.stepsize = stepsize;
     this.configurationSerializer = configurationSerializer;
@@ -103,47 +96,24 @@ public final class NeuralNetworkParameterUpdater
     if (neuralNetParamServerData.isValidationStatsPair()) {
       return new NeuralNetParamServerData(neuralNetParamServerData.getValidationStatsPair());
     } else {
-      return new NeuralNetParamServerData(processLayerParametersList(key,
-          neuralNetParamServerData.getLayerParametersList()));
+      return new NeuralNetParamServerData(processLayerParameters(key, neuralNetParamServerData.getLayerParameters()));
     }
   }
 
   /**
-   * Aggregate parameter gradients by computing the average of all gradients, per layer,
-   * and multiplying the step size.
+   * Multiplies the step size (in-place update).
    */
-  private List<LayerParameter[]> processLayerParametersList(final String key,
-                                                            final List<LayerParameter[]> parameterGradientsList) {
-    if (parameterGradientsList == null || parameterGradientsList.size() == 0 || !key.equals(WHOLE_MODEL)) {
+  private LayerParameter[] processLayerParameters(final String key,
+                                                  final LayerParameter[] parameterGradients) {
+    if (parameterGradients == null || !key.equals(WHOLE_MODEL)) {
       return null;
     }
 
-    final LayerParameter[] aggregatedParameterGradients = new LayerParameter[parameterGradientsList.get(0).length];
-    for (int index = 0; index < aggregatedParameterGradients.length; index++) {
-      final Matrix weight = parameterGradientsList.get(0)[index].getWeightParam();
-      final Matrix bias = parameterGradientsList.get(0)[index].getBiasParam();
-
-      aggregatedParameterGradients[index] = LayerParameter.newBuilder()
-          .setWeightParam(matrixFactory.zeros(weight.getRows(), weight.getColumns()))
-          .setBiasParam(matrixFactory.zeros(bias.getRows(), bias.getColumns()))
-          .build();
+    for (final LayerParameter parameterGradient : parameterGradients) {
+      parameterGradient.getWeightParam().muli(stepsize);
+      parameterGradient.getBiasParam().muli(stepsize);
     }
-
-    for (final LayerParameter[] parameterGradient : parameterGradientsList) {
-      for (int index = 0; index < aggregatedParameterGradients.length; index++) {
-        aggregatedParameterGradients[index].getWeightParam().addi(parameterGradient[index].getWeightParam());
-        aggregatedParameterGradients[index].getBiasParam().addi(parameterGradient[index].getBiasParam());
-      }
-    }
-
-    for (final LayerParameter sumParameterGradient : aggregatedParameterGradients) {
-      sumParameterGradient.getWeightParam().divi(parameterGradientsList.size()).muli(stepsize);
-      sumParameterGradient.getBiasParam().divi(parameterGradientsList.size()).muli(stepsize);
-    }
-
-    final List<LayerParameter[]> retList = new ArrayList<>(1);
-    retList.add(aggregatedParameterGradients);
-    return retList;
+    return parameterGradients;
   }
 
   /**
@@ -163,7 +133,7 @@ public final class NeuralNetworkParameterUpdater
         throw new RuntimeException("NeuralNetParamServerData oldData and delta have the same key but different format");
       }
       return new NeuralNetParamServerData(updateLayerParameter(
-          oldData.getLayerParametersList().get(0), delta.getLayerParametersList().get(0)));
+          oldData.getLayerParameters(), delta.getLayerParameters()));
     }
   }
 
@@ -197,20 +167,21 @@ public final class NeuralNetworkParameterUpdater
   }
 
   /**
-   * Subtract the parameter gradients from the current layer parameter values.
+   * Subtract the parameter gradients from the current layer parameter values (in-place update).
    */
-  private List<LayerParameter[]> updateLayerParameter(final LayerParameter[] layerParameters,
-                                                      final LayerParameter[] parameterGradients) {
+  private LayerParameter[] updateLayerParameter(final LayerParameter[] layerParameters,
+                                                final LayerParameter[] parameterGradients) {
+    if (layerParameters.length != parameterGradients.length) {
+      throw new RuntimeException("The number of parameter gradients is not equal to the number of layers.");
+    }
+
     for (int index = 0; index < layerParameters.length; ++index) {
       final LayerParameter layerParameter = layerParameters[index];
       final LayerParameter parameterGradient = parameterGradients[index];
       layerParameter.getWeightParam().subi(parameterGradient.getWeightParam());
       layerParameter.getBiasParam().subi(parameterGradient.getBiasParam());
     }
-
-    final List<LayerParameter[]> retList = new ArrayList<>(1);
-    retList.add(layerParameters);
-    return retList;
+    return layerParameters;
   }
 
   /**
@@ -238,7 +209,7 @@ public final class NeuralNetworkParameterUpdater
   /**
    * Use {@link LayerParameterInitializer} to generate initial layer parameter values.
    */
-  private List<LayerParameter[]> initValueLayerParameters() {
+  private LayerParameter[] initValueLayerParameters() {
     final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
 
     for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
@@ -258,8 +229,6 @@ public final class NeuralNetworkParameterUpdater
       }
     }
 
-    final List<LayerParameter[]> retList = new ArrayList<>(1);
-    retList.add(layerParameters);
-    return retList;
+    return layerParameters;
   }
 }

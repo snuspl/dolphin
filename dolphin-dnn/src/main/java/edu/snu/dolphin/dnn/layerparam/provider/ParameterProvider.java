@@ -23,10 +23,11 @@ import edu.snu.dolphin.dnn.layers.LayerParameter;
 public interface ParameterProvider {
 
   /**
-   * Pushes parameter gradients of all layers for a training input.
-   * @param parameterGradients parameter gradients of all layers.
+   * Pushes parameter gradients for an input batch.
+   * @param batchSize the size of an input batch
+   * @param parameterGradients parameter gradients sums for an input batch
    */
-  void push(final LayerParameter[] parameterGradients);
+  void push(final int batchSize, final LayerParameter[] parameterGradients);
 
   /**
    * @return the updated parameters of the whole network.

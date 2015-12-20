@@ -16,16 +16,12 @@
 package edu.snu.dolphin.dnn.layerparam.provider;
 
 import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.ps.worker.ParameterWorker;
-import org.apache.reef.tang.annotations.Parameter;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parameter provider for a neural network that uses Dolphin Parameter Server, {@code dolphin-ps}.
@@ -37,31 +33,25 @@ import java.util.List;
 public final class ParameterServerParameterProvider implements ParameterProvider {
 
   private static final int RETRY_COUNT = 3;
-
   private final ParameterWorker<String, NeuralNetParamServerData, NeuralNetParamServerData> worker;
-  private final List<LayerParameter[]> parameterGradientsList;
-  private final int batchSize;
-  private int pushCount;
 
   @Inject
   private ParameterServerParameterProvider(
-      final ParameterWorker<String, NeuralNetParamServerData, NeuralNetParamServerData> worker,
-      @Parameter(BatchSize.class) final int batchSize) {
+      final ParameterWorker<String, NeuralNetParamServerData, NeuralNetParamServerData> worker) {
     this.worker = worker;
-    this.parameterGradientsList = new ArrayList<>(batchSize);
-    this.batchSize = batchSize;
-    this.pushCount = 0;
   }
 
   @Override
-  public synchronized void push(final LayerParameter[] parameterGradients) {
-    parameterGradientsList.add(parameterGradients);
-
-    if (++pushCount > batchSize) {
-      pushCount = 0;
-      worker.push(NeuralNetworkParameterUpdater.WHOLE_MODEL, new NeuralNetParamServerData(parameterGradientsList));
-      parameterGradientsList.clear();
+  public void push(final int batchSize, final LayerParameter[] parameterGradients) {
+    // averaging parameter gradients
+    final LayerParameter[] parameterGradientsToPush = new LayerParameter[parameterGradients.length];
+    for (int i = 0; i < parameterGradients.length; ++i) {
+      parameterGradientsToPush[i] = LayerParameter.newBuilder()
+          .setWeightParam(parameterGradients[i].getWeightParam().div(batchSize))
+          .setBiasParam(parameterGradients[i].getBiasParam().div(batchSize))
+          .build();
     }
+    worker.push(NeuralNetworkParameterUpdater.WHOLE_MODEL, new NeuralNetParamServerData(parameterGradientsToPush));
   }
 
   @Override
@@ -78,13 +68,7 @@ public final class ParameterServerParameterProvider implements ParameterProvider
         throw new RuntimeException("Requested NeuralNetworkParameterUpdater.WHOLE_MODEL but received validation stats");
       }
 
-      final List<LayerParameter[]> retList = neuralNetParamServerData.getLayerParametersList();
-      if (retList.size() != 1) {
-        throw new RuntimeException(String.format("Expected one array of LayerParameters but received %d arrays",
-            retList.size()));
-      }
-
-      return retList.get(0);
+      return neuralNetParamServerData.getLayerParameters();
     }
 
     throw new RuntimeException("Retried " + RETRY_COUNT + " times but failed to pull model from server.");
