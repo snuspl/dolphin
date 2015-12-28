@@ -47,7 +47,7 @@ public final class NeuralNetworkUtils {
   private static final String SHAPE_DELIMITER = ",";
 
   /**
-   * Converts a list of integer for a shape to a string.
+   * Converts a list of integers for a shape to a string.
    * @param dimensionList a list of integers for a shape.
    * @return a string for a shape.
    */
@@ -56,7 +56,7 @@ public final class NeuralNetworkUtils {
   }
 
   /**
-   * Converts an array of {@code int} for a shape to a string.
+   * Converts an array of {@code int}s for a shape to a string.
    * @param dimensions an array of {@code int}s for a shape.
    * @return a string for a shape.
    */

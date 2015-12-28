@@ -50,7 +50,6 @@ public final class LayerConfigurationParameters {
   /**
    * For fully connected layers.
    */
-
   @NamedParameter(doc = "number of layer output nodes", short_name = "numOutput")
   public static final class NumberOfOutput implements Name<Integer> {
   }
@@ -58,7 +57,6 @@ public final class LayerConfigurationParameters {
   /**
    * For activation layers.
    */
-
   @NamedParameter(doc = "activation function of layer node", short_name = "activationFunc")
   public static final class ActivationFunction implements Name<String> {
   }
