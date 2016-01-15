@@ -15,7 +15,6 @@
  */
 package edu.snu.dolphin.dnn.util;
 
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.LayerBase;
@@ -121,40 +120,6 @@ public final class NeuralNetworkUtils {
   }
 
   /**
-   * Returns initial layer parameters from the specified set of configurations and the input shape.
-   * @param layerInitializerConfs an array of configurations for injecting layer initializers
-   * @param inputShape an input shape for the neural network.
-   * @param matrixFactoryClass a matrix factory class for instantiate matrices
-   * @return an array of initial layer parameters
-   */
-  public static LayerParameter[] getInitialLayerParameters(final Configuration[] layerInitializerConfs,
-                                                           final String inputShape,
-                                                           final Class<? extends MatrixFactory> matrixFactoryClass) {
-    final LayerParameter[] layerParameters = new LayerParameter[layerInitializerConfs.length];
-
-    String currentInputShape = inputShape;
-    for (int i = 0; i < layerInitializerConfs.length; ++i) {
-      try {
-        // bind an input shape for the layer and the matrix factory.
-        final Configuration finalInitializerConf =
-            Tang.Factory.getTang().newConfigurationBuilder(layerInitializerConfs[i])
-                .bindNamedParameter(LayerConfigurationParameters.LayerInputShape.class, currentInputShape)
-                .bindImplementation(MatrixFactory.class, matrixFactoryClass)
-                .build();
-        final LayerParameterInitializer layerParameterInitializer =
-            Tang.Factory.getTang().newInjector(finalInitializerConf).getInstance(LayerParameterInitializer.class);
-
-        layerParameters[i] = layerParameterInitializer.generateInitialParameter();
-        currentInputShape = shapeToString(layerParameterInitializer.getOutputShape());
-
-      } catch (final InjectionException e) {
-        throw new RuntimeException("InjectionException while injecting LayerParameterInitializer", e);
-      }
-    }
-    return layerParameters;
-  }
-
-  /**
    * Returns initial layer parameters using the specified injector and the specified array of configurations.
    * This assumes that the specified injector has all parameters that are needed to inject layer parameter initializer
    * instances except the configuration for each layer.
@@ -169,11 +134,11 @@ public final class NeuralNetworkUtils {
     final LayerParameter[] layerParameters = new LayerParameter[layerInitializerConfs.length];
 
     String currentInputShape = inputShape;
-    for (int i = 0; i < layerInitializerConfs.length; ++i) {
+    for (final Configuration layerInitializerConf : layerInitializerConfs) {
       try {
         // bind an input shape for the layer.
         final Configuration finalInitializerConf =
-            Tang.Factory.getTang().newConfigurationBuilder(layerInitializerConfs[i])
+            Tang.Factory.getTang().newConfigurationBuilder(layerInitializerConf)
                 .bindNamedParameter(LayerConfigurationParameters.LayerInputShape.class, currentInputShape)
                 .build();
         final LayerParameterInitializer layerParameterInitializer =
@@ -191,39 +156,6 @@ public final class NeuralNetworkUtils {
   }
 
   /**
-   * Returns layer instances from the specified array of configurations for layer instances.
-   * @param layerConfs an array of configurations for layer instances
-   * @param inputShape an input shape for the neural network
-   * @param matrixFactoryClass a class for {@link MatrixFactory}
-   * @return an array of layer instances
-   */
-  public static LayerBase[] getLayerInstances(final Configuration[] layerConfs,
-                                              final String inputShape,
-                                              final Class<? extends MatrixFactory> matrixFactoryClass) {
-    final LayerBase[] layers = new LayerBase[layerConfs.length];
-
-    String currentInputShape = inputShape;
-    for (int i = 0; i < layerConfs.length; ++i) {
-      try {
-        // bind an input shape for the layer and the matrix factory.
-        final Configuration finalLayerConf = Tang.Factory.getTang().newConfigurationBuilder(layerConfs[i])
-            .bindNamedParameter(LayerConfigurationParameters.LayerInputShape.class, currentInputShape)
-            .bindImplementation(MatrixFactory.class, matrixFactoryClass)
-            .build();
-        final Injector injector = Tang.Factory.getTang().newInjector(finalLayerConf);
-        final LayerBase layer = injector.getInstance(LayerBase.class);
-
-        layers[i] = layer;
-        currentInputShape = shapeToString(layer.getOutputShape());
-
-      } catch (final InjectionException exception) {
-        throw new RuntimeException("InjectionException while injecting LayerBase", exception);
-      }
-    }
-    return layers;
-  }
-
-  /**
    * Returns layer instances using the specified injector and the specified array of configurations.
    * This assumes that the specified injector has all parameters that are needed to inject layer instances
    * except the configuration for each layer.
@@ -238,10 +170,10 @@ public final class NeuralNetworkUtils {
     final LayerBase[] layers = new LayerBase[layerConfs.length];
 
     String currentInputShape = inputShape;
-    for (int i = 0; i < layerConfs.length; ++i) {
+    for (final Configuration layerConf : layerConfs) {
       try {
         // bind an input shape for the layer.
-        final Configuration finalLayerConf = Tang.Factory.getTang().newConfigurationBuilder(layerConfs[i])
+        final Configuration finalLayerConf = Tang.Factory.getTang().newConfigurationBuilder(layerConf)
             .bindNamedParameter(LayerConfigurationParameters.LayerInputShape.class, currentInputShape)
             .build();
         final LayerBase layer = injector.forkInjector(finalLayerConf).getInstance(LayerBase.class);

@@ -37,7 +37,7 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeToString;
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
-  private ArrayList<Configuration> layerConfigurations = new ArrayList<>();
+  private List<Configuration> layerConfigurations = new ArrayList<>();
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
   private float stepsize = 1e-2f;

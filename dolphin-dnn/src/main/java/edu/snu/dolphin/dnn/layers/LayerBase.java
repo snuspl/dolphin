@@ -28,11 +28,6 @@ public abstract class LayerBase {
   private LayerParameter layerParameter;
   private final int[] inputShape;
 
-  protected LayerBase(final int index, final int[] inputShape) {
-    this.index = index;
-    this.inputShape = inputShape;
-  }
-
   protected LayerBase(final int index, final String inputShapeString) {
     this.index = index;
     this.inputShape = shapeFromString(inputShapeString);
