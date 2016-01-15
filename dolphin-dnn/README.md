@@ -164,8 +164,6 @@ layer {
 }
 layer {
   type: "ActivationWithLoss"
-  num_input: 10
-  num_output: 10
   activation_with_loss_param {
     activation_function: "softmax"
     loss_function: "crossentropy"
