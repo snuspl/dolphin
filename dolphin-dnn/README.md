@@ -81,12 +81,12 @@ parameter_provider {
 
 **More types of layers such as convolutional layer and subsampling layer will be supported.**
 
-##### Activation Layers
+##### Activation Layer
 * Layer type: `Activation`
 * Parameters (`ActivationLayerConfiguration activation_param`)
 	* `activation_function`: the activation function to produce output values for this layer.
 
-##### Activation with Loss Layers
+##### Activation with Loss Layer
 * Layer type: `ActivationWithLoss`
 * Parameters (`ActivationWithLossLayerConfiguration activation_with_loss_param`)
 	* `activation_function`: the activation function to produce output values for this layer.
@@ -101,7 +101,7 @@ The following activation functions are supported.
 * Absolute: `abs`
 * Softmax: `softmax`
 
-##### Loss functions
+##### Loss Functions
 The following loss functions are supported.
 * CrossEntropy: `crossEntropy`
 
@@ -166,7 +166,7 @@ layer {
   type: "ActivationWithLoss"
   activation_with_loss_param {
     activation_function: "softmax"
-    loss_function: "crossentropy"
+    loss_function: "crossEntropy"
   }
 }
 
