@@ -23,6 +23,9 @@ import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
 
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.getShapeLength;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
+
 /**
  * Parameter Initializer of fully connected layer.
  *
@@ -43,7 +46,7 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
   public FullyConnectedLayerParameterInitializer(
       final MatrixFactory matrixFactory,
       @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
-      @Parameter(LayerConfigurationParameters.NumberOfInput.class) final int numInput,
+      @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape,
       @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput,
       @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
       @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
@@ -51,7 +54,7 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
     this.matrixFactory = matrixFactory;
     this.index = index;
     this.randomSeed = randomSeed;
-    this.numInput = numInput;
+    this.numInput = getShapeLength(shapeFromString(inputShape));
     this.numOutput = numOutput;
     this.initWeight = initWeight;
     this.initBias = initBias;
@@ -75,5 +78,10 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
   @Override
   public int getIndex() {
     return this.index;
+  }
+
+  @Override
+  public int[] getOutputShape() {
+    return new int[]{numOutput};
   }
 }

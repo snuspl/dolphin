@@ -15,10 +15,8 @@
  */
 package edu.snu.dolphin.dnn;
 
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
-import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.ValidationStats;
 import edu.snu.dolphin.ps.server.ParameterUpdater;
@@ -28,14 +26,15 @@ import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 import org.apache.reef.tang.annotations.Parameter;
-import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.getInitialLayerParameters;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.deserializeLayerConfSetToArray;
 
 /**
  * This {@link ParameterUpdater} implementation depicts how the parameter server for {@code dolphin-dnn} should
@@ -60,29 +59,31 @@ public final class NeuralNetworkParameterUpdater
   public static final String WHOLE_MODEL = "WHOLE_MODEL";
   public static final String VALIDATION = "VALIDATION";
 
-  private final Set<String> serializedLayerConfigurationSet;
   private final float stepsize;
-  private final ConfigurationSerializer configurationSerializer;
   private final int logPeriod;
   private final Injector injector;
+  private final String inputShape;
+  private final Configuration[] layerInitializerConfigurations;
   private int iteration;
 
   @Inject
   private NeuralNetworkParameterUpdater(
       @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfigurationSet,
-      @Parameter(NeuralNetworkConfigurationParameters.Stepsize.class) final float stepsize,
+      @Parameter(Stepsize.class) final float stepsize,
       final ConfigurationSerializer configurationSerializer,
       @Parameter(LogPeriod.class) final int logPeriod,
+      @Parameter(InputShape.class) final String inputShape,
       final Injector injector) {
-    this.serializedLayerConfigurationSet = serializedLayerConfigurationSet;
+    this.layerInitializerConfigurations =
+        deserializeLayerConfSetToArray(configurationSerializer, serializedLayerConfigurationSet);
     this.stepsize = stepsize;
-    this.configurationSerializer = configurationSerializer;
 
     if (logPeriod <= 0) {
       throw new RuntimeException("Log period is too small");
     }
     this.logPeriod = logPeriod;
     this.injector = injector;
+    this.inputShape = inputShape;
     this.iteration = 0;
   }
 
@@ -207,28 +208,10 @@ public final class NeuralNetworkParameterUpdater
   }
 
   /**
-   * Use {@link LayerParameterInitializer} to generate initial layer parameter values.
+   * Use {@link edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer}
+   * to generate initial layer parameter values.
    */
   private LayerParameter[] initValueLayerParameters() {
-    final LayerParameter[] layerParameters = new LayerParameter[serializedLayerConfigurationSet.size()];
-
-    for (final String serializedInitializerConfiguration : serializedLayerConfigurationSet) {
-      try {
-        final Configuration initializerConfiguration =
-            configurationSerializer.fromString(serializedInitializerConfiguration);
-        final LayerParameterInitializer layerParameterInitializer =
-            injector.forkInjector(initializerConfiguration).getInstance(LayerParameterInitializer.class);
-        final int index = layerParameterInitializer.getIndex();
-
-        layerParameters[index] = layerParameterInitializer.generateInitialParameter();
-
-      } catch (final IOException exception) {
-        throw new RuntimeException("IOException during de-serializing layer configuration", exception);
-      } catch (final InjectionException exception) {
-        throw new RuntimeException("InjectionException during injecting LayerParameterInitializer", exception);
-      }
-    }
-
-    return layerParameters;
+    return getInitialLayerParameters(injector, layerInitializerConfigurations, inputShape);
   }
 }

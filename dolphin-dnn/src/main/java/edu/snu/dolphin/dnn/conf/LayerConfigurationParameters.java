@@ -43,14 +43,20 @@ public final class LayerConfigurationParameters {
   public static final class LayerIndex implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "number of layer input nodes", short_name = "numInput")
-  public static final class NumberOfInput implements Name<Integer> {
+  @NamedParameter(doc = "the shape of input data for layer")
+  public static final class LayerInputShape implements Name<String> {
   }
 
+  /**
+   * For fully connected layers.
+   */
   @NamedParameter(doc = "number of layer output nodes", short_name = "numOutput")
   public static final class NumberOfOutput implements Name<Integer> {
   }
 
+  /**
+   * For activation layers.
+   */
   @NamedParameter(doc = "activation function of layer node", short_name = "activationFunc")
   public static final class ActivationFunction implements Name<String> {
   }

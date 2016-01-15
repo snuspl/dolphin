@@ -17,18 +17,20 @@ package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
 
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
+
 /**
  * Abstract class for the layer of a neural network.
  */
 public abstract class LayerBase {
 
   private final int index;
-  private final int numOutput;
   private LayerParameter layerParameter;
+  private final int[] inputShape;
 
-  protected LayerBase(final int index, final int numOutput) {
+  protected LayerBase(final int index, final String inputShapeString) {
     this.index = index;
-    this.numOutput = numOutput;
+    this.inputShape = shapeFromString(inputShapeString);
   }
 
   /**
@@ -39,11 +41,16 @@ public abstract class LayerBase {
   }
 
   /**
-   * @return the number of layer output nodes.
+   * @return the shape of inputs.
    */
-  public final int getNumOutput() {
-    return this.numOutput;
+  public final int[] getInputShape() {
+    return this.inputShape;
   }
+
+  /**
+   * @return the shape of outputs.
+   */
+  public abstract int[] getOutputShape();
 
   /**
    * Replaces the parameter of the layer.

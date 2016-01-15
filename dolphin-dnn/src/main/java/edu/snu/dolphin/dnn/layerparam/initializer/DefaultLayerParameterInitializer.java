@@ -22,21 +22,27 @@ import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
 
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
+
 /**
  * Default parameter initializer.
  *
  * This initializer is for layers which do not have layer parameters (i.e. not learnable layer).
+ * This initializer is used for layers whose output shape is equal to input shape.
  */
 public final class DefaultLayerParameterInitializer implements LayerParameterInitializer {
 
   private final int index;
+  private final int[] inputShape;
   private final LayerParameter emptyLayerParam;
 
   @Inject
   public DefaultLayerParameterInitializer(
       final MatrixFactory matrixFactory,
-      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index) {
+      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
+      @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape) {
     this.index = index;
+    this.inputShape = shapeFromString(inputShape);
     this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
   }
 
@@ -53,4 +59,10 @@ public final class DefaultLayerParameterInitializer implements LayerParameterIni
   public int getIndex() {
     return index;
   }
+
+  @Override
+  public int[] getOutputShape() {
+    return inputShape;
+  }
+
 }

@@ -76,19 +76,34 @@ parameter_provider {
 * Parameters (`FullyConnectedLayerConfiguration fully_connected_param`)
 	* `init_weight`: the standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
 	* `init_bias`: constant value with which the biases of this layer are initialized.
-	* `activation_function`: the activation function to produce a output value for this layer.
+	* `random_seed`: the seed for generating random inital parameters.
+	* `num_output`: the number of outputs for this layer.
 
 **More types of layers such as convolutional layer and subsampling layer will be supported.**
 
-##### Activation function
-The following functions are supported.
+##### Activation Layer
+* Layer type: `Activation`
+* Parameters (`ActivationLayerConfiguration activation_param`)
+	* `activation_function`: the activation function to produce output values for this layer.
 
+##### Activation with Loss Layer
+* Layer type: `ActivationWithLoss`
+* Parameters (`ActivationWithLossLayerConfiguration activation_with_loss_param`)
+	* `activation_function`: the activation function to produce output values for this layer.
+	* `loss_function`: the loss function that is used to compute loss and calculate the loss gradient for backpropagation.
+
+##### Activation Functions
+The following activation functions are supported.
 * Sigmoid: `sigmoid`
 * ReLU: `relu`
 * TanhH: `tanh`
 * Power: `pow` (squared value)
 * Absolute: `abs`
 * Softmax: `softmax`
+
+##### Loss Functions
+The following loss functions are supported.
+* CrossEntropy: `crossEntropy`
 
 ## How to run
 A script for training a neural network model is included with the source code, in `bin/run_neuralnetwork.sh`. `test/resources/data/neuralnet` is a sample subset of the [MNIST](http://yann.lecun.com/exdb/mnist) dataset, composed of 1,000 training images and 100 test images. `test/resources/configuration/neuralnet` is an example of a protocol buffer definition file; it defines a neural network model that uses two fully connected layers and a local parameter provider.
@@ -127,24 +142,34 @@ parameter_provider {
 }
 layer {
   type: "FullyConnected"
-  num_input: 784
-  num_output: 50
   fully_connected_param {
     init_weight: 1e-4
     init_bias: 2e-4
-    activation_function: "sigmoid"
+    num_output: 50
+  }
+}
+layer {
+  type: "Activation"
+  activation_param {
+    activation_function: "relu"
   }
 }
 layer {
   type: "FullyConnected"
-  num_input: 50
-  num_output: 10
   fully_connected_param {
     init_weight: 1e-2
     init_bias: 2e-2
-    activation_function: "sigmoid"
+    num_output: 10
   }
 }
+layer {
+  type: "ActivationWithLoss"
+  activation_with_loss_param {
+    activation_function: "softmax"
+    loss_function: "crossEntropy"
+  }
+}
+
 ```
 This model comprises two fully connected layers with 50 and 10 features, respectively, and a local parameter provider. `input_shape` specifies the shape of input data. For the MNIST dataset, each data object is a 28 * 28 image and thus `input_shape` is configured as the following.
 

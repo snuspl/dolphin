@@ -17,8 +17,7 @@ package edu.snu.dolphin.dnn;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
-import edu.snu.dolphin.dnn.blas.MatrixUtils;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layers.LayerBase;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
@@ -26,12 +25,15 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.annotations.Parameter;
-import org.apache.reef.tang.exceptions.InjectionException;
 import org.apache.reef.tang.formats.ConfigurationSerializer;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Set;
+
+import static edu.snu.dolphin.dnn.blas.MatrixUtils.createOutputMatrix;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.getLayerInstances;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.getShapeLength;
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.deserializeLayerConfSetToArray;
 
 /**
  * Neural network model.
@@ -67,25 +69,15 @@ public final class NeuralNetwork {
                         final ConfigurationSerializer configurationSerializer,
                         @Parameter(SerializedLayerConfigurationSet.class) final Set<String> serializedLayerConfSets,
                         final ParameterProvider parameterProvider,
+                        @Parameter(InputShape.class) final String inputShape,
                         final Injector injector) {
     this.matrixFactory = matrixFactory;
     this.parameterProvider = parameterProvider;
-    this.layers = new LayerBase[serializedLayerConfSets.size()];
+    final Configuration[] layerConfs =
+        deserializeLayerConfSetToArray(configurationSerializer, serializedLayerConfSets);
+    this.layers = getLayerInstances(injector, layerConfs, inputShape);
     this.emptyMatrix = matrixFactory.create(0);
     this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
-
-    for (final String serializedLayerConfiguration : serializedLayerConfSets) {
-      try {
-        final Configuration layerConfiguration = configurationSerializer.fromString(serializedLayerConfiguration);
-        final LayerBase layer = injector.forkInjector(layerConfiguration).getInstance(LayerBase.class);
-        this.layers[layer.getIndex()] = layer;
-
-      } catch (final IOException exception) {
-        throw new RuntimeException("IOException", exception);
-      } catch (final InjectionException exception) {
-        throw new RuntimeException("InjectionException", exception);
-      }
-    }
   }
 
   /**
@@ -127,7 +119,9 @@ public final class NeuralNetwork {
    * @param labels the label array.
    */
   public void train(final Matrix input, final int[] labels) {
-    train(input, MatrixUtils.createOutputMatrix(matrixFactory, labels, layers[layers.length - 1].getNumOutput()));
+    final Matrix labelMatrix = createOutputMatrix(
+        matrixFactory, labels, getShapeLength(layers[layers.length - 1].getOutputShape()));
+    train(input, labelMatrix);
   }
 
   /**

@@ -16,8 +16,8 @@
 package edu.snu.dolphin.dnn.conf;
 
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import org.apache.reef.tang.Configuration;
-import org.apache.reef.tang.Configurations;
 import org.apache.reef.tang.JavaConfigurationBuilder;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.formats.AvroConfigurationSerializer;
@@ -25,7 +25,9 @@ import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.apache.reef.util.Builder;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+
+import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeToString;
 
 /**
  * Configuration builder for neural network.
@@ -35,25 +37,18 @@ import java.util.Collection;
  */
 public final class NeuralNetworkConfigurationBuilder implements Builder<Configuration> {
 
-  private Collection<String> layerConfigurations = new ArrayList<>();
-  private int index = 0;
+  private List<Configuration> layerConfigurations = new ArrayList<>();
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
   private Class<? extends ParameterProvider> parameterProviderClass;
   private float stepsize = 1e-2f;
+  private String inputShape;
 
   public static NeuralNetworkConfigurationBuilder newConfigurationBuilder() {
     return new NeuralNetworkConfigurationBuilder();
   }
 
   public synchronized NeuralNetworkConfigurationBuilder addLayerConfiguration(final Configuration layerConfiguration) {
-
-    final Configuration finalLayerConfiguration = Configurations.merge(layerConfiguration,
-        Tang.Factory.getTang().newConfigurationBuilder()
-            .bindNamedParameter(LayerConfigurationParameters.LayerIndex.class, String.valueOf(index))
-            .build());
-
-    layerConfigurations.add(configurationSerializer.toString(finalLayerConfiguration));
-    ++index;
+    layerConfigurations.add(layerConfiguration);
     return this;
   }
 
@@ -68,16 +63,33 @@ public final class NeuralNetworkConfigurationBuilder implements Builder<Configur
     return this;
   }
 
+  public synchronized NeuralNetworkConfigurationBuilder setInputShape(final List<Integer> inputShapeList) {
+    this.inputShape = shapeToString(inputShapeList);
+    return this;
+  }
+
+  public synchronized NeuralNetworkConfigurationBuilder setInputShape(final int... inputShape) {
+    this.inputShape = shapeToString(inputShape);
+    return this;
+  }
+
   @Override
   public synchronized Configuration build() {
     final JavaConfigurationBuilder jb = Tang.Factory.getTang().newConfigurationBuilder();
 
-    for (final String layerConfiguration : layerConfigurations) {
-      jb.bindSetEntry(NeuralNetworkConfigurationParameters.SerializedLayerConfigurationSet.class, layerConfiguration);
+    for (int i = 0; i < layerConfigurations.size(); ++i) {
+      final Configuration finalLayerConfiguration =
+          Tang.Factory.getTang().newConfigurationBuilder(layerConfigurations.get(i))
+              .bindNamedParameter(LayerConfigurationParameters.LayerIndex.class, String.valueOf(i))
+              .build();
+
+      jb.bindSetEntry(SerializedLayerConfigurationSet.class,
+          configurationSerializer.toString(finalLayerConfiguration));
     }
 
     jb.bindImplementation(ParameterProvider.class, parameterProviderClass);
-    jb.bindNamedParameter(NeuralNetworkConfigurationParameters.Stepsize.class, String.valueOf(stepsize));
+    jb.bindNamedParameter(Stepsize.class, String.valueOf(stepsize));
+    jb.bindNamedParameter(InputShape.class, inputShape);
 
     return jb.build();
   }

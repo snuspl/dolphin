@@ -35,4 +35,9 @@ public interface LayerParameterInitializer {
    * @return the index of the layer.
    */
   int getIndex();
+
+  /**
+   * @return the shape of output.
+   */
+  int[] getOutputShape();
 }

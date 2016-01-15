@@ -16,9 +16,7 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LayerIndex;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.NumberOfOutput;
-import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.LossFunction;
+import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.SerializedLayerConfiguartion;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
@@ -47,17 +45,19 @@ public final class ActivationWithLossLayer extends LayerBase {
 
   @Inject
   private ActivationWithLossLayer(@Parameter(LayerIndex.class) final int index,
-                                  @Parameter(NumberOfOutput.class) final int numOutput,
+                                  @Parameter(LayerInputShape.class) final String inputShape,
                                   @Parameter(SerializedLayerConfiguartion.class) final String serializedLayerConf,
                                   final ConfigurationSerializer configurationSerializer,
                                   @Parameter(LossFunction.class) final String lossFunction) {
-    super(index, numOutput);
+    super(index, inputShape);
     this.lossFunction = lossFunction;
 
     try {
+      // bind the layer index and input shape for injecting inner layer.
       final Configuration layerConf = Tang.Factory.getTang().newConfigurationBuilder(
           configurationSerializer.fromString(serializedLayerConf))
-          .bindNamedParameter(LayerIndex.class, String.valueOf(index)) // bind a layer index for injecting inner layer.
+          .bindNamedParameter(LayerIndex.class, String.valueOf(index))
+          .bindNamedParameter(LayerInputShape.class, inputShape)
           .build();
       this.activationLayer = Tang.Factory.getTang().newInjector(layerConf).getInstance(LayerBase.class);
     } catch (final IOException ioException) {
@@ -65,6 +65,11 @@ public final class ActivationWithLossLayer extends LayerBase {
     } catch (final InjectionException injectException) {
       throw new RuntimeException("InjectionException while injecting activation layer: " + injectException);
     }
+  }
+
+  @Override
+  public int[] getOutputShape() {
+    return activationLayer.getOutputShape();
   }
 
   @Override

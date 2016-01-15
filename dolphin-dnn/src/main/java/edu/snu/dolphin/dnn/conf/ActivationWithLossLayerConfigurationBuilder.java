@@ -29,6 +29,7 @@ import org.apache.reef.util.Builder;
  * Configuration builder for activation with loss layer.
  *
  * The configuration that this builder generates is used to create an activation with loss layer instance.
+ * The generate configuration need to bind the parameter for a layer input shape, to inject layer instance.
  */
 public final class ActivationWithLossLayerConfigurationBuilder implements Builder<Configuration> {
 
@@ -36,22 +37,10 @@ public final class ActivationWithLossLayerConfigurationBuilder implements Builde
     return new ActivationWithLossLayerConfigurationBuilder();
   }
 
-  private int numInput;
-  private int numOutput;
   private String activationFunction;
   private String lossFunction;
 
   private ConfigurationSerializer configurationSerializer = new AvroConfigurationSerializer();
-
-  public synchronized ActivationWithLossLayerConfigurationBuilder setNumInput(final int numInput) {
-    this.numInput = numInput;
-    return this;
-  }
-
-  public synchronized ActivationWithLossLayerConfigurationBuilder setNumOutput(final int numOutput) {
-    this.numOutput = numOutput;
-    return this;
-  }
 
   public synchronized ActivationWithLossLayerConfigurationBuilder setActivationFunction(
       final String activationFunction) {
@@ -66,8 +55,6 @@ public final class ActivationWithLossLayerConfigurationBuilder implements Builde
 
   public synchronized ActivationWithLossLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    numInput = protoConf.getNumInput();
-    numOutput = protoConf.getNumOutput();
     activationFunction = protoConf.getActivationWithLossParam().getActivationFunction();
     lossFunction = protoConf.getActivationWithLossParam().getLossFunction();
     return this;
@@ -76,13 +63,10 @@ public final class ActivationWithLossLayerConfigurationBuilder implements Builde
   @Override
   public synchronized Configuration build() {
     final Configuration layerConf = ActivationLayerConfigurationBuilder.newConfigurationBuilder()
-        .setNumInput(numInput)
-        .setNumOutput(numOutput)
         .setActivationFunction(activationFunction)
         .build();
 
     return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
         .bindNamedParameter(LayerConfigurationParameters.LossFunction.class, lossFunction)
         .bindNamedParameter(SerializedLayerConfiguartion.class, configurationSerializer.toString(layerConf))
         .bindImplementation(LayerBase.class, ActivationWithLossLayer.class)
