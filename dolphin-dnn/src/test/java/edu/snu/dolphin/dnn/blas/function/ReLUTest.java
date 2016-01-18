@@ -44,11 +44,20 @@ public final class ReLUTest {
         .build();
     final MatrixFactory matrixFactory = Tang.Factory.getTang().newInjector(conf).getInstance(MatrixFactory.class);
 
-    this.input = matrixFactory.create(new float[][]{{1.0f, -2.0f, 3.0f}, {-4.0f, 5.0f, -6.0f}});
-    this.expectedOutput = matrixFactory.create(new float[][]{
-        {1.0f, 0.0f, 3.0f}, {0.0f, 5.0f, 0.0f}});
-    this.expectedDerivative = matrixFactory.create(new float[][]{
-        {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}});
+    final int numInput = 3;
+    final int numBatch = 2;
+    this.input = matrixFactory.create(new float[]{
+        1.0f, -2.0f, 3.0f,
+        -4.0f, 5.0f, -6.0f},
+        numInput, numBatch);
+    this.expectedOutput = matrixFactory.create(new float[]{
+        1.0f, 0.0f, 3.0f,
+        0.0f, 5.0f, 0.0f},
+        numInput, numBatch);
+    this.expectedDerivative = matrixFactory.create(new float[]{
+        1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f},
+        numInput, numBatch);
   }
 
   @Test

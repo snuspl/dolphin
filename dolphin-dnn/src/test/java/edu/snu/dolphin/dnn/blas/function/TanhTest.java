@@ -44,13 +44,20 @@ public final class TanhTest {
         .build();
     final MatrixFactory matrixFactory = Tang.Factory.getTang().newInjector(conf).getInstance(MatrixFactory.class);
 
-    this.input = matrixFactory.create(new float[][]{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}});
-    this.expectedOutput = matrixFactory.create(new float[][]{
-        {7.615941560e-01f, 9.640275801e-01f, 9.950547537e-01f},
-        {9.993292997e-01f, 9.999092043e-01f, 9.999877117e-01f}});
-    this.expectedDerivative = matrixFactory.create(new float[][]{
-        {4.199743416e-01f, 7.065082485e-02f, 9.866037165e-03f},
-        {1.340950683e-03f, 1.815832309e-04f, 2.457654741e-05f}});
+    final int numInput = 3;
+    final int numBatch = 2;
+    this.input = matrixFactory.create(new float[]{
+        1.0f, 2.0f, 3.0f,
+        4.0f, 5.0f, 6.0f},
+        numInput, numBatch);
+    this.expectedOutput = matrixFactory.create(new float[]{
+        7.615941560e-01f, 9.640275801e-01f, 9.950547537e-01f,
+        9.993292997e-01f, 9.999092043e-01f, 9.999877117e-01f},
+        numInput, numBatch);
+    this.expectedDerivative = matrixFactory.create(new float[]{
+        4.199743416e-01f, 7.065082485e-02f, 9.866037165e-03f,
+        1.340950683e-03f, 1.815832309e-04f, 2.457654741e-05f},
+        numInput, numBatch);
   }
 
   @Test
