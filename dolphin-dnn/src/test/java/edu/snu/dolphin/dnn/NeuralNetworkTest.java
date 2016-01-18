@@ -56,19 +56,21 @@ public final class NeuralNetworkTest {
     }
   }
 
-  private final Matrix input = matrixFactory.create(new float[]{77, 57, 30, 26, 75, 74, 87, 75});
+  private final Matrix input = matrixFactory.create(new float[]{77, 57, 30, 26, 75, 74, 87, 75}).transpose();
   private final Matrix expectedOutput =
-      matrixFactory.create(new float[]{5.61329743164e-01f, 5.97883503916e-01f, 4.79822915984e-01f});
-  private final Matrix label = matrixFactory.create(new float[]{0, 1, 0});
+      matrixFactory.create(new float[]{5.61329743164e-01f, 5.97883503916e-01f, 4.79822915984e-01f}).transpose();
+  private final Matrix label = matrixFactory.create(new float[]{0, 1, 0}).transpose();
   private final int numHiddenUnits = 5;
 
   private final Matrix[] expectedActivations = new Matrix[] {
       matrixFactory.create(new float[]{
-          -7.93876278605e-03f,  -3.31747899111e-02f, 3.44120437890e-02f, 1.59688640758e-02f, 1.38468652740e-02f}),
+          -7.93876278605e-03f,  -3.31747899111e-02f, 3.44120437890e-02f, 1.59688640758e-02f, 1.38468652740e-02f})
+          .transpose(),
       matrixFactory.create(new float[]{
-          4.98015319727e-01f, 4.91707063086e-01f, 5.08602162082e-01f, 5.03992131185e-01f, 5.03461661008e-01f}),
+          4.98015319727e-01f, 4.91707063086e-01f, 5.08602162082e-01f, 5.03992131185e-01f, 5.03461661008e-01f})
+          .transpose(),
       matrixFactory.create(new float[]{
-          2.46560502863e-01f, 3.96654087576e-01f, -8.07521889872e-02f}),
+          2.46560502863e-01f, 3.96654087576e-01f, -8.07521889872e-02f}).transpose(),
       expectedOutput};
 
   private final Configuration neuralNetworkConfiguration = NeuralNetworkConfigurationBuilder.newConfigurationBuilder()
@@ -107,10 +109,12 @@ public final class NeuralNetworkTest {
 
   private final Matrix[] expectedErrors = new Matrix[] {
       matrixFactory.create(new float[]{
-          -8.30651912736e-03f, -4.80258488777e-02f, 1.07207504661e-02f, 1.48007835060e-02f, -9.54255943309e-02f}),
+          -8.30651912736e-03f, -4.80258488777e-02f, 1.07207504661e-02f, 1.48007835060e-02f, -9.54255943309e-02f})
+          .transpose(),
       matrixFactory.create(new float[]{
-          -3.32266000219e-02f, -1.92156256008e-01f, 4.28956985094e-02f, 5.92069083725e-02f, -3.81720674107e-01f}),
-      matrixFactory.create(new float[]{5.61329743164e-01f, -4.02116496084e-01f, 4.79822915984e-01f})};
+          -3.32266000219e-02f, -1.92156256008e-01f, 4.28956985094e-02f, 5.92069083725e-02f, -3.81720674107e-01f})
+          .transpose(),
+      matrixFactory.create(new float[]{5.61329743164e-01f, -4.02116496084e-01f, 4.79822915984e-01f}).transpose()};
 
   private final LayerParameter[] expectedParams = new LayerParameter[]{
       LayerParameter.newBuilder()
@@ -124,7 +128,8 @@ public final class NeuralNetworkTest {
               {7.27458344572e-03f, 4.14693921910e-02f, -9.24880154366e-03f, -1.29832496649e-02f, 8.30297472805e-02f},
               {6.22864791469e-03f, 3.59129885050e-02f, -7.93995969825e-03f, -1.10342586510e-02f, 7.16121329971e-02f}}))
           .setBiasParam(matrixFactory.create(new float[]{
-              2.83065191274e-04f, 6.80258488777e-04f, 9.27924953390e-05f, 5.19921649397e-05f, 1.15425594331e-03f}))
+              2.83065191274e-04f, 6.80258488777e-04f, 9.27924953390e-05f, 5.19921649397e-05f, 1.15425594331e-03f})
+              .transpose())
           .build(),
       emptyLayerParam, // sigmoid activation layer
       LayerParameter.newBuilder()
@@ -134,7 +139,8 @@ public final class NeuralNetworkTest {
               {6.29037997313e-02f, -4.37688459799e-04f, 7.94878703128e-03f},
               {2.45057981449e-01f, 1.11668795437e-01f, -7.71344562636e-02f},
               {-1.32025024617e-01f, 2.37492346105e-02f, -6.28608389523e-01f}}))
-          .setBiasParam(matrixFactory.create(new float[]{2.94386702568e-01f, 3.04021164961e-01f, 2.95201770840e-01f}))
+          .setBiasParam(matrixFactory.create(new float[]{2.94386702568e-01f, 3.04021164961e-01f, 2.95201770840e-01f})
+              .transpose())
           .build(),
       emptyLayerParam}; // sigmoid activation layer
 
@@ -277,7 +283,8 @@ public final class NeuralNetworkTest {
               {1.32143923438e-02f, 7.38994773632e-03f, -4.60051170392e-03f, -1.76606577354e-02f, 1.38018655878e-02f},
               {4.93842304532e-03f, 9.21118247783e-03f, -2.92447609099e-03f, -8.33124861590e-03f, 2.09370626562e-02f}}))
           .setBiasParam(matrixFactory.create(new float[]{
-              2.83460933506e-04f, 2.67492680069e-04f, 1.60384729616e-04f, 1.36638863018e-05f, 4.88896313408e-04f}))
+              2.83460933506e-04f, 2.67492680069e-04f, 1.60384729616e-04f, 1.36638863018e-05f, 4.88896313408e-04f})
+              .transpose())
           .build(),
       emptyLayerParam, // sigmoid activation layer
       LayerParameter.newBuilder()
@@ -287,7 +294,8 @@ public final class NeuralNetworkTest {
               {6.45986834694e-02f, -3.79691247050e-03f, 9.64634547967e-03f},
               {2.46749910214e-01f, 1.08310496669e-01f, -7.54667251949e-02f},
               {-1.30342513562e-01f, 2.04075111228e-02f, -6.26933879715e-01f}}))
-          .setBiasParam(matrixFactory.create(new float[]{2.97721494666e-01f, 2.97353940683e-01f, 2.98532802849e-01f}))
+          .setBiasParam(matrixFactory.create(new float[]{2.97721494666e-01f, 2.97353940683e-01f, 2.98532802849e-01f})
+              .transpose())
           .build(),
       emptyLayerParam}; // sigmoid activation layer
 

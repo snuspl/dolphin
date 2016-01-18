@@ -36,7 +36,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix create(final int length) {
-    return new MatrixJBLASImpl(new FloatMatrix(1, length));
+    return new MatrixJBLASImpl(new FloatMatrix(length));
   }
 
   @Override
@@ -46,7 +46,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix create(final float[] data) {
-    return new MatrixJBLASImpl(new FloatMatrix(1, data.length, data));
+    return new MatrixJBLASImpl(new FloatMatrix(data));
   }
 
   @Override
@@ -61,7 +61,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix ones(final int length) {
-    return new MatrixJBLASImpl(FloatMatrix.ones(1, length));
+    return new MatrixJBLASImpl(FloatMatrix.ones(length));
   }
 
   @Override
@@ -71,7 +71,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix zeros(final int length) {
-    return new MatrixJBLASImpl(FloatMatrix.zeros(1, length));
+    return new MatrixJBLASImpl(FloatMatrix.zeros(length));
   }
 
   @Override
@@ -81,7 +81,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix rand(final int length) {
-    return rand(1, length);
+    return rand(length);
   }
 
   @Override
@@ -104,7 +104,7 @@ public final class MatrixJBLASFactory implements MatrixFactory {
 
   @Override
   public Matrix randn(final int length) {
-    return randn(1, length);
+    return randn(length);
   }
 
   @Override

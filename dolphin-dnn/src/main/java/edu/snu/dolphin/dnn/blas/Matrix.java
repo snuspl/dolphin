@@ -38,7 +38,7 @@ public interface Matrix {
   float get(int index);
 
   /**
-   * Returns a row vector in which elements are specified by the given linear indices.
+   * Returns a column vector in which elements are specified by the given linear indices.
    * The modification on the returned vector does not affect this matrix.
    */
   Matrix get(int[] indices);

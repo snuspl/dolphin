@@ -79,23 +79,23 @@ public final class MatrixUtils {
     final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     String line;
     final List<float[]> dataList = new ArrayList<>();
-    int numColumns = -1;
+    int numRows = -1;
     final Matrix ret;
     while ((line = reader.readLine()) != null) {
       final String[] data = line.trim().split(delimiter);
-      if (numColumns < 0) {
-        numColumns = data.length;
+      if (numRows < 0) {
+        numRows = data.length;
       } else {
-        if (data.length != numColumns) {
-          throw new RuntimeException("Data has inconsistent number of columns");
+        if (data.length != numRows) {
+          throw new RuntimeException("Data has inconsistent length");
         }
       }
       dataList.add(readSplit(data));
     }
 
-    ret = matrixFactory.create(dataList.size(), numColumns);
+    ret = matrixFactory.create(numRows, dataList.size());
     for (int i = 0; i < dataList.size(); i++) {
-      ret.putRow(i, matrixFactory.create(dataList.get(i)));
+      ret.putColumn(i, matrixFactory.create(dataList.get(i)));
     }
     return ret;
   }
@@ -123,28 +123,29 @@ public final class MatrixUtils {
   }
 
   /**
-   * Creates a row vector in which only element at the specified position is {@code 1} and other elements are {@code 0}.
+   * Creates a column vector in which only element at the specified position is {@code 1}
+   * and other elements are {@code 0}.
    *
    * @param matrixFactory a matrix factory used to create a matrix
    * @param index an index of the element to be set to {@code}
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   public static Matrix createOutputVector(final MatrixFactory matrixFactory, final int index, final int length) {
     return matrixFactory.zeros(length).put(index, 1.0f);
   }
 
   /**
-   * Creates a matrix of which each row is a one-hot vector specified by each element of the given indices array.
+   * Creates a matrix of which each column is an one-hot vector specified by each element of the given indices array.
    * @param matrixFactory a matrix factory used to create a matrix
    * @param indices the array of indices that indicate the one-hot positions
-   * @param length the length of each row vector, in other words, the number of columns of the return matrix
+   * @param length the length of each column vector, in other words, the number of rows of the return matrix
    * @return the generated matrix
    */
   public static Matrix createOutputMatrix(final MatrixFactory matrixFactory, final int[] indices, final int length) {
-    final Matrix ret = matrixFactory.zeros(indices.length, length);
+    final Matrix ret = matrixFactory.zeros(length, indices.length);
     for (int i = 0; i < indices.length; ++i) {
-      ret.put(i, indices[i], 1.0f);
+      ret.put(indices[i], i, 1.0f);
     }
     return ret;
   }

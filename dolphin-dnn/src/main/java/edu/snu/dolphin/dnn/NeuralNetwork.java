@@ -120,7 +120,7 @@ public final class NeuralNetwork {
    */
   public void train(final Matrix input, final int[] labels) {
     final Matrix labelMatrix = createOutputMatrix(
-        matrixFactory, labels, getShapeLength(layers[layers.length - 1].getOutputShape()));
+        matrixFactory, labels, getShapeLength(layers[layers.length - 1].getOutputShape())).transpose();
     train(input, labelMatrix);
   }
 
