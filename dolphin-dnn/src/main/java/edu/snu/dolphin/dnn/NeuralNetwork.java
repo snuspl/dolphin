@@ -37,6 +37,9 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.deserializeLayerConfSe
 
 /**
  * Neural network model.
+ *
+ * The input matrix for the neural network model is a collection of input instances.
+ * Each column of the matrix represents each input instance.
  */
 public final class NeuralNetwork {
 
@@ -103,7 +106,7 @@ public final class NeuralNetwork {
     final Matrix[] errors = backPropagate(activations, label);
     final LayerParameter[] parameterGradients = generateParameterGradients(activations, errors);
 
-    parameterProvider.push(input.getRows(), parameterGradients);
+    parameterProvider.push(input.getColumns(), parameterGradients);
 
     final LayerParameter[] updatedParameters = parameterProvider.pull();
     for (int i = 0; i < layers.length; ++i) {
@@ -120,7 +123,7 @@ public final class NeuralNetwork {
    */
   public void train(final Matrix input, final int[] labels) {
     final Matrix labelMatrix = createOutputMatrix(
-        matrixFactory, labels, getShapeLength(layers[layers.length - 1].getOutputShape())).transpose();
+        matrixFactory, labels, getShapeLength(layers[layers.length - 1].getOutputShape()));
     train(input, labelMatrix);
   }
 

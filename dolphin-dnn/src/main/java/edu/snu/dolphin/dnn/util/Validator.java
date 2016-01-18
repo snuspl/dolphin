@@ -35,8 +35,8 @@ public final class Validator {
     final Matrix[] activations = network.feedForward(input);
     final Matrix outputMatrix = activations[activations.length - 1];
 
-    for (int i = 0; i < outputMatrix.getRows(); ++i) {
-      final Matrix output = outputMatrix.getRow(i);
+    for (int i = 0; i < outputMatrix.getColumns(); ++i) {
+      final Matrix output = outputMatrix.getColumn(i);
       float maxValue = output.get(0);
 
       // Find the index with highest probability.

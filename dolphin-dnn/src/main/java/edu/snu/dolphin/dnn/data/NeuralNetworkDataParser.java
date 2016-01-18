@@ -201,7 +201,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
         for (final Matrix vector : inputs) {
           ret.putColumn(i++, vector);
         }
-        return ret.transpose();
+        return ret;
       } else {
         throw new IllegalArgumentException("At least one input is needed to make batch");
       }

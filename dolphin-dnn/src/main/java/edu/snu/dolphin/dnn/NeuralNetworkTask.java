@@ -86,7 +86,7 @@ public final class NeuralNetworkTask implements Task {
       final int[] labels = data.getFirst().getSecond();
       final boolean isValidation = data.getSecond();
 
-      if (input.getRows() != labels.length) {
+      if (input.getColumns() != labels.length) {
         throw new RuntimeException("The number of inputs is not equal to the number of labels");
       }
 

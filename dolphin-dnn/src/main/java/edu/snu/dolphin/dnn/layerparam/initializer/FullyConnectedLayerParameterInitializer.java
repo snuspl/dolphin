@@ -63,8 +63,8 @@ public final class FullyConnectedLayerParameterInitializer implements LayerParam
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateInitialParameter() {
-    final Matrix weight = matrixFactory.randn(numInput, numOutput, randomSeed);
-    final Matrix bias = matrixFactory.create(1, numOutput).fill(initBias);
+    final Matrix weight = matrixFactory.randn(numOutput, numInput, randomSeed);
+    final Matrix bias = matrixFactory.create(numOutput).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
 
