@@ -204,7 +204,7 @@ public final class NeuralNetworkTest {
     assertTrue(compare(expectedParams, localNeuralNetParameterProvider.pull(), TOLERANCE));
   }
 
-  private static final int numBatch = 3;
+  private final int numBatch = 3;
 
   private final Matrix batchInput = matrixFactory.create(new float[]{
       77, 57, 30, 26, 75, 74, 87, 75,
