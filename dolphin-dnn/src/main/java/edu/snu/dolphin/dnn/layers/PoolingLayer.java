@@ -42,7 +42,8 @@ public final class PoolingLayer extends LayerBase {
   }
   private final int[] outputShape;
   private PType poolingType;
-  private int stride;
+  private int strideHeight;
+  private int strideWidth;
   private int kernelHeight;
   private int kernelWidth;
   private Matrix trackMatrix;
@@ -52,13 +53,15 @@ public final class PoolingLayer extends LayerBase {
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
                        @Parameter(LayerInputShape.class) final String inputShape,
                        @Parameter(PoolingType.class) final String poolingType,
-                       @Parameter(Stride.class) final int stride,
+                       @Parameter(StrideHeight.class) final int strideHeight,
+                       @Parameter(StrideWidth.class) final int strideWidth,
                        @Parameter(KernelHeight.class) final int kernelHeight,
                        @Parameter(KernelWidth.class) final int kernelWidth,
                        final LayerParameterInitializer layerParameterInitializer) {
     super(index, inputShape);
     this.outputShape = setOutputShape();
-    this.stride = stride;
+    this.strideHeight = strideHeight;
+    this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
 
@@ -89,12 +92,12 @@ public final class PoolingLayer extends LayerBase {
     switch (inputShape.length) {
     case 1 :
       computedShape = new int[1];
-      computedShape[0] = (inputShape[0] - kernelHeight) / stride + 1;
+      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       return computedShape;
     case 2 :
       computedShape = new int[2];
-      computedShape[0] = (inputShape[0] - kernelHeight) / stride + 1;
-      computedShape[1] = (inputShape[1] - kernelWidth) / stride + 1;
+      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
+      computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
       return computedShape;
     default :
       throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
