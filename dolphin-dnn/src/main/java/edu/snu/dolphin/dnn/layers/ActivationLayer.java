@@ -34,9 +34,9 @@ public final class ActivationLayer extends LayerBase {
   private final Function activationFunction;
 
   @Inject
-  public ActivationLayer(@Parameter(LayerIndex.class) final int index,
-                         @Parameter(LayerInputShape.class) final String inputShape,
-                         @Parameter(ActivationFunction.class) final String activationFunction) {
+  private ActivationLayer(@Parameter(LayerIndex.class) final int index,
+                          @Parameter(LayerInputShape.class) final String inputShape,
+                          @Parameter(ActivationFunction.class) final String activationFunction) {
     super(index, inputShape);
     this.activationFunction = FunctionFactory.getSingleInstance(activationFunction);
   }
