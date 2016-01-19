@@ -47,8 +47,13 @@ public abstract class PoolingLayer extends LayerBase {
                       @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape,
                       final LayerParameterInitializer layerParameterInitializer) {
     super(index, inputShape);
-    this.outputShape = getOutputShape();
+    this.outputShape = setOutputShape();
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
+  }
+
+  @Override
+  public int[] getOutputShape() {
+    return outputShape;
   }
 
   /**
@@ -59,8 +64,7 @@ public abstract class PoolingLayer extends LayerBase {
    * col = (col − kernal_width) / stride + 1
    */
 
-  @Override
-  public int[] getOutputShape() {
+  public int[] setOutputShape() {
     final int[] inputShape = getInputShape();
     int[] computedShape;
     switch (inputShape.length) {
