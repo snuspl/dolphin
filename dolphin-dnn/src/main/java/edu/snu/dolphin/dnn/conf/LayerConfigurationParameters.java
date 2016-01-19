@@ -64,4 +64,23 @@ public final class LayerConfigurationParameters {
   @NamedParameter(doc = "loss function of loss layer", short_name = "lossFunc")
   public static final class LossFunction implements Name<String> {
   }
+
+  /**
+   * For pooling layers.
+   */
+  @NamedParameter(doc = "pooling type of pooling layer", short_name = "poolingTyp")
+  public static final class PoolingType implements Name<String> {
+  }
+
+  @NamedParameter(doc = "stride of pooling / convolutional layer", short_name = "stride")
+  public static final class Stride implements Name<Integer> {
+  }
+
+  @NamedParameter(doc = "kernel height of pooling / convolutional layer", short_name = "height")
+  public static final class KernelHeight implements Name<Integer> {
+  }
+
+  @NamedParameter(doc = "kernal width of pooling / convolutional layer", short_name = "width")
+  public static final class KernelWidth implements Name<Integer> {
+  }
 }
