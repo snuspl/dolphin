@@ -24,6 +24,10 @@ import edu.snu.dolphin.dnn.blas.MatrixFactory;
 public final class LayerParameter {
   private final Matrix weightParam;
   private final Matrix biasParam;
+  private final String poolingType;
+  private final int stride;
+  private final int kernalHeight;
+  private final int kernalWidth;
 
   /**
    * Generates a new instance of a layer parameter.
@@ -31,7 +35,7 @@ public final class LayerParameter {
    * @return the generated empty layer parameter
    */
   public static LayerParameter newEmptyInstance(final MatrixFactory matrixFactory) {
-    return new LayerParameter(matrixFactory.create(0), matrixFactory.create(0));
+    return new LayerParameter(matrixFactory.create(0), matrixFactory.create(0), null, 0, 0, 0);
   }
 
   /**
@@ -55,9 +59,29 @@ public final class LayerParameter {
     return biasParam;
   }
 
+  public String getPoolingType() {
+    return poolingType;
+  }
+
+  public int getStride() {
+    return stride;
+  }
+
+  public int getKernalHeight() {
+    return kernalHeight;
+  }
+
+  public int getKernalWidth() {
+    return kernalWidth;
+  }
+
   public static final class Builder implements org.apache.reef.util.Builder<LayerParameter> {
     private Matrix weightParam;
     private Matrix biasParam;
+    private String poolingType;
+    private int stride;
+    private int kernalHeight;
+    private int kernalWidth;
 
     public Builder setWeightParam(final Matrix weightParam) {
       this.weightParam = weightParam;
@@ -69,21 +93,52 @@ public final class LayerParameter {
       return this;
     }
 
+    public Builder setPoolingType(final String poolingType) {
+      this.poolingType = poolingType;
+      return this;
+    }
+
+    public Builder setStride(final int stride) {
+      this.stride = stride;
+      return this;
+    }
+
+    public Builder setKernalHeight(final int kernalHeight) {
+      this.kernalHeight = kernalHeight;
+      return this;
+    }
+
+    public Builder setKernalWidth(final int kernalWidth) {
+      this.kernalWidth = kernalWidth;
+      return this;
+    }
+
     @Override
     public LayerParameter build() {
-      return new LayerParameter(this.weightParam, this.biasParam);
+      return new LayerParameter(this.weightParam, this.biasParam,
+          this.poolingType, this.stride, this.kernalHeight, this.kernalWidth);
     }
   }
 
   private LayerParameter(final Matrix weightParam,
-                         final Matrix biasParam) {
+                         final Matrix biasParam,
+                         final String poolingType,
+                         final int stride,
+                         final int kernalHeight,
+                         final int kernalWidth) {
     this.weightParam = weightParam;
     this.biasParam = biasParam;
+    this.poolingType = poolingType;
+    this.stride = stride;
+    this.kernalHeight = kernalHeight;
+    this.kernalWidth = kernalWidth;
   }
 
   @Override
   public String toString() {
-    return "weight: " + weightParam.toString() + ", bias: " + biasParam.toString();
+    return "weight: " + weightParam.toString() + ", bias: " + biasParam.toString()
+        + ", pooling type: " + poolingType + ", stride: " + Integer.toString(stride)
+        + ", kernal height: " + Integer.toString(kernalHeight) + ", kernal width: " + Integer.toString(kernalWidth);
   }
 
   @Override
@@ -93,13 +148,21 @@ public final class LayerParameter {
     }
 
     final LayerParameter other = (LayerParameter)obj;
-    return weightParam.equals(other.weightParam) && biasParam.equals(other.biasParam);
+    return weightParam.equals(other.weightParam) && biasParam.equals(other.biasParam)
+        && poolingType.equals(other.poolingType) && this.stride == other.stride
+        && this.kernalHeight == other.kernalHeight && this.kernalWidth == other.kernalWidth;
   }
 
   @Override
   public int hashCode() {
     final int weightParamHashCode = weightParam == null ? 0 : weightParam.hashCode();
     final int biasParamHashCode = biasParam == null ? 0 : biasParam.hashCode();
-    return weightParamHashCode * 31 + biasParamHashCode;
+    final int poolingTypeHashCode = poolingType == null ? 0 : poolingType.hashCode();
+    final int strideHashCode = stride;
+    final int kernalHeightHashCode = kernalHeight;
+    final int kernalWidthHashCode = kernalWidth;
+    return strideHashCode * (int) Math.pow(31, 5) + kernalHeightHashCode * (int) Math.pow(31, 4) +
+        kernalWidthHashCode * (int) Math.pow(31, 3) + poolingTypeHashCode * (int) Math.pow(31, 2) +
+        weightParamHashCode * 31 + biasParamHashCode;
   }
 }
