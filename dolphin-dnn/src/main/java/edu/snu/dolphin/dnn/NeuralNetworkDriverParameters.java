@@ -26,7 +26,6 @@ import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterServerParameterProvider;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.proto.NeuralNetworkProtos.*;
 import edu.snu.dolphin.bsp.parameters.OnLocal;
 import org.apache.hadoop.fs.FileSystem;
