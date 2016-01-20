@@ -45,6 +45,7 @@ message LayerConfiguration {
   optional FullyConnectedLayerConfiguration fully_connected_param = 2;
   optional ActivationLayerConfiguration activation_param = 3;
   optional ActivationWithLossLayerConfiguration activation_with_loss_param = 4;
+  optional PoolingLayerConfiguration pooling_param = 5;
 }
 
 message ParameterProviderConfiguration {
