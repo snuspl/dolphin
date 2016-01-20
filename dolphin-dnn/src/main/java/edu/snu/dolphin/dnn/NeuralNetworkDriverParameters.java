@@ -20,15 +20,13 @@ import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater.LogPeriod;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.blas.jblas.MatrixJBLASFactory;
-import edu.snu.dolphin.dnn.conf.ActivationLayerConfigurationBuilder;
-import edu.snu.dolphin.dnn.conf.ActivationWithLossLayerConfigurationBuilder;
-import edu.snu.dolphin.dnn.conf.FullyConnectedLayerConfigurationBuilder;
-import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
+import edu.snu.dolphin.dnn.conf.*;
 import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.BatchSize;
 import edu.snu.dolphin.dnn.layerparam.provider.GroupCommParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.LocalNeuralNetParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterProvider;
 import edu.snu.dolphin.dnn.layerparam.provider.ParameterServerParameterProvider;
+import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationBuilder;
 import edu.snu.dolphin.dnn.proto.NeuralNetworkProtos.*;
 import edu.snu.dolphin.bsp.parameters.OnLocal;
 import org.apache.hadoop.fs.FileSystem;
@@ -160,6 +158,9 @@ public final class NeuralNetworkDriverParameters {
           .fromProtoConfiguration(layerConf).build();
     case "activationwithloss":
       return ActivationWithLossLayerConfigurationBuilder.newConfigurationBuilder()
+          .fromProtoConfiguration(layerConf).build();
+    case "pooling":
+      return PoolingLayerConfigurationBuilder.newConfigurationBuilder()
           .fromProtoConfiguration(layerConf).build();
     default:
       throw new IllegalArgumentException("Illegal layer type: " + layerConf.getType());
