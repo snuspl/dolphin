@@ -55,11 +55,11 @@ public final class PoolingLayer extends LayerBase {
                        @Parameter(KernelHeight.class) final int kernelHeight,
                        @Parameter(KernelWidth.class) final int kernelWidth) {
     super(index, inputShape);
-    this.outputShape = computeOutputShape();
     this.strideHeight = strideHeight;
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
+    this.outputShape = computeOutputShape();
 
     try {
       this.poolingType = PoolType.valueOf(poolingType);
@@ -87,16 +87,16 @@ public final class PoolingLayer extends LayerBase {
     final int[] inputShape = getInputShape();
     final int[] computedShape;
     switch (inputShape.length) {
-    case 1 :
+    case 1:
       computedShape = new int[1];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       return computedShape;
-    case 2 :
+    case 2:
       computedShape = new int[2];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
       return computedShape;
-    default :
+    default:
       throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
     }
   }
@@ -124,11 +124,11 @@ public final class PoolingLayer extends LayerBase {
   @Override
   public Matrix feedForward(final Matrix input) {
     switch (poolingType) {
-    case MAX :
+    case MAX:
       return feedForwardMaxPooling(input);
-    case AVERAGE :
+    case AVERAGE:
       return feedForwardAveragePooling(input);
-    default :
+    default:
       throw new IllegalArgumentException("Illegal pooling type: " + poolingType);
     }
   }
@@ -152,11 +152,11 @@ public final class PoolingLayer extends LayerBase {
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
     switch (poolingType) {
-    case MAX :
+    case MAX:
       return backPropagateMaxPooling(input, nextError);
-    case AVERAGE :
+    case AVERAGE:
       return backPropagateAveragePooling(input, nextError);
-    default :
+    default:
       throw new IllegalArgumentException("Illegal pooling type: " + poolingType);
     }
   }
