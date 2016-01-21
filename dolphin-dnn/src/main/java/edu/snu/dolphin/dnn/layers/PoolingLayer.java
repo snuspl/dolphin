@@ -16,9 +16,7 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.blas.function.Function;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
-import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -28,26 +26,25 @@ import javax.inject.Inject;
  *
  * This layer is not learnable.
  * This layer resizes input matrix spatially, using max pooling or average pooling.
+ * This layer works for only 1D and 2D inputs.
  * In a forward pass,
- * max pooling picks maximum value in certain range (kernelHeight * kernelWidth) and these values make up output.
- * Average pooling gets average of values in certain range (kernelHeight * kernelWidth) and these values make up output.
+ * max pooling picks the maximum value in certain range (kernelHeight * kernelWidth) and these values make up output.
+ * Average pooling gets the average of values in certain range (kernelHeight * kernelWidth)
+ * and these values make up output.
  * In a backward pass,
- * each value of error matrix is the sum of elements in next error matrix
- * on which had an impact in feedforward step.
+ * each value of error matrix is the sum of elements in next error matrix on which had an impact in feedforward step.
  */
 public final class PoolingLayer extends LayerBase {
 
-  private enum PType {
-    average, max
+  private enum PoolType {
+    AVERAGE, MAX
   }
   private final int[] outputShape;
-  private PType poolingType;
+  private PoolType poolingType;
   private int strideHeight;
   private int strideWidth;
   private int kernelHeight;
   private int kernelWidth;
-  private Matrix trackMatrix;
-  private Function poolingFunctions;
 
   @Inject
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
@@ -56,17 +53,16 @@ public final class PoolingLayer extends LayerBase {
                        @Parameter(StrideHeight.class) final int strideHeight,
                        @Parameter(StrideWidth.class) final int strideWidth,
                        @Parameter(KernelHeight.class) final int kernelHeight,
-                       @Parameter(KernelWidth.class) final int kernelWidth,
-                       final LayerParameterInitializer layerParameterInitializer) {
+                       @Parameter(KernelWidth.class) final int kernelWidth) {
     super(index, inputShape);
-    this.outputShape = setOutputShape();
+    this.outputShape = computeOutputShape();
     this.strideHeight = strideHeight;
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
 
     try {
-      this.poolingType = PType.valueOf(poolingType);
+      this.poolingType = PoolType.valueOf(poolingType);
     } catch (final IllegalArgumentException illegalArgumentException) {
       throw new IllegalArgumentException("Illegal pooling type: " + illegalArgumentException);
     } catch (final NullPointerException nullPointerException) {
@@ -83,10 +79,11 @@ public final class PoolingLayer extends LayerBase {
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
-   * row = (row − kernelHeight) / stride + 1
-   * col = (col − kernelWidth) / stride + 1
+   * row' = (row − kernelHeight) / stride + 1
+   * col' = (col − kernelWidth) / stride + 1
+   * @return shape of output
    */
-  private int[] setOutputShape() {
+  private int[] computeOutputShape() {
     final int[] inputShape = getInputShape();
     final int[] computedShape;
     switch (inputShape.length) {
@@ -125,11 +122,11 @@ public final class PoolingLayer extends LayerBase {
    * @return output values for this layer.
    */
   @Override
-  public  Matrix feedForward(final Matrix input) {
+  public Matrix feedForward(final Matrix input) {
     switch (poolingType) {
-    case max :
+    case MAX :
       return feedForwardMaxPooling(input);
-    case average :
+    case AVERAGE :
       return feedForwardAveragePooling(input);
     default :
       throw new IllegalArgumentException("Illegal pooling type: " + poolingType);
@@ -155,9 +152,9 @@ public final class PoolingLayer extends LayerBase {
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
     switch (poolingType) {
-    case max :
+    case MAX :
       return backPropagateMaxPooling(input, nextError);
-    case average :
+    case AVERAGE :
       return backPropagateAveragePooling(input, nextError);
     default :
       throw new IllegalArgumentException("Illegal pooling type: " + poolingType);
@@ -167,6 +164,6 @@ public final class PoolingLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    throw new RuntimeException("This layer doesn't have parameter gradient");
+    throw new RuntimeException("This layer is not learnable");
   }
 }

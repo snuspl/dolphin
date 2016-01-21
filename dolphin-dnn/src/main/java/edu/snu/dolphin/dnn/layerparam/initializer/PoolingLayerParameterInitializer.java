@@ -27,12 +27,13 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
 /**
  * Pooling Layer parameter initializer.
  *
- * This initializer is for pooling layer which do not have layer parameter.
+ * This initializer is for pooling layers which do not have layer parameters.
  */
 public final class PoolingLayerParameterInitializer implements LayerParameterInitializer {
 
   private final int index;
   private final int[] inputShape;
+  private final int[] outputShape;
   private final int strideHeight;
   private final int strideWidth;
   private final int kernelHeight;
@@ -40,7 +41,7 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
   private final LayerParameter emptyLayerParam;
 
   @Inject
-  public PoolingLayerParameterInitializer(
+  private PoolingLayerParameterInitializer(
       final MatrixFactory matrixFactory,
       @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
       @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape,
@@ -54,6 +55,7 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
+    this.outputShape = computeOutputShape();
     this.emptyLayerParam = LayerParameter.newEmptyInstance(matrixFactory);
   }
 
@@ -75,24 +77,32 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
-   * row = (row − kernelHeight) / stride + 1
-   * col = (col − kernelWidth) / stride + 1
+   * row' = (row − kernelHeight) / stride + 1
+   * col' = (col − kernelWidth) / stride + 1
+   * @return shape of output
    */
-  @Override
-  public int[] getOutputShape() {
+  private int[] computeOutputShape() {
     final int[] computedShape;
     switch (inputShape.length) {
-    case 1 :
+    case 1:
       computedShape = new int[1];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       return computedShape;
-    case 2 :
+    case 2:
       computedShape = new int[2];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
       return computedShape;
-    default :
+    default:
       throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
     }
+  }
+
+  /**
+   * @return shape of output
+   */
+  @Override
+  public int[] getOutputShape() {
+    return outputShape;
   }
 }
