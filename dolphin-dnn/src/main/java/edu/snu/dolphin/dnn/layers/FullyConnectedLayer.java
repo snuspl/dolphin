@@ -34,9 +34,9 @@ public final class FullyConnectedLayer extends LayerBase {
   private final int[] outputShape;
 
   @Inject
-  public FullyConnectedLayer(@Parameter(LayerIndex.class) final int index,
-                             @Parameter(LayerInputShape.class) final String inputShape,
-                             final LayerParameterInitializer layerParameterInitializer) {
+  private FullyConnectedLayer(@Parameter(LayerIndex.class) final int index,
+                              @Parameter(LayerInputShape.class) final String inputShape,
+                              final LayerParameterInitializer layerParameterInitializer) {
     super(index, inputShape);
     this.outputShape = layerParameterInitializer.getOutputShape();
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
@@ -61,8 +61,8 @@ public final class FullyConnectedLayer extends LayerBase {
    */
   @Override
   public Matrix feedForward(final Matrix input) {
-    // (output matrix) = (input matrix) x (weight matrix) + (bias row vector)
-    return input.mmul(getLayerParameter().getWeightParam()).addiRowVector(getLayerParameter().getBiasParam());
+    // (output matrix) = (weight matrix) x (input matrix) + (bias column vector)
+    return getLayerParameter().getWeightParam().mmul(input).addiColumnVector(getLayerParameter().getBiasParam());
   }
 
   /**
@@ -74,16 +74,16 @@ public final class FullyConnectedLayer extends LayerBase {
    */
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
-    // ((next error matrix) x (weight matrix of the next layer))
-    return nextError.mmul(getLayerParameter().getWeightParam().transpose());
+    // (error matrix) = (transposed weight matrix) x (next error matrix)
+    return getLayerParameter().getWeightParam().transpose().mmul(nextError);
   }
 
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
     return LayerParameter.newBuilder()
-        .setWeightParam(input.transpose().mmul(error))
-        .setBiasParam(error.columnSums())
+        .setWeightParam(error.mmul(input.transpose()))
+        .setBiasParam(error.rowSums())
         .build();
   }
 }

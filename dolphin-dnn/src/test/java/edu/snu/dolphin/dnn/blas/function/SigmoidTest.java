@@ -44,13 +44,20 @@ public final class SigmoidTest {
         .build();
     final MatrixFactory matrixFactory = Tang.Factory.getTang().newInjector(conf).getInstance(MatrixFactory.class);
 
-    this.input = matrixFactory.create(new float[][]{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}});
-    this.expectedOutput = matrixFactory.create(new float[][]{
-        {7.310585786e-01f, 8.807970780e-01f, 9.525741268e-01f},
-        {9.820137900e-01f, 9.933071491e-01f, 9.975273768e-01f}});
-    this.expectedDerivative = matrixFactory.create(new float[][]{
-        {1.966119332e-01f, 1.049935854e-01f, 4.517665973e-02f},
-        {1.766270621e-02f, 6.648056671e-03f, 2.466509291e-03f}});
+    final int numInput = 3;
+    final int numBatch = 2;
+    this.input = matrixFactory.create(new float[]{
+        1.0f, 2.0f, 3.0f,
+        4.0f, 5.0f, 6.0f},
+        numInput, numBatch);
+    this.expectedOutput = matrixFactory.create(new float[]{
+        7.310585786e-01f, 8.807970780e-01f, 9.525741268e-01f,
+        9.820137900e-01f, 9.933071491e-01f, 9.975273768e-01f},
+        numInput, numBatch);
+    this.expectedDerivative = matrixFactory.create(new float[]{
+        1.966119332e-01f, 1.049935854e-01f, 4.517665973e-02f,
+        1.766270621e-02f, 6.648056671e-03f, 2.466509291e-03f},
+        numInput, numBatch);
   }
 
   @Test

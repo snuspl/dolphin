@@ -20,6 +20,8 @@ import edu.snu.dolphin.dnn.blas.MatrixFunctions;
 
 /**
  * Softmax function.
+ *
+ * Assumes each column represents a single input instance.
  */
 final class Softmax implements Function {
 
@@ -36,12 +38,12 @@ final class Softmax implements Function {
    */
   @Override
   public Matrix applyi(final Matrix m) {
-    // subtract the maximum values of each row
-    m.subiColumnVector(m.rowMaxs());
+    // subtract the maximum values of each column
+    m.subiRowVector(m.columnMaxs());
     // exponentiation
     MatrixFunctions.expi(m);
-    // divide by the sum of each row
-    return m.diviColumnVector(m.rowSums());
+    // divide by the sum of each column
+    return m.diviRowVector(m.columnSums());
   }
 
   /**

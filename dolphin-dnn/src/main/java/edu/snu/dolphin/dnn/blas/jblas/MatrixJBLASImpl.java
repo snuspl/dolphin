@@ -46,9 +46,7 @@ final class MatrixJBLASImpl implements Matrix {
 
   @Override
   public Matrix get(final int[] indices) {
-    final FloatMatrix innerVector = jblasMatrix.get(indices); // a column vector
-    innerVector.reshape(1, innerVector.getLength()); // convert it to a row vector
-    return new MatrixJBLASImpl(innerVector);
+    return new MatrixJBLASImpl(jblasMatrix.get(indices));
   }
 
   @Override

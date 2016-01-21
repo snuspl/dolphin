@@ -44,13 +44,20 @@ public final class SoftmaxTest {
         .build();
     final MatrixFactory matrixFactory = Tang.Factory.getTang().newInjector(conf).getInstance(MatrixFactory.class);
 
-    this.input = matrixFactory.create(new float[][]{{1.0f, -2.0f, 3.0f}, {-4.0f, 5.0f, -6.0f}});
-    this.expectedOutput = matrixFactory.create(new float[][]{
-        {1.184996545e-01f, 5.899750402e-03f, 8.756005951e-01f},
-        {1.233925154e-04f, 9.998599081e-01f, 1.669936102e-05f}});
-    this.expectedDerivative = matrixFactory.create(new float[][]{
-        {1.044574864e-01f, 5.864943347e-03f, 1.089241930e-01f},
-        {1.233772897e-04f, 1.400722507e-04f, 1.669908215e-05f}});
+    final int numInput = 3;
+    final int numBatch = 2;
+    this.input = matrixFactory.create(new float[]{
+        1.0f, -2.0f, 3.0f,
+        -4.0f, 5.0f, -6.0f},
+        numInput, numBatch);
+    this.expectedOutput = matrixFactory.create(new float[]{
+        1.184996545e-01f, 5.899750402e-03f, 8.756005951e-01f,
+        1.233925154e-04f, 9.998599081e-01f, 1.669936102e-05f},
+        numInput, numBatch);
+    this.expectedDerivative = matrixFactory.create(new float[]{
+        1.044574864e-01f, 5.864943347e-03f, 1.089241930e-01f,
+        1.233772897e-04f, 1.400722507e-04f, 1.669908215e-05f},
+        numInput, numBatch);
   }
 
   @Test

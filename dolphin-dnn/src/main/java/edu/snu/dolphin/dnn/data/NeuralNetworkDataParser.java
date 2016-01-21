@@ -87,9 +87,9 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
       }
       try {
         final Matrix input = readNumpy(matrixFactory, new ByteArrayInputStream(text.getBytes()), delimiter);
-        final Matrix data = input.get(range(0, input.getColumns() - 2));
-        final int label = (int) input.get(input.getColumns() - 2);
-        final boolean isValidation = ((int) input.get(input.getColumns() - 1) == 1);
+        final Matrix data = input.get(range(0, input.getRows() - 2));
+        final int label = (int) input.get(input.getRows() - 2);
+        final boolean isValidation = ((int) input.get(input.getRows() - 1) == 1);
 
         if (isValidation) {
           validationBatchGenerator.push(data, label);
@@ -196,10 +196,10 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
      */
     private Matrix makeBatch(final List<Matrix> inputs) {
       if (inputs.size() > 0) {
-        final Matrix ret = matrixFactory.create(inputs.size(), inputs.get(0).getLength());
+        final Matrix ret = matrixFactory.create(inputs.get(0).getLength(), inputs.size());
         int i = 0;
         for (final Matrix vector : inputs) {
-          ret.putRow(i++, vector);
+          ret.putColumn(i++, vector);
         }
         return ret;
       } else {

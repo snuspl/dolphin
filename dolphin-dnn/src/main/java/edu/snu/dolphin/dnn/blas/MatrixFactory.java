@@ -21,9 +21,9 @@ package edu.snu.dolphin.dnn.blas;
 public interface MatrixFactory {
 
   /**
-   * Creates a row vector.
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * Creates a column vector.
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   Matrix create(int length);
 
@@ -36,9 +36,9 @@ public interface MatrixFactory {
   Matrix create(int rows, int columns);
 
   /**
-   * Creates a row vector with the given values.
-   * @param data elements of a row vector
-   * @return a generated row vector
+   * Creates a column vector with the given values.
+   * @param data elements of a column vector
+   * @return a generated column vector
    */
   Matrix create(float[] data);
 
@@ -60,9 +60,9 @@ public interface MatrixFactory {
   Matrix create(float[] data, int rows, int columns);
 
   /**
-   * Creates a row vector in which all elements are equal to {@code 1}.
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * Creates a column vector in which all elements are equal to {@code 1}.
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   Matrix ones(int length);
 
@@ -75,9 +75,9 @@ public interface MatrixFactory {
   Matrix ones(int rows, int columns);
 
   /**
-   * Creates a row vector in which all elements are equal to {@code 0}.
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * Creates a column vector in which all elements are equal to {@code 0}.
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   Matrix zeros(int length);
 
@@ -90,9 +90,9 @@ public interface MatrixFactory {
   Matrix zeros(int rows, int columns);
 
   /**
-   * Creates a row vector with random values uniformly distributed in 0..1.
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * Creates a column vector with random values uniformly distributed in 0..1.
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   Matrix rand(int length);
 
@@ -114,9 +114,9 @@ public interface MatrixFactory {
   Matrix rand(int rows, int columns, long seed);
 
   /**
-   * Creates a row vector containing normally distributed random values with mean 0.0 and standard deviation 1.0.
-   * @param length the length of a row vector
-   * @return a generated row vector
+   * Creates a column vector containing normally distributed random values with mean 0.0 and standard deviation 1.0.
+   * @param length the length of a column vector
+   * @return a generated column vector
    */
   Matrix randn(int length);
 
