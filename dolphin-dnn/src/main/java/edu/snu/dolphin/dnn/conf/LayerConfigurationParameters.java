@@ -68,7 +68,7 @@ public final class LayerConfigurationParameters {
   /**
    * For pooling layers.
    */
-  @NamedParameter(doc = "pooling type of pooling layer", short_name = "poolingTyp")
+  @NamedParameter(doc = "pooling type of pooling layer")
   public static final class PoolingType implements Name<String> {
   }
 
