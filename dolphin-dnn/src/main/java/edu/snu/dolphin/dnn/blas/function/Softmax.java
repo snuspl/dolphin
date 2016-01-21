@@ -21,7 +21,7 @@ import edu.snu.dolphin.dnn.blas.MatrixFunctions;
 /**
  * Softmax function.
  *
- * Assumes each column represents each input instance.
+ * Assumes each column represents a single input instance.
  */
 final class Softmax implements Function {
 

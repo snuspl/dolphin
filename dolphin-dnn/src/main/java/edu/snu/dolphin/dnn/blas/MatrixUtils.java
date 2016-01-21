@@ -123,7 +123,7 @@ public final class MatrixUtils {
   }
 
   /**
-   * Creates a column vector in which only element at the specified position is {@code 1}
+   * Creates a column vector in which the only element at the specified position is {@code 1}
    * and other elements are {@code 0}.
    *
    * @param matrixFactory a matrix factory used to create a matrix
@@ -136,7 +136,7 @@ public final class MatrixUtils {
   }
 
   /**
-   * Creates a matrix of which each column is an one-hot vector specified by each element of the given indices array.
+   * Creates a matrix of which each column is a one-hot vector specified by each element of the given indices array.
    * @param matrixFactory a matrix factory used to create a matrix
    * @param indices the array of indices that indicate the one-hot positions
    * @param length the length of each column vector, in other words, the number of rows of the return matrix
