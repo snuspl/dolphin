@@ -24,9 +24,9 @@ message FullyConnectedLayerConfiguration {
 }
 
 message PoolingLayerConfiguration {
-  required string pooling_type = 1;
-  required uint32 stride_height = 2;
-  required uint32 stride_width = 3;
+  optional string pooling_type = 1;
+  optional uint32 stride_height = 2;
+  optional uint32 stride_width = 3;
   required uint32 kernel_height = 4;
   required uint32 kernel_width = 5;
 }

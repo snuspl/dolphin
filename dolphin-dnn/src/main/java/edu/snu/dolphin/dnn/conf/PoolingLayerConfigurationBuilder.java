@@ -28,7 +28,7 @@ import org.apache.reef.util.Builder;
  * Configuration builder for Pooling layer.
  *
  * The configuration that this builder generates is used to create a pooling layer instance.
- * The generate configuration need to bind to bind the parameter for a layer input shape, to inject layer instance.
+ * The generate configuration need to bind the parameter for a layer input shape, to inject layer instance.
  */
 public final class PoolingLayerConfigurationBuilder implements Builder<Configuration> {
 
@@ -36,9 +36,9 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return new PoolingLayerConfigurationBuilder();
   }
 
-  private String poolingType;
-  private int strideHeight;
-  private int strideWidth;
+  private String poolingType = "MAX";
+  private int strideHeight = 1;
+  private int strideWidth = 1;
   private int kernelHeight;
   private int kernelWidth;
 
@@ -69,9 +69,15 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
 
   public synchronized PoolingLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    poolingType = protoConf.getPoolingParam().getPoolingType();
-    strideHeight = protoConf.getPoolingParam().getStrideHeight();
-    strideWidth = protoConf.getPoolingParam().getStrideWidth();
+    if (protoConf.getPoolingParam().hasPoolingType()) {
+      poolingType = protoConf.getPoolingParam().getPoolingType();
+    }
+    if (protoConf.getPoolingParam().hasStrideHeight()) {
+      strideHeight = protoConf.getPoolingParam().getStrideHeight();
+    }
+    if (protoConf.getPoolingParam().hasStrideWidth()) {
+      strideWidth = protoConf.getPoolingParam().getStrideWidth();
+    }
     kernelHeight = protoConf.getPoolingParam().getKernelHeight();
     kernelWidth = protoConf.getPoolingParam().getKernelWidth();
     return this;
@@ -80,7 +86,7 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   @Override
   public synchronized Configuration build() {
     return Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerConfigurationParameters.PoolingType.class, String.valueOf(poolingType))
+        .bindNamedParameter(LayerConfigurationParameters.PoolingType.class, poolingType)
         .bindNamedParameter(LayerConfigurationParameters.StrideHeight.class, String.valueOf(strideHeight))
         .bindNamedParameter(LayerConfigurationParameters.StrideWidth.class, String.valueOf(strideWidth))
         .bindNamedParameter(LayerConfigurationParameters.KernelHeight.class, String.valueOf(kernelHeight))
