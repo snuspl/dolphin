@@ -36,9 +36,9 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return new PoolingLayerConfigurationBuilder();
   }
 
-  private String poolingType = "MAX";
-  private int strideHeight = 1;
-  private int strideWidth = 1;
+  private String poolingType;
+  private int strideHeight;
+  private int strideWidth;
   private int kernelHeight;
   private int kernelWidth;
 
@@ -69,15 +69,9 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
 
   public synchronized PoolingLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    if (protoConf.getPoolingParam().hasPoolingType()) {
-      poolingType = protoConf.getPoolingParam().getPoolingType();
-    }
-    if (protoConf.getPoolingParam().hasStrideHeight()) {
-      strideHeight = protoConf.getPoolingParam().getStrideHeight();
-    }
-    if (protoConf.getPoolingParam().hasStrideWidth()) {
-      strideWidth = protoConf.getPoolingParam().getStrideWidth();
-    }
+    poolingType = protoConf.getPoolingParam().getPoolingType();
+    strideHeight = protoConf.getPoolingParam().getStrideHeight();
+    strideWidth = protoConf.getPoolingParam().getStrideWidth();
     kernelHeight = protoConf.getPoolingParam().getKernelHeight();
     kernelWidth = protoConf.getPoolingParam().getKernelWidth();
     return this;
