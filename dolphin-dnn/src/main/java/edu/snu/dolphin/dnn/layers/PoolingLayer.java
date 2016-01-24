@@ -32,7 +32,7 @@ import javax.inject.Inject;
  * Average pooling gets the average of values in certain range (kernelHeight * kernelWidth)
  * and these values make up output.
  * In a backward pass,
- * each value of error matrix is the sum of elements in next error matrix on which had an impact in feedforward step.
+ * error of each input pixel comes from errors of output pixels affected by the input pixel in feedforward step.
  */
 public final class PoolingLayer extends LayerBase {
 
@@ -40,11 +40,11 @@ public final class PoolingLayer extends LayerBase {
     AVERAGE, MAX
   }
   private final int[] outputShape;
-  private PoolType poolingType;
-  private int strideHeight;
-  private int strideWidth;
-  private int kernelHeight;
-  private int kernelWidth;
+  private final PoolType poolingType;
+  private final int strideHeight;
+  private final int strideWidth;
+  private final int kernelHeight;
+  private final int kernelWidth;
 
   @Inject
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
