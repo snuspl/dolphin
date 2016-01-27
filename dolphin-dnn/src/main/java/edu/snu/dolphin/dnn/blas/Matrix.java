@@ -33,7 +33,7 @@ public interface Matrix {
   int getColumns();
 
   /**
-   * Returns a element specified by the given index (linear indexing).
+   * Returns the element specified by the given index (linear indexing).
    */
   float get(int index);
 
@@ -44,7 +44,7 @@ public interface Matrix {
   Matrix get(int[] indices);
 
   /**
-   * Returns a element specified by the row and column indices.
+   * Returns the element specified by the row and column indices.
    */
   float get(int rowIndex, int columnIndex);
 
@@ -145,192 +145,192 @@ public interface Matrix {
   Matrix addi(float value);
 
   /**
-   * Element-wise adds a matrix.
+   * Adds a matrix, element-wise.
    */
   Matrix add(Matrix matrix);
 
   /**
-   * Element-wise Adds a matrix (in place).
+   * Adds a matrix, element-wise (in place).
    */
   Matrix addi(Matrix matrix);
 
   /**
-   * Element-wise adds a vector to all columns of the matrix.
+   * Adds a vector to all columns of the matrix. element-wise.
    */
   Matrix addColumnVector(Matrix vector);
 
   /**
-   * Element-wise adds a vector to all columns of the matrix (in place).
+   * Adds a vector to all columns of the matrix, element-wise (in place).
    */
   Matrix addiColumnVector(Matrix vector);
 
   /**
-   * Element-wise adds a vector to all rows of the matrix.
+   * Adds a vector to all rows of the matrix, element-wise.
    */
   Matrix addRowVector(Matrix vector);
 
   /**
-   * Element-wise adds a vector to all rows of the matrix (in place).
+   * Adds a vector to all rows of the matrix, element-wise (in place).
    */
   Matrix addiRowVector(Matrix vector);
 
   /**
-   * Subtracts a scalar to all elements.
+   * Subtracts a scalar from all elements.
    */
   Matrix sub(float value);
 
   /**
-   * Subtracts a scalar to all elements (in place).
+   * Subtracts a scalar from all elements (in place).
    */
   Matrix subi(float value);
 
   /**
-   * Element-wise subtracts a matrix.
+   * Subtracts a matrix, element-wise.
    */
   Matrix sub(Matrix matrix);
 
   /**
-   * Element-wise subtracts a matrix (in place).
+   * Subtracts a matrix, element-wise (in place).
    */
   Matrix subi(Matrix matrix);
 
   /**
-   * Element-wise subtracts a vector to all columns of the matrix.
+   * Subtracts a vector from all columns of the matrix, element-wise.
    */
   Matrix subColumnVector(Matrix vector);
 
   /**
-   * Element-wise subtracts a vector to all columns of the matrix (in place).
+   * Subtracts a vector from all columns of the matrix, element-wise (in place).
    */
   Matrix subiColumnVector(Matrix vector);
 
   /**
-   * Element-wise subtracts a vector to all rows of the matrix.
+   * Subtracts a vector from all rows of the matrix, element-wise.
    */
   Matrix subRowVector(Matrix vector);
 
   /**
-   * Element-wise subtracts a vector to all rows of the matrix (in place).
+   * Subtracts a vector from all rows of the matrix, element-wise (in place).
    */
   Matrix subiRowVector(Matrix vector);
 
   /**
-   * Element-wise (right-)subtracts a scalar to all elements.
+   * Subtracts all elements from a scalar.
    */
   Matrix rsub(float value);
 
   /**
-   * Element-wise (right-)subtracts a scalar to all elements (in place).
+   * Subtracts all elements from a scalar (in place).
    */
   Matrix rsubi(float value);
 
   /**
-   * Element-wise (right-)subtracts a matrix.
+   * Subtracts from a matrix, element-wise.
    */
   Matrix rsub(Matrix matrix);
 
   /**
-   * Element-wise (right-)subtracts a matrix (in place).
+   * Subtracts from a matrix, element-wise (in place).
    */
   Matrix rsubi(Matrix matrix);
 
   /**
-   * Multiplies a scalar to all elements.
+   * Multiplies all elements by a scalar.
    */
   Matrix mul(float value);
 
   /**
-   * Multiplies a scalar to all elements (in place).
+   * Multiplies all elements by a scalar (in place).
    */
   Matrix muli(float value);
 
   /**
-   * Element-wise multiplies a matrix.
+   * Multiplies by a matrix, element-wise.
    */
   Matrix mul(Matrix matrix);
 
   /**
-   * Element-wise multiplies a matrix (in place).
+   * Multiplies by a matrix, element-wise (in place).
    */
   Matrix muli(Matrix matrix);
 
   /**
-   * Element-wise multiplies a vector to all columns of the matrix.
+   * Multiplies all columns of the matrix by a vector, element-wise.
    */
   Matrix mulColumnVector(Matrix vector);
 
   /**
-   * Element-wise multiplies a vector to all columns of the matrix (in place).
+   * Multiplies all columns of the matrix by a vector, element-wise (in place).
    */
   Matrix muliColumnVector(Matrix vector);
 
   /**
-   * Element-wise multiplies a vector to all rows of the matrix.
+   * Multiplies all rows of the matrix by a vector, element-wise.
    */
   Matrix mulRowVector(Matrix vector);
 
   /**
-   * Element-wise multiplies a vector to all rows of the matrix (in place).
+   * Multiplies all rows of the matrix by a vector, element-wise (in place).
    */
   Matrix muliRowVector(Matrix vector);
 
   /**
-   * Divides by a scalar to all elements.
+   * Divides all elements by a scalar.
    */
   Matrix div(float value);
 
   /**
-   * Divides by a scalar to all elements (in place).
+   * Divides all elements by a scalar (in place).
    */
   Matrix divi(float value);
 
   /**
-   * Element-wise divides by a matrix.
+   * Divides by a matrix, element-wise.
    */
   Matrix div(Matrix matrix);
 
   /**
-   * Element-wise divides by a matrix (in place).
+   * Divides by a matrix, element-wise (in place).
    */
   Matrix divi(Matrix matrix);
 
   /**
-   * Element-wise divides a vector to all columns of the matrix.
+   * Divides all columns of the matrix by a vector, element-wise.
    */
   Matrix divColumnVector(Matrix vector);
 
   /**
-   * Element-wise divides a vector to all columns of the matrix (in place).
+   * Divides all columns of the matrix by a vector, element-wise (in place).
    */
   Matrix diviColumnVector(Matrix vector);
 
   /**
-   * Element-wise divides a vector to all rows of the matrix.
+   * Divides all rows of the matrix by a vector, element-wise.
    */
   Matrix divRowVector(Matrix vector);
 
   /**
-   * Element-wise divides a vector to all rows of the matrix (in place).
+   * Divides a vector to all rows of the matrix by a vector, element-wise (in place).
    */
   Matrix diviRowVector(Matrix vector);
 
   /**
-   * Element-wise (right-)divides by a scalar to all elements.
+   * Divides a scalar by all elements, element-wise.
    */
   Matrix rdiv(float value);
 
   /**
-   * Element-wise (right-)divides by a scalar to all elements (in place).
+   * Divides a scalar by all elements, element-wise (in place).
    */
   Matrix rdivi(float value);
 
   /**
-   * Element-wise (right-)divides by a matrix.
+   * Divides a matrix by this matrix, element-wise.
    */
   Matrix rdiv(Matrix matrix);
 
   /**
-   * Element-wise (right-)divides by a matrix (in place).
+   * Divides a matrix by this matrix, element-wise (in place).
    */
   Matrix rdivi(Matrix matrix);
 
