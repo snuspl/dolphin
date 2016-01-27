@@ -17,6 +17,7 @@ package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
+import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -53,52 +54,20 @@ public final class PoolingLayer extends LayerBase {
                        @Parameter(StrideHeight.class) final int strideHeight,
                        @Parameter(StrideWidth.class) final int strideWidth,
                        @Parameter(KernelHeight.class) final int kernelHeight,
-                       @Parameter(KernelWidth.class) final int kernelWidth) {
+                       @Parameter(KernelWidth.class) final int kernelWidth,
+                       final LayerParameterInitializer layerParameterInitializer) {
     super(index, inputShape);
     this.strideHeight = strideHeight;
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
-    this.outputShape = computeOutputShape();
-
-    try {
-      this.poolingType = PoolType.valueOf(poolingType);
-    } catch (final IllegalArgumentException illegalArgumentException) {
-      throw new IllegalArgumentException("Illegal pooling type: " + illegalArgumentException);
-    } catch (final NullPointerException nullPointerException) {
-      throw new NullPointerException("Null pointer exception while matching pooling type: " + nullPointerException);
-    }
+    this.outputShape = layerParameterInitializer.getOutputShape();
+    this.poolingType = PoolType.valueOf(poolingType);
   }
 
   @Override
   public int[] getOutputShape() {
     return outputShape;
-  }
-
-  /**
-   * This function computes output shape.
-   * input shape: row * col
-   * output shape: row' * col'
-   * row' = (row − kernelHeight) / stride + 1
-   * col' = (col − kernelWidth) / stride + 1
-   * @return shape of output
-   */
-  private int[] computeOutputShape() {
-    final int[] inputShape = getInputShape();
-    final int[] computedShape;
-    switch (inputShape.length) {
-    case 1:
-      computedShape = new int[1];
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      return computedShape;
-    case 2:
-      computedShape = new int[2];
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
-      return computedShape;
-    default:
-      throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
-    }
   }
 
   /** {@inheritDoc} */
