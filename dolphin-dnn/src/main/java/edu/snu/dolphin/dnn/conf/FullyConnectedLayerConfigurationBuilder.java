@@ -28,8 +28,8 @@ import org.apache.reef.util.Builder;
  * Configuration builder for fully connected layer.
  *
  * The configuration that this builder generates is used to create a fully connected layer instance.
- * The generate configuration need to bind the implementation for matrix factory and
- * the parameter for a layer input shape, to inject layer instance.
+ * The generated configuration needs to bind the implementation for matrix factory and
+ * the parameter for a layer input shape, to inject a layer instance.
  */
 public final class FullyConnectedLayerConfigurationBuilder implements Builder<Configuration> {
 

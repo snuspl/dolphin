@@ -26,7 +26,7 @@ import org.apache.reef.util.Builder;
  * Configuration builder for activation layer.
  *
  * The configuration that this builder generates is used to create an activation layer instance.
- * The generate configuration need to bind the parameter for a layer input shape, to inject layer instance.
+ * The generated configuration needs to bind the parameter for a layer input shape, to inject a layer instance.
  */
 public final class ActivationLayerConfigurationBuilder implements Builder<Configuration> {
 

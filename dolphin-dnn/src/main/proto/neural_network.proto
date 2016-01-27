@@ -23,6 +23,14 @@ message FullyConnectedLayerConfiguration {
   required uint32 num_output = 4;
 }
 
+message PoolingLayerConfiguration {
+  optional string pooling_type = 1 [default = "MAX"];
+  optional uint32 stride_height = 2 [default = 1];
+  optional uint32 stride_width = 3 [default = 1];
+  required uint32 kernel_height = 4;
+  required uint32 kernel_width = 5;
+}
+
 message ActivationLayerConfiguration {
   required string activation_function = 1;
 }
@@ -37,6 +45,7 @@ message LayerConfiguration {
   optional FullyConnectedLayerConfiguration fully_connected_param = 2;
   optional ActivationLayerConfiguration activation_param = 3;
   optional ActivationWithLossLayerConfiguration activation_with_loss_param = 4;
+  optional PoolingLayerConfiguration pooling_param = 5;
 }
 
 message ParameterProviderConfiguration {
