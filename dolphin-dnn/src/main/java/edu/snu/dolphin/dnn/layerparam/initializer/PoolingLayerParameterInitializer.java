@@ -74,6 +74,17 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
   }
 
   /**
+   * This function checks if stride is set proper for the input shape.
+   */
+  private void checkShape() {
+    if ((inputShape[0] - kernelHeight) % strideHeight != 0) {
+      throw new IllegalArgumentException("Stride height is not proper for input.");
+    } else if (inputShape.length == 2 && (inputShape[1] - kernelWidth) % strideWidth != 0) {
+      throw new IllegalArgumentException("Stride width is not proper for input.");
+    }
+  }
+
+  /**
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
@@ -82,14 +93,14 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * @return shape of output
    */
   private int[] computeOutputShape() {
-    final int[] computedShape;
+    final int[] computedShape = new int[2];
+    checkShape();
     switch (inputShape.length) {
     case 1:
-      computedShape = new int[1];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
+      computedShape[1] = 1;
       return computedShape;
     case 2:
-      computedShape = new int[2];
       computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
       computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
       return computedShape;
