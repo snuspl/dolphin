@@ -16,6 +16,7 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
@@ -46,6 +47,8 @@ public final class PoolingLayer extends LayerBase {
   private final int strideWidth;
   private final int kernelHeight;
   private final int kernelWidth;
+  private Matrix indexMatrix;
+  private MatrixFactory matrixFactory;
 
   @Inject
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
@@ -76,12 +79,59 @@ public final class PoolingLayer extends LayerBase {
     return false;
   }
 
+  /**
+   * Feedforward function for Max pooling.
+   * @param input input values for this layer.
+   * @return output values for this layer.
+   */
   private Matrix feedForwardMaxPooling(final Matrix input) {
-    throw new RuntimeException("Not implemented");
+    final Matrix output = matrixFactory.create(outputShape[0], outputShape[1]);
+    indexMatrix = matrixFactory.create(outputShape[0], outputShape[1]);
+    int ih = 0, iw = 0;
+    for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
+      for (int ow = 0; ow < outputShape[1]; ++ow, iw += strideWidth) {
+        //Find maximum value within kernel range and put it in the output matrix.
+        float max = input.get(ih, iw);
+        int index = iw + ih * input.getColumns();
+        for (int kh = 0; kh < kernelHeight; ++kh) {
+          for (int kw = 0; kw < kernelWidth; ++kw) {
+            final float tempValue= input.get(ih + kh, iw + kw);
+            if (tempValue > max) {
+              max = tempValue;
+              index = iw + kw + (ih + kh) * input.getColumns();
+            }
+          }
+        }
+        output.put(oh, ow, max);
+        //Save index of max value.
+        indexMatrix.put(oh, ow, index);
+      }
+    }
+    return output;
   }
 
+  /**
+   * Feedforward function for average pooling
+   * @param input input values for this layer.
+   * @return output values for this layer.
+   */
   private Matrix feedForwardAveragePooling(final Matrix input) {
-    throw new RuntimeException("Not implemented");
+    final int kernelSize = kernelHeight * kernelWidth;
+    final Matrix output = matrixFactory.create(outputShape[0], outputShape[1]);
+    int ih = 0, iw = 0;
+    for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
+      for (int ow = 0; ow < outputShape[1]; ++ow, iw += strideWidth) {
+        //Find sum of values within kernel range and put average value in the output matrix.
+        int sum = 0;
+        for (int kh = 0; kh < kernelHeight; ++kh) {
+          for (int kw = 0; kw < kernelWidth; ++kw) {
+            sum += input.get(ih + kh, iw + kw);
+          }
+        }
+        output.put(oh, ow, sum / kernelSize);
+      }
+    }
+    return output;
   }
 
   /**
