@@ -95,7 +95,7 @@ public final class PoolingLayer extends LayerBase {
         int index = iw + ih * input.getColumns();
         for (int kh = 0; kh < kernelHeight; ++kh) {
           for (int kw = 0; kw < kernelWidth; ++kw) {
-            final float tempValue= input.get(ih + kh, iw + kw);
+            final float tempValue = input.get(ih + kh, iw + kw);
             if (tempValue > max) {
               max = tempValue;
               index = iw + kw + (ih + kh) * input.getColumns();
