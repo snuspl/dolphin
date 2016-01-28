@@ -80,9 +80,9 @@ public final class PoolingLayer extends LayerBase {
   }
 
   /**
-   * Feedforward function for Max pooling.
-   * @param input input values for this layer.
-   * @return output values for this layer.
+   * Feedforward function for max pooling.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
    */
   private Matrix feedForwardMaxPooling(final Matrix input) {
     final Matrix output = matrixFactory.create(outputShape[0], outputShape[1]);
@@ -111,9 +111,9 @@ public final class PoolingLayer extends LayerBase {
   }
 
   /**
-   * Feedforward function for average pooling
-   * @param input input values for this layer.
-   * @return output values for this layer.
+   * Feedforward function for average pooling.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
    */
   private Matrix feedForwardAveragePooling(final Matrix input) {
     final int kernelSize = kernelHeight * kernelWidth;
@@ -137,8 +137,8 @@ public final class PoolingLayer extends LayerBase {
   /**
    * Computes output values for this pooling layer.
    * available pooling type: max, average
-   * @param input input values for this layer.
-   * @return output values for this layer.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
    */
   @Override
   public Matrix feedForward(final Matrix input) {
@@ -152,12 +152,49 @@ public final class PoolingLayer extends LayerBase {
     }
   }
 
+  /**
+   * Backpropagating function for max pooling.
+   * @param input the input values for this layer.
+   * @param nextError the errors of the next layer - the one closer to the output layer.
+   * @return errors for this layer with the specified input value.
+   */
   private Matrix backPropagateMaxPooling(final Matrix input, final Matrix nextError) {
-    throw new RuntimeException("Not implemented");
+    final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
+    for (int oh = 0; oh < nextError.getRows(); ++oh) {
+      for (int ow = 0; ow < nextError.getColumns(); ++ow) {
+        final int ih = (int) indexMatrix.get(oh, ow) / input.getColumns();
+        final int iw = (int) indexMatrix.get(oh, ow) - ih * input.getColumns();
+        final float tempError = nextError.get(oh, ow) + error.get(ih, iw);
+        //Add error to saved index.
+        error.put(ih, iw, tempError);
+      }
+    }
+    return error;
   }
 
+  /**
+   * Backpropagating function for average pooling.
+   * @param input the input values for this layer.
+   * @param nextError the errors of the next layer - the one closer to the output layer.
+   * @return errors for this layer with the specified input value.
+   */
   private Matrix backPropagateAveragePooling(final Matrix input, final Matrix nextError) {
-    throw new RuntimeException("Not implemented");
+    final int kernelSize = kernelHeight * kernelWidth;
+    final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
+    for (int oh = 0; oh < nextError.getRows(); ++oh) {
+      for (int ow = 0; ow < nextError.getColumns(); ++ow) {
+        final int sh = strideHeight * oh;
+        final int sw = strideWidth * ow;
+        for (int ih = sh; ih < sh + kernelHeight; ++ih) {
+          for (int iw = sw; iw < sw + kernelWidth; ++iw) {
+            //Add error divided by kernel size for all pixels within the range.
+            final float tempError = nextError.get(oh, ow) / kernelSize + error.get(ih, iw);
+            error.put(ih, iw, tempError);
+          }
+        }
+      }
+    }
+    return error;
   }
 
   /**
