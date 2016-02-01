@@ -28,7 +28,7 @@ import javax.inject.Inject;
  *
  * This layer is not learnable.
  * This layer resizes input matrix spatially, using max pooling or average pooling.
- * This layer works for only 1D and 2D inputs.
+ * This layer works for only 2D inputs.
  * In a forward pass,
  * max pooling picks the maximum value in certain range (kernelHeight * kernelWidth) and these values make up output.
  * Average pooling gets the average of values in certain range (kernelHeight * kernelWidth)
@@ -91,32 +91,28 @@ public final class PoolingLayer extends LayerBase {
     final Matrix output = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
     indexMatrix = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix inputImage = input.getColumn(n).reshape(inputShape[0], inputShape[1]).transpose();
-      final Matrix outputImage = matrixFactory.create(outputShape[0], outputShape[1]);
-      final Matrix indexMatrixImage = matrixFactory.create(outputShape[0], outputShape[1]);
       int ih = 0;
       for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
         int iw = 0;
         for (int ow = 0; ow < outputShape[1]; ++ow, iw += strideWidth) {
           //Find maximum value within kernel range and put it in the output matrix.
-          float max = inputImage.get(ih, iw);
-          int index = iw + ih * inputImage.getColumns();
+          int index = iw + ih * inputShape[1];
+          float max = input.get(index, n);
           for (int kh = 0; kh < kernelHeight; ++kh) {
             for (int kw = 0; kw < kernelWidth; ++kw) {
-              final float tempValue = inputImage.get(ih + kh, iw + kw);
+              final int tempIndex = (iw + kw) + (ih + kh) * inputShape[1];
+              final float tempValue = input.get(tempIndex, n);
               if (tempValue > max) {
                 max = tempValue;
-                index = iw + kw + (ih + kh) * inputImage.getColumns();
+                index = tempIndex;
               }
             }
           }
-          outputImage.put(oh, ow, max);
+          output.put(oh * outputShape[1] + ow, n, max);
           //Save index of max value.
-          indexMatrixImage.put(oh, ow, index);
+          indexMatrix.put(oh * outputShape[1] + ow, n, index);
         }
       }
-      output.putColumn(n, outputImage.transpose().reshape(outputShape[0] * outputShape[1], 1));
-      indexMatrix.putColumn(n, indexMatrixImage.transpose().reshape(outputShape[0] * outputShape[1], 1));
     }
     return output;
   }
@@ -131,8 +127,6 @@ public final class PoolingLayer extends LayerBase {
     final int kernelSize = kernelHeight * kernelWidth;
     final Matrix output = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix inputImage = input.getColumn(n).reshape(inputShape[0], inputShape[1]).transpose();
-      final Matrix outputImage = matrixFactory.create(outputShape[0], outputShape[1]);
       int ih = 0;
       for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
         int iw = 0;
@@ -141,13 +135,12 @@ public final class PoolingLayer extends LayerBase {
           float sum = 0;
           for (int kh = 0; kh < kernelHeight; ++kh) {
             for (int kw = 0; kw < kernelWidth; ++kw) {
-              sum += inputImage.get(ih + kh, iw + kw);
+              sum += input.get((ih + kh) * inputShape[1] + (iw + kw), n);
             }
           }
-          outputImage.put(oh, ow, sum / kernelSize);
+          output.put(oh * outputShape[1] + ow, n, sum / kernelSize);
         }
       }
-      output.putColumn(n, outputImage.transpose().reshape(outputShape[0] * outputShape[1], 1));
     }
     return output;
   }
@@ -178,20 +171,15 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix backPropagateMaxPooling(final Matrix input, final Matrix nextError) {
     final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
-    final int[] inputShape = getInputShape();
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix errorImage = matrixFactory.zeros(inputShape[0], inputShape[1]);
-      final Matrix nextErrorImage = nextError.getColumn(n).reshape(outputShape[0], outputShape[1]).transpose();
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
-          final int ih = (int) indexMatrix.get(oh * outputShape[1] + ow, n) / errorImage.getColumns();
-          final int iw = (int) indexMatrix.get(oh * outputShape[1] + ow, n) - ih * errorImage.getColumns();
-          final float tempError = nextErrorImage.get(oh, ow) + errorImage.get(ih, iw);
+          final int index = oh * outputShape[1] + ow;
+          final float tempError = nextError.get(index, n) + error.get(index, n);
           //Add error to saved index.
-          errorImage.put(ih, iw, tempError);
+          error.put((int) indexMatrix.get(index, n), n, tempError);
         }
       }
-      error.putColumn(n, errorImage.transpose().reshape(inputShape[0] * inputShape[1], 1));
     }
     return error;
   }
@@ -207,8 +195,6 @@ public final class PoolingLayer extends LayerBase {
     final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
     final int[] inputShape = getInputShape();
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix errorImage = matrixFactory.zeros(inputShape[0], inputShape[1]);
-      final Matrix nextErrorImage = nextError.getColumn(n).reshape(outputShape[0], outputShape[1]).transpose();
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
           final int sh = strideHeight * oh;
@@ -216,13 +202,13 @@ public final class PoolingLayer extends LayerBase {
           for (int ih = sh; ih < sh + kernelHeight; ++ih) {
             for (int iw = sw; iw < sw + kernelWidth; ++iw) {
               //Add error divided by kernel size for all pixels within the range.
-              final float tempError = nextErrorImage.get(oh, ow) / kernelSize + errorImage.get(ih, iw);
-              errorImage.put(ih, iw, tempError);
+              final float tempError = nextError.get(oh * outputShape[1] + ow, n) / kernelSize
+                      + error.get(ih * inputShape[1] + iw, n);
+              error.put(ih * inputShape[1] + iw, n, tempError);
             }
           }
         }
       }
-      error.putColumn(n, errorImage.transpose().reshape(inputShape[0] * inputShape[1], 1));
     }
     return error;
   }

@@ -79,7 +79,7 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
   private void checkShape() {
     if ((inputShape[0] - kernelHeight) % strideHeight != 0) {
       throw new IllegalArgumentException("Stride height is not proper for input.");
-    } else if (inputShape.length == 2 && (inputShape[1] - kernelWidth) % strideWidth != 0) {
+    } else if ((inputShape[1] - kernelWidth) % strideWidth != 0) {
       throw new IllegalArgumentException("Stride width is not proper for input.");
     }
   }
@@ -95,18 +95,9 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
   private int[] computeOutputShape() {
     final int[] computedShape = new int[2];
     checkShape();
-    switch (inputShape.length) {
-    case 1:
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      computedShape[1] = 1;
-      return computedShape;
-    case 2:
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
-      return computedShape;
-    default:
-      throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
-    }
+    computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
+    computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
+    return computedShape;
   }
 
   /**
