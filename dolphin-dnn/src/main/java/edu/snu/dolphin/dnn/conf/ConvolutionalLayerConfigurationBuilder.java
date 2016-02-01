@@ -15,6 +15,7 @@
  */
 package edu.snu.dolphin.dnn.conf;
 
+import edu.snu.dolphin.dnn.layerparam.initializer.ConvolutionalLayerParameterInitializer;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import edu.snu.dolphin.dnn.layers.ConvolutionalLayer;
 import edu.snu.dolphin.dnn.layers.LayerBase;
@@ -94,14 +95,14 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
 
   public synchronized ConvolutionalLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
-    paddingHeight = protoConf.getConvolutionalParam().getPaddingHeight;
-    paddingWidth = protoConf.getConvolutionalParam().getPaddingWidth;
+    paddingHeight = protoConf.getConvolutionalParam().getPaddingHeight();
+    paddingWidth = protoConf.getConvolutionalParam().getPaddingWidth();
     strideHeight = protoConf.getConvolutionalParam().getStrideHeight();
     strideWidth = protoConf.getConvolutionalParam().getStrideWidth();
     kernelHeight = protoConf.getConvolutionalParam().getKernelHeight();
     kernelWidth = protoConf.getConvolutionalParam().getKernelWidth();
     if (protoConf.getConvolutionalParam().hasRandomSeed()) {
-        randomSeed = protoConf.getConvolutionalParam().getRandomSeed();
+      randomSeed = protoConf.getConvolutionalParam().getRandomSeed();
     }
     initWeight = protoConf.getConvolutionalParam().getInitWeight();
     initBias = protoConf.getConvolutionalParam().getInitBias();

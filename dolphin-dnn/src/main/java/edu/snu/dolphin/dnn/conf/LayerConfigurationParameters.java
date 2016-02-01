@@ -72,27 +72,27 @@ public final class LayerConfigurationParameters {
   public static final class PoolingType implements Name<String> {
   }
 
-  @NamedParameter(doc = "padding height of pooling / convolutional layer", short_name = "paddingH")
+  @NamedParameter(doc = "padding height of pooling / convolutional layer")
   public static final class PaddingHeight implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "padding width of pooling / convolutional layer", short_name = "paddingW")
+  @NamedParameter(doc = "padding width of pooling / convolutional layer")
   public static final class PaddingWidth implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "stride height of pooling / convolutional layer", short_name = "strideH")
+  @NamedParameter(doc = "stride height of pooling / convolutional layer")
   public static final class StrideHeight implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "stride width of pooling / convolutional layer", short_name = "strideW")
+  @NamedParameter(doc = "stride width of pooling / convolutional layer")
   public static final class StrideWidth implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "kernel height of pooling / convolutional layer", short_name = "kernelH")
+  @NamedParameter(doc = "kernel height of pooling / convolutional layer")
   public static final class KernelHeight implements Name<Integer> {
   }
 
-  @NamedParameter(doc = "kernel width of pooling / convolutional layer", short_name = "kernelW")
+  @NamedParameter(doc = "kernel width of pooling / convolutional layer")
   public static final class KernelWidth implements Name<Integer> {
   }
 }

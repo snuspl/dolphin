@@ -30,7 +30,7 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
  *
  * initializes the weight matrix with pseudo random normal distributed value with mean 0 and given standard deviation.
  * initializes the bias vector with the given value.
- * includes function that compute the output shape.
+ * includes function that computes the output shape.
  */
 public final class ConvolutionalLayerParameterInitializer implements LayerParameterInitializer {
 
@@ -82,7 +82,7 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    */
   public LayerParameter generateInitialParameter() {
     final Matrix weight = matrixFactory.randn(kernelHeight, kernelWidth, randomSeed);
-    final Matrix bias = matrixFactory.create(outputShape[0],outputShape[1]).fill(initBias);
+    final Matrix bias = matrixFactory.create(outputShape[0], outputShape[1]).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
 
@@ -97,16 +97,16 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    */
   public int getIndex() {
     return index;
-}
+  }
 
   /**
    * This function checks if stride is set proper for the input shape.
    */
   private void checkShape() {
     if ((inputShape[0] - kernelHeight + 2 * paddingHeight) % strideHeight != 0) {
-        throw new IllegalArgumentException("Stride height is not proper for input.");
-    } else if (inputShape.length == 2 && (inputShape[1] - kernelWidth + 2 * paddingWidth) % strideWidth != 0) {
-        throw new IllegalArgumentException("Stride width is not proper for input.");
+      throw new IllegalArgumentException("Stride height is not proper for input.");
+    } else if ((inputShape[1] - kernelWidth + 2 * paddingWidth) % strideWidth != 0) {
+      throw new IllegalArgumentException("Stride width is not proper for input.");
     }
   }
 
@@ -121,18 +121,9 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
   private int[] computeOutputShape() {
     final int[] computedShape = new int[2];
     checkShape();
-    switch (inputShape.length) {
-    case 1:
-      computedShape[0] = (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight + 1;
-      computedShape[1] = 1;
-      return computedShape;
-    case 2:
-            computedShape[0] = (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight + 1;
-            computedShape[1] = (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth + 1;
-            return computedShape;
-    default:
-            throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
-    }
+    computedShape[0] = (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight + 1;
+    computedShape[1] = (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth + 1;
+    return computedShape;
   }
 
   /**

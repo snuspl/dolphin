@@ -16,7 +16,6 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
-import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
 import org.apache.reef.tang.annotations.Parameter;
@@ -27,9 +26,12 @@ import javax.inject.Inject;
    * Convolutional layer.
    *
    * This layer is learnable having the updatable parameter (weight and bias).
-   * This layer works for only 1D and 2D inputs.
+   * This layer works for only 2D inputs.
    * In a forward pass,
+   * computes the product between weight and the input within kernel range and produce activation matrix.
    * In a backward pass,
+   * error of each input pixel comes from
+   * the product between weight and errors of output pixels affected by the input pixel in feedforward step.
    */
 public final class ConvolutionalLayer extends LayerBase {
 
@@ -73,9 +75,14 @@ public final class ConvolutionalLayer extends LayerBase {
     return false;
   }
 
+  /**
+   * Computes output values for this convolutional layer.
+   * @param input input values for this layer.
+   * @return output values for this layer.
+   */
   @Override
   public Matrix feedForward(final Matrix input) {
-    throw new RuntimeException();
+    throw new RuntimeException("Not Implemented");
   }
 
   /**
@@ -87,7 +94,7 @@ public final class ConvolutionalLayer extends LayerBase {
    */
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
-    throw new RuntimeException();
+    throw new RuntimeException("Not Implemented");
   }
 
   /** {@inheritDoc} */
