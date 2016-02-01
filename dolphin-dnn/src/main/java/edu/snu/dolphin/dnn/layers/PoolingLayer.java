@@ -174,9 +174,9 @@ public final class PoolingLayer extends LayerBase {
     for (int n = 0; n < input.getColumns(); ++n) {
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
+          //Add error to saved index.
           final int index = oh * outputShape[1] + ow;
           final float tempError = nextError.get(index, n) + error.get(index, n);
-          //Add error to saved index.
           error.put((int) indexMatrix.get(index, n), n, tempError);
         }
       }
