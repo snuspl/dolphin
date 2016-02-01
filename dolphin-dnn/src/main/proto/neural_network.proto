@@ -23,6 +23,18 @@ message FullyConnectedLayerConfiguration {
   required uint32 num_output = 4;
 }
 
+message ConvolutionalLayerConfiguration {
+  optional uint32 padding_height = 1 [default = 0];
+  optional uint32 padding_width = 2 [default = 0];
+  optional uint32 stride_height = 3 [default = 1];
+  optional uint32 stride_width = 4 [default = 1];
+  required uint32 kernel_height = 5;
+  required uint32 kernel_width = 6;
+  required float init_bias = 7;
+  required float init_weight = 8;
+  optional uint32 random_seed = 9;
+}
+
 message PoolingLayerConfiguration {
   optional string pooling_type = 1 [default = "MAX"];
   optional uint32 stride_height = 2 [default = 1];
@@ -46,6 +58,7 @@ message LayerConfiguration {
   optional ActivationLayerConfiguration activation_param = 3;
   optional ActivationWithLossLayerConfiguration activation_with_loss_param = 4;
   optional PoolingLayerConfiguration pooling_param = 5;
+  optional ConvolutionalLayerConfiguration convolutional_param = 6;
 }
 
 message ParameterProviderConfiguration {

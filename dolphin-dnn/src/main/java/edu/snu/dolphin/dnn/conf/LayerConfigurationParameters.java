@@ -66,10 +66,18 @@ public final class LayerConfigurationParameters {
   }
 
   /**
-   * For pooling layers.
+   * For pooling / convolutional layers.
    */
   @NamedParameter(doc = "pooling type of pooling layer")
   public static final class PoolingType implements Name<String> {
+  }
+
+  @NamedParameter(doc = "padding height of pooling / convolutional layer", short_name = "paddingH")
+  public static final class PaddingHeight implements Name<Integer> {
+  }
+
+  @NamedParameter(doc = "padding width of pooling / convolutional layer", short_name = "paddingW")
+  public static final class PaddingWidth implements Name<Integer> {
   }
 
   @NamedParameter(doc = "stride height of pooling / convolutional layer", short_name = "strideH")

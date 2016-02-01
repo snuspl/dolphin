@@ -161,6 +161,9 @@ public final class NeuralNetworkDriverParameters {
     case "pooling":
       return PoolingLayerConfigurationBuilder.newConfigurationBuilder()
           .fromProtoConfiguration(layerConf).build();
+    case "convolutional":
+      return PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+          .fromProtoConfiguration(layerConf).build();
     default:
       throw new IllegalArgumentException("Illegal layer type: " + layerConf.getType());
     }
