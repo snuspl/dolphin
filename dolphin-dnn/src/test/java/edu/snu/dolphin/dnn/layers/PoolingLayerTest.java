@@ -23,13 +23,17 @@ import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
+import org.junit.runners.MethodSorters;
+
 import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for pooling layer.
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public final class PoolingLayerTest {
 
   private static MatrixFactory matrixFactory;
@@ -66,6 +70,11 @@ public final class PoolingLayerTest {
       {5.25f, 10.75f},
       {6.25f, 4.5f},
       {3.75f, 6}});
+  private final Matrix expectedRemainderExistingPoolingActivation = matrixFactory.create(new float[][]{
+      {9, 22},
+      {7, 13},
+      {10, 7},
+      {1, 9}});
   private final Matrix nextError = matrixFactory.create(new float[][]{
       {12, 0},
       {16, 4},
@@ -91,19 +100,24 @@ public final class PoolingLayerTest {
       {5, 3},
       {6, 5},
       {1, 2}});
+  private final Matrix expectedRemainderExistingPoolingError = matrixFactory.create(new float[][]{
+      {0, 0},
+      {12, 0},
+      {0, 4},
+      {0, 0},
+      {0, 0},
+      {16, 0},
+      {20, 0},
+      {0, 12},
+      {4, 8}});
 
   private LayerBase maxPoolingLayer;
   private LayerBase averagePoolingLayer;
+  private LayerBase remainderExistingPoolingLayer;
 
   @Before
   public void setup() throws InjectionException {
-    final Configuration layerConfMax = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(LayerIndex.class, String.valueOf(0))
-        .bindNamedParameter(LayerInputShape.class, "3,3")
-        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
-        .build();
-
-    final Configuration layerConfAverage = Tang.Factory.getTang().newConfigurationBuilder()
+    final Configuration layerConf = Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerIndex.class, String.valueOf(0))
         .bindNamedParameter(LayerInputShape.class, "3,3")
         .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
@@ -123,13 +137,26 @@ public final class PoolingLayerTest {
         .setStrideHeight(1)
         .setStrideWidth(1);
 
+    final PoolingLayerConfigurationBuilder remainderExistingBuilder =
+            PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+            .setPoolingType("MAX")
+            .setKernelHeight(2)
+            .setKernelWidth(2)
+            .setStrideHeight(2)
+            .setStrideWidth(2);
+
     this.maxPoolingLayer =
-        Tang.Factory.getTang().newInjector(layerConfMax, maxBuilder.build())
+        Tang.Factory.getTang().newInjector(layerConf, maxBuilder.build())
         .getInstance(LayerBase.class);
 
     this.averagePoolingLayer =
-        Tang.Factory.getTang().newInjector(layerConfAverage, averageBuilder.build())
+        Tang.Factory.getTang().newInjector(layerConf, averageBuilder.build())
         .getInstance(LayerBase.class);
+
+    this.remainderExistingPoolingLayer =
+        Tang.Factory.getTang().newInjector(layerConf, remainderExistingBuilder.build())
+        .getInstance(LayerBase.class);
+
   }
 
   @Test
@@ -155,5 +182,19 @@ public final class PoolingLayerTest {
   public void testAveragePoolingBackPropagate() {
     final Matrix error = averagePoolingLayer.backPropagate(input, expectedAveragePoolingActivation, nextError);
     assertTrue(expectedAveragePoolingError.compare(error, TOLERANCE));
+  }
+
+  @Test
+  public void testRemainderExistingPoolingActivation() {
+    final Matrix poolingActivation = remainderExistingPoolingLayer.feedForward(input);
+    assertTrue(expectedRemainderExistingPoolingActivation.compare(poolingActivation, TOLERANCE));
+  }
+
+  @Test
+  public void testRemainderExistingPoolingBackPropagate() {
+    remainderExistingPoolingLayer.feedForward(input);
+    final Matrix error =
+        remainderExistingPoolingLayer.backPropagate(input, expectedRemainderExistingPoolingActivation, nextError);
+    assertTrue(expectedRemainderExistingPoolingError.compare(error, TOLERANCE));
   }
 }

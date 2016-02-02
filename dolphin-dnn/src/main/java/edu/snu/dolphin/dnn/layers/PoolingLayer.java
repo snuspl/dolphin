@@ -19,6 +19,7 @@ import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.dolphin.dnn.util.NeuralNetworkUtils;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -48,7 +49,7 @@ public final class PoolingLayer extends LayerBase {
   private final int kernelHeight;
   private final int kernelWidth;
   private Matrix indexMatrix;
-  private MatrixFactory matrixFactory;
+  private final MatrixFactory matrixFactory;
 
   @Inject
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
@@ -66,7 +67,7 @@ public final class PoolingLayer extends LayerBase {
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
     this.outputShape = layerParameterInitializer.getOutputShape();
-    this.poolingType = PoolType.valueOf(poolingType);
+    this.poolingType = PoolType.valueOf(poolingType.toUpperCase());
     this.matrixFactory = matrixFactory;
   }
 
@@ -88,8 +89,8 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix feedForwardMaxPooling(final Matrix input) {
     final int[] inputShape = getInputShape();
-    final Matrix output = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
-    indexMatrix = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
+    final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
+    indexMatrix = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
       int ih = 0;
       for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
@@ -98,8 +99,8 @@ public final class PoolingLayer extends LayerBase {
           //Find maximum value within kernel range and put it in the output matrix.
           int index = iw + ih * inputShape[1];
           float max = input.get(index, n);
-          for (int kh = 0; kh < kernelHeight; ++kh) {
-            for (int kw = 0; kw < kernelWidth; ++kw) {
+          for (int kh = 0; kh < kernelHeight && (kh + ih) < inputShape[0]; ++kh) {
+            for (int kw = 0; kw < kernelWidth && (kw + iw) < inputShape[1]; ++kw) {
               final int tempIndex = (iw + kw) + (ih + kh) * inputShape[1];
               final float tempValue = input.get(tempIndex, n);
               if (tempValue > max) {
@@ -125,7 +126,7 @@ public final class PoolingLayer extends LayerBase {
   private Matrix feedForwardAveragePooling(final Matrix input) {
     final int[] inputShape = getInputShape();
     final int kernelSize = kernelHeight * kernelWidth;
-    final Matrix output = matrixFactory.create(outputShape[0] * outputShape[1], input.getColumns());
+    final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
       int ih = 0;
       for (int oh = 0; oh < outputShape[0]; ++oh, ih += strideHeight) {
@@ -133,8 +134,9 @@ public final class PoolingLayer extends LayerBase {
         for (int ow = 0; ow < outputShape[1]; ++ow, iw += strideWidth) {
           //Find sum of values within kernel range and put average value in the output matrix.
           float sum = 0;
-          for (int kh = 0; kh < kernelHeight; ++kh) {
-            for (int kw = 0; kw < kernelWidth; ++kw) {
+          for (int kh = 0; kh < kernelHeight && (kh + ih) < inputShape[0]; ++kh) {
+            for (int kw = 0; kw < kernelWidth && (kw + iw) < inputShape[1]; ++kw) {
+
               sum += input.get((ih + kh) * inputShape[1] + (iw + kw), n);
             }
           }
@@ -176,7 +178,7 @@ public final class PoolingLayer extends LayerBase {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
           //Add error to saved index.
           final int index = oh * outputShape[1] + ow;
-          final float tempError = nextError.get(index, n) + error.get(index, n);
+          final float tempError = nextError.get(index, n) + error.get((int) indexMatrix.get(index, n), n);
           error.put((int) indexMatrix.get(index, n), n, tempError);
         }
       }
