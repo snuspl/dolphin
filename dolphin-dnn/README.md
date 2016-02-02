@@ -80,7 +80,7 @@ parameter_provider {
 	* `num_output`: the number of outputs for this layer.
 
 ##### Pooling Layer
-* Layer Type: `Pooling`
+* Layer type: `Pooling`
 * Parameters (`PoolingLayerConfiguration pooling_param`)
     * `pooling_type`[default="MAX"]: the type of pooling for this layer. Available types are MAX and AVERAGE.
     * `stride_height`[default=1]: the height of stride that controls how new rows are allocated to compute.
