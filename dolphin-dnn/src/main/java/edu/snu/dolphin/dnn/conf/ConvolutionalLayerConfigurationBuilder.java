@@ -27,7 +27,7 @@ import org.apache.reef.util.Builder;
 /**
  * Configuration builder for Convolutional layer.
  *
- * The configuration that this builder generates is used to create convolutional layer instance.
+ * The configuration that this builder generates is used to create a convolutional layer instance.
  * The generated configuration needs to bind the implementation for matrix factory and
  * the parameter for a layer input shape, to inject a layer instance.
  */
@@ -37,10 +37,10 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
     return new ConvolutionalLayerConfigurationBuilder();
   }
 
-  private int paddingHeight;
-  private int paddingWidth;
-  private int strideHeight;
-  private int strideWidth;
+  private int paddingHeight = 0;
+  private int paddingWidth = 0;
+  private int strideHeight = 1;
+  private int strideWidth = 1;
   private int kernelHeight;
   private int kernelWidth;
   private long randomSeed = System.currentTimeMillis();

@@ -28,9 +28,10 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
 /**
  * Convolutional Layer parameter initializer.
  *
- * initializes the weight matrix with pseudo random normal distributed value with mean 0 and given standard deviation.
- * initializes the bias vector with the given value.
- * includes function that computes the output shape.
+ * This class initializes the weight matrix
+ * with pseudo random normal distributed value with mean 0 and given standard deviation.
+ * This class initializes the bias vector with the given value.
+ * This class includes function that computes the output shape.
  */
 public final class ConvolutionalLayerParameterInitializer implements LayerParameterInitializer {
 
@@ -100,17 +101,6 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
   }
 
   /**
-   * This function checks if stride is set proper for the input shape.
-   */
-  private void checkShape() {
-    if ((inputShape[0] - kernelHeight + 2 * paddingHeight) % strideHeight != 0) {
-      throw new IllegalArgumentException("Stride height is not proper for input.");
-    } else if ((inputShape[1] - kernelWidth + 2 * paddingWidth) % strideWidth != 0) {
-      throw new IllegalArgumentException("Stride width is not proper for input.");
-    }
-  }
-
-  /**
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
@@ -120,9 +110,8 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    */
   private int[] computeOutputShape() {
     final int[] computedShape = new int[2];
-    checkShape();
-    computedShape[0] = (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight + 1;
-    computedShape[1] = (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth + 1;
+    computedShape[0] = (int) Math.ceil((double) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
+    computedShape[1] = (int) Math.ceil((double) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
     return computedShape;
   }
 

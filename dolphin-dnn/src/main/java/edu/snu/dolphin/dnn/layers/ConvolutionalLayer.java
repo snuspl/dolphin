@@ -22,17 +22,18 @@ import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
 
-  /**
-   * Convolutional layer.
-   *
-   * This layer is learnable having the updatable parameter (weight and bias).
-   * This layer works for only 2D inputs.
-   * In a forward pass,
-   * computes the product between weight and the input within kernel range and produce activation matrix.
-   * In a backward pass,
-   * error of each input pixel comes from
-   * the product between weight and errors of output pixels affected by the input pixel in feedforward step.
-   */
+/**
+ * Convolutional layer.
+ *
+ * This layer is learnable having the updatable parameter (weight and bias).
+ * This layer works for only 2D inputs.
+ * In a forward pass,
+ * feedForward function computes the product between weight and the input within kernel range
+ * and produce activation matrix.
+ * In a backward pass,
+ * the error of each input pixel comes from the product
+ * between weight and errors of output pixels affected by the input pixel in feedforward step.
+ */
 public final class ConvolutionalLayer extends LayerBase {
 
   private final int[] outputShape;
@@ -46,8 +47,8 @@ public final class ConvolutionalLayer extends LayerBase {
   @Inject
   private ConvolutionalLayer(@Parameter(LayerIndex.class) final int index,
                              @Parameter(LayerInputShape.class) final String inputShape,
-                             @Parameter(StrideHeight.class) final int paddingHeight,
-                             @Parameter(StrideWidth.class) final int paddingWidth,
+                             @Parameter(PaddingHeight.class) final int paddingHeight,
+                             @Parameter(PaddingWidth.class) final int paddingWidth,
                              @Parameter(StrideHeight.class) final int strideHeight,
                              @Parameter(StrideWidth.class) final int strideWidth,
                              @Parameter(KernelHeight.class) final int kernelHeight,
@@ -72,7 +73,7 @@ public final class ConvolutionalLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public boolean isLearnable() {
-    return false;
+    return true;
   }
 
   /**
@@ -100,9 +101,6 @@ public final class ConvolutionalLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    return LayerParameter.newBuilder()
-        .setWeightParam(error.mmul(input.transpose()))
-        .setBiasParam(error.rowSums())
-        .build();
+    throw new RuntimeException("Not Implemented");
   }
 }
