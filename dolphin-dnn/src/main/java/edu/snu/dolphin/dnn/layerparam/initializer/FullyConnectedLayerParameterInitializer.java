@@ -29,8 +29,9 @@ import static edu.snu.dolphin.dnn.util.NeuralNetworkUtils.shapeFromString;
 /**
  * Parameter Initializer of fully connected layer.
  *
- * initializes the weight matrix with pseudo random normal distributed value with mean 0 and given standard deviation.
- * initializes the bias vector with the given value.
+ * This class initializes the weight matrix
+ * with pseudo random normal distributed value with mean 0 and given standard deviation.
+ * This class initializes the bias vector with the given value.
  */
 public final class FullyConnectedLayerParameterInitializer implements LayerParameterInitializer {
 
