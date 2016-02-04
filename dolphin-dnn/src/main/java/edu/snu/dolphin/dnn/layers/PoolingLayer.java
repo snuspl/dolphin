@@ -16,8 +16,10 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.dolphin.dnn.util.NeuralNetworkUtils;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -27,7 +29,7 @@ import javax.inject.Inject;
  *
  * This layer is not learnable.
  * This layer resizes input matrix spatially, using max pooling or average pooling.
- * This layer works for only 1D and 2D inputs.
+ * This layer works for only 2D inputs.
  * In a forward pass,
  * max pooling picks the maximum value in certain range (kernelHeight * kernelWidth) and these values make up output.
  * Average pooling gets the average of values in certain range (kernelHeight * kernelWidth)
@@ -46,6 +48,8 @@ public final class PoolingLayer extends LayerBase {
   private final int strideWidth;
   private final int kernelHeight;
   private final int kernelWidth;
+  private Matrix indexMatrix;
+  private final MatrixFactory matrixFactory;
 
   @Inject
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
@@ -55,14 +59,16 @@ public final class PoolingLayer extends LayerBase {
                        @Parameter(StrideWidth.class) final int strideWidth,
                        @Parameter(KernelHeight.class) final int kernelHeight,
                        @Parameter(KernelWidth.class) final int kernelWidth,
-                       final LayerParameterInitializer layerParameterInitializer) {
+                       final LayerParameterInitializer layerParameterInitializer,
+                       final MatrixFactory matrixFactory) {
     super(index, inputShape);
     this.strideHeight = strideHeight;
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
     this.outputShape = layerParameterInitializer.getOutputShape();
-    this.poolingType = PoolType.valueOf(poolingType);
+    this.poolingType = PoolType.valueOf(poolingType.toUpperCase());
+    this.matrixFactory = matrixFactory;
   }
 
   @Override
@@ -76,19 +82,81 @@ public final class PoolingLayer extends LayerBase {
     return false;
   }
 
+  /**
+   * Feedforward function for max pooling.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
+   */
   private Matrix feedForwardMaxPooling(final Matrix input) {
-    throw new RuntimeException("Not implemented");
+    final int[] inputShape = getInputShape();
+    final int outputLength = NeuralNetworkUtils.getShapeLength(outputShape);
+    final Matrix output = matrixFactory.create(outputLength, input.getColumns());
+    indexMatrix = matrixFactory.create(outputLength, input.getColumns());
+    for (int n = 0; n < input.getColumns(); ++n) {
+      for (int oh = 0; oh < outputShape[0]; ++oh) {
+        for (int ow = 0; ow < outputShape[1]; ++ow) {
+          //Find the maximum value within kernel range and put it in the output matrix.
+          final int hstart = strideHeight * oh;
+          final int wstart = strideWidth * ow;
+          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
+          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          int maxIndex = hstart * inputShape[1] + wstart;
+          float max = input.get(maxIndex, n);
+          for (int kh = hstart; kh < hend; ++kh) {
+            for (int kw = wstart; kw < wend; ++kw) {
+              final int newIndex = kh * inputShape[1] + kw;
+              final float newValue = input.get(newIndex, n);
+              if (newValue > max) {
+                max = newValue;
+                maxIndex = newIndex;
+              }
+            }
+          }
+          final int outputIndex = oh * outputShape[1] + ow;
+          output.put(outputIndex, n, max);
+          //Save the index of max value.
+          indexMatrix.put(outputIndex, n, maxIndex);
+        }
+      }
+    }
+    return output;
   }
 
+  /**
+   * Feedforward function for average pooling.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
+   */
   private Matrix feedForwardAveragePooling(final Matrix input) {
-    throw new RuntimeException("Not implemented");
+    final int[] inputShape = getInputShape();
+    final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
+    for (int n = 0; n < input.getColumns(); ++n) {
+      for (int oh = 0; oh < outputShape[0]; ++oh) {
+        for (int ow = 0; ow < outputShape[1]; ++ow) {
+          //Compute sum of values within kernel range and put the average value in the output matrix.
+          final int hstart = strideHeight * oh;
+          final int wstart = strideWidth * ow;
+          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
+          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          final int kernelSize = (hend - hstart) * (wend - wstart);
+          float sum = 0;
+          for (int kh = hstart; kh < hend; ++kh) {
+            for (int kw = wstart; kw < wend; ++kw) {
+              sum += input.get(kh * inputShape[1] + kw, n);
+            }
+          }
+          output.put(oh * outputShape[1] + ow, n, sum / kernelSize);
+        }
+      }
+    }
+    return output;
   }
 
   /**
    * Computes output values for this pooling layer.
    * available pooling type: max, average
-   * @param input input values for this layer.
-   * @return output values for this layer.
+   * @param input the input values for this layer.
+   * @return the output values for this layer.
    */
   @Override
   public Matrix feedForward(final Matrix input) {
@@ -102,12 +170,59 @@ public final class PoolingLayer extends LayerBase {
     }
   }
 
+  /**
+   * Backpropagating function for max pooling.
+   * @param input the input values for this layer.
+   * @param nextError the errors of the next layer - the one closer to the output layer.
+   * @return errors for this layer with the specified input value.
+   */
   private Matrix backPropagateMaxPooling(final Matrix input, final Matrix nextError) {
-    throw new RuntimeException("Not implemented");
+    final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
+    for (int n = 0; n < input.getColumns(); ++n) {
+      for (int oh = 0; oh < outputShape[0]; ++oh) {
+        for (int ow = 0; ow < outputShape[1]; ++ow) {
+          //Add error to saved index.
+          final int outputIndex = oh * outputShape[1] + ow;
+          final int maxIndex = (int) indexMatrix.get(outputIndex, n);
+          final float newError = nextError.get(outputIndex, n) + error.get(maxIndex, n);
+          error.put(maxIndex, n, newError);
+        }
+      }
+    }
+    return error;
   }
 
+  /**
+   * Backpropagating function for average pooling.
+   * @param input the input values for this layer.
+   * @param nextError the errors of the next layer - the one closer to the output layer.
+   * @return errors for this layer with the specified input value.
+   */
   private Matrix backPropagateAveragePooling(final Matrix input, final Matrix nextError) {
-    throw new RuntimeException("Not implemented");
+    final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
+    final int[] inputShape = getInputShape();
+    for (int n = 0; n < input.getColumns(); ++n) {
+      for (int oh = 0; oh < outputShape[0]; ++oh) {
+        for (int ow = 0; ow < outputShape[1]; ++ow) {
+          final int hstart = strideHeight * oh;
+          final int wstart = strideWidth * ow;
+          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
+          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          final int kernelSize = (hend - hstart) * (wend - wstart);
+          final int outputIndex = oh * outputShape[1] + ow;
+
+          for (int kh = hstart; kh < hend; ++kh) {
+            for (int kw = wstart; kw < wend; ++kw) {
+              //Add error divided by kernel size for all pixels within the range.
+              final int inputIndex = kh * inputShape[1] + kw;
+              final float newError = nextError.get(outputIndex, n) / kernelSize + error.get(inputIndex, n);
+              error.put(inputIndex, n, newError);
+            }
+          }
+        }
+      }
+    }
+    return error;
   }
 
   /**

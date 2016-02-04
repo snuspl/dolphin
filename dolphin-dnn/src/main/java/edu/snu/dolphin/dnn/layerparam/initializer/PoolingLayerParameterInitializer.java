@@ -82,20 +82,13 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * @return shape of output
    */
   private int[] computeOutputShape() {
-    final int[] computedShape;
-    switch (inputShape.length) {
-    case 1:
-      computedShape = new int[1];
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      return computedShape;
-    case 2:
-      computedShape = new int[2];
-      computedShape[0] = (inputShape[0] - kernelHeight) / strideHeight + 1;
-      computedShape[1] = (inputShape[1] - kernelWidth) / strideWidth + 1;
-      return computedShape;
-    default:
-      throw new IllegalArgumentException("Unsupported input dimension: " + Integer.toString(inputShape.length));
+    final int[] computedShape = new int[2];
+    if (inputShape.length != 2) {
+      throw new IllegalArgumentException("Unsupported input dimensions: " + inputShape.length);
     }
+    computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight) / strideHeight) + 1;
+    computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth) / strideWidth) + 1;
+    return computedShape;
   }
 
   /**

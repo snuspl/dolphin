@@ -36,9 +36,9 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
     return new PoolingLayerConfigurationBuilder();
   }
 
-  private String poolingType;
-  private int strideHeight;
-  private int strideWidth;
+  private String poolingType = "MAX";
+  private int strideHeight = 1;
+  private int strideWidth = 1;
   private int kernelHeight;
   private int kernelWidth;
 

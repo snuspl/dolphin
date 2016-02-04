@@ -79,7 +79,16 @@ parameter_provider {
 	* `random_seed`: the seed for generating random inital parameters.
 	* `num_output`: the number of outputs for this layer.
 
-**More types of layers such as convolutional layer and subsampling layer will be supported.**
+##### Pooling Layer
+* Layer type: `Pooling`
+* Parameters (`PoolingLayerConfiguration pooling_param`)
+    * `pooling_type`[default="MAX"]: the type of pooling for this layer. Available types are MAX and AVERAGE.
+    * `stride_height`[default=1]: the interval at which pooling layers apply filters to inputs.
+    * `stride_width`[default=1]: the interval at which pooling layers apply filters to inputs.
+    * `kernel_height`: the height of kernel for this layer.
+    * `kernel_width`: the width of kernel for this layer.
+
+**More types of layers such as convolutional layer will be supported.**
 
 ##### Activation Layer
 * Layer type: `Activation`
