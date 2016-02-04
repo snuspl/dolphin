@@ -110,8 +110,11 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    */
   private int[] computeOutputShape() {
     final int[] computedShape = new int[2];
-    computedShape[0] = (int) Math.ceil((double) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
-    computedShape[1] = (int) Math.ceil((double) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
+    if (inputShape.length != 2) {
+      throw new IllegalArgumentException("Unsupported input dimensions: " + inputShape.length);
+    }
+    computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
+    computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
     return computedShape;
   }
 
