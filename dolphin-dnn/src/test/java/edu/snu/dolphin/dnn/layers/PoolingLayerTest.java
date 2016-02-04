@@ -80,10 +80,61 @@ public final class PoolingLayerTest {
       {4.5f, 8},
       {7, 6.5f},
       {1, 9}});
+  private final Matrix expectedMaxPoolingWithPaddingActivation = matrixFactory.create(new float[][]{
+      {0, 10},
+      {9, 22},
+      {9, 22},
+      {2, 13},
+      {8, 10},
+      {9, 22},
+      {9, 22},
+      {7, 13},
+      {10, 6},
+      {10, 7},
+      {7, 9},
+      {7, 9},
+      {10, 6},
+      {10, 7},
+      {4, 9},
+      {1, 9}});
+  private final Matrix expectedAveragePoolingWithPaddingActivation = matrixFactory.create(new float[][]{
+      {0, 2.5f},
+      {2.25f, 8},
+      {2.75f, 8.75f},
+      {0.5f, 3.25f},
+      {2, 2.5f},
+      {5, 9.25f},
+      {5.25f, 10.75f},
+      {2.25f, 4},
+      {4.5f, 1.5f},
+      {6.25f, 4.5f},
+      {3.75f, 6},
+      {2, 3},
+      {2.5f, 1.5f},
+      {3.5f, 3.25f},
+      {1.25f, 4},
+      {0.25f, 2.25f}});
   private final Matrix nextError = matrixFactory.create(new float[][]{
       {12, 0},
       {16, 4},
       {20, 12},
+      {4, 8}});
+  private final Matrix nextErrorWithPadding = matrixFactory.create(new float[][]{
+      {12, 0},
+      {16, 4},
+      {20, 12},
+      {4, 8},
+      {0, 8},
+      {8, 20},
+      {4, 12},
+      {4, 0},
+      {8, 4},
+      {4, 0},
+      {0, 16},
+      {12, 0},
+      {16, 4},
+      {12, 16},
+      {0, 4},
       {4, 8}});
   private final Matrix expectedMaxPoolingError = matrixFactory.create(new float[][]{
       {0, 0},
@@ -125,11 +176,33 @@ public final class PoolingLayerTest {
       {10, 6},
       {10, 6},
       {4, 8}});
+  private final Matrix expectedMaxPoolingWithPaddingError = matrixFactory.create(new float[][]{
+      {12, 8},
+      {48, 48},
+      {4, 8},
+      {0, 0},
+      {0, 0},
+      {16, 0},
+      {40, 8},
+      {0, 16},
+      {4, 28}});
+  private final Matrix expectedAveragePoolingWithPaddingError = matrixFactory.create(new float[][]{
+      {9, 8},
+      {12, 12},
+      {8, 8},
+      {5, 8},
+      {4, 12},
+      {5, 7},
+      {10, 6},
+      {4, 9},
+      {4, 7}});
 
   private LayerBase maxPoolingLayer;
   private LayerBase averagePoolingLayer;
   private LayerBase remainderExistingMaxPoolingLayer;
   private LayerBase remainderExistingAveragePoolingLayer;
+  private LayerBase maxPoolingWithPaddingLayer;
+  private LayerBase averagePoolingWithPaddingLayer;
 
   @Before
   public void setup() throws InjectionException {
@@ -169,6 +242,26 @@ public final class PoolingLayerTest {
         .setStrideHeight(2)
         .setStrideWidth(2);
 
+    final PoolingLayerConfigurationBuilder maxWithPaddingBuilder =
+        PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+        .setPoolingType("MAX")
+        .setPaddingHeight(1)
+        .setPaddingWidth(1)
+        .setKernelHeight(2)
+        .setKernelWidth(2)
+        .setStrideHeight(1)
+        .setStrideWidth(1);
+
+    final PoolingLayerConfigurationBuilder averageWithPaddingBuilder =
+        PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+        .setPoolingType("AVERAGE")
+        .setPaddingHeight(1)
+        .setPaddingWidth(1)
+        .setKernelHeight(2)
+        .setKernelWidth(2)
+        .setStrideHeight(1)
+        .setStrideWidth(1);
+
     this.maxPoolingLayer =
         Tang.Factory.getTang().newInjector(layerConf, maxBuilder.build())
         .getInstance(LayerBase.class);
@@ -185,6 +278,13 @@ public final class PoolingLayerTest {
         Tang.Factory.getTang().newInjector(layerConf, remainderExistingAverageBuilder.build())
         .getInstance(LayerBase.class);
 
+    this.maxPoolingWithPaddingLayer =
+        Tang.Factory.getTang().newInjector(layerConf, maxWithPaddingBuilder.build())
+        .getInstance(LayerBase.class);
+
+    this.averagePoolingWithPaddingLayer =
+        Tang.Factory.getTang().newInjector(layerConf, averageWithPaddingBuilder.build())
+        .getInstance(LayerBase.class);
   }
 
   @Test
@@ -234,9 +334,35 @@ public final class PoolingLayerTest {
 
   @Test
   public void testRemainderExistingAveragePoolingBackPropagate() {
-    remainderExistingAveragePoolingLayer.feedForward(input);
     final Matrix error = remainderExistingAveragePoolingLayer
         .backPropagate(input, expectedRemainderExistingAveragePoolingActivation, nextError);
     assertTrue(expectedRemainderExistingAveragePoolingError.compare(error, TOLERANCE));
+  }
+
+  @Test
+  public void testMaxPoolingWithPaddingActivation() {
+    final Matrix poolingActivation = maxPoolingWithPaddingLayer.feedForward(input);
+    assertTrue(expectedMaxPoolingWithPaddingActivation.compare(poolingActivation, TOLERANCE));
+  }
+
+  @Test
+  public void testMaxPoolingWithPaddingBackPropagate() {
+    maxPoolingWithPaddingLayer.feedForward(input);
+    final Matrix error = maxPoolingWithPaddingLayer
+        .backPropagate(input, expectedMaxPoolingWithPaddingActivation, nextErrorWithPadding);
+    assertTrue(expectedMaxPoolingWithPaddingError.compare(error, TOLERANCE));
+  }
+
+  @Test
+  public void testAveragePoolingWithPaddingActivation() {
+    final Matrix poolingActivation = averagePoolingWithPaddingLayer.feedForward(input);
+    assertTrue(expectedAveragePoolingWithPaddingActivation.compare(poolingActivation, TOLERANCE));
+  }
+
+  @Test
+  public void testAveragePoolingWithPaddingBackPropagate() {
+    final Matrix error = averagePoolingWithPaddingLayer
+        .backPropagate(input, expectedAveragePoolingWithPaddingActivation, nextErrorWithPadding);
+    assertTrue(expectedAveragePoolingWithPaddingError.compare(error, TOLERANCE));
   }
 }

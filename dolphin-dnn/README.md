@@ -83,6 +83,8 @@ parameter_provider {
 * Layer type: `Pooling`
 * Parameters (`PoolingLayerConfiguration pooling_param`)
     * `pooling_type`[default="MAX"]: the type of pooling for this layer. Available types are MAX and AVERAGE.
+    * `padding_height`[default=0]: the space on the border of the input volume.
+    * `padding_width`[default=0]: the space on the border of the input volume.
     * `stride_height`[default=1]: the interval at which pooling layers apply filters to inputs.
     * `stride_width`[default=1]: the interval at which pooling layers apply filters to inputs.
     * `kernel_height`: the height of kernel for this layer.
