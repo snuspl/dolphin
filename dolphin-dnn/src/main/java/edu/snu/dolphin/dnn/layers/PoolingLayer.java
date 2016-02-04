@@ -183,8 +183,9 @@ public final class PoolingLayer extends LayerBase {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
           //Add error to saved index.
           final int outputIndex = oh * outputShape[1] + ow;
-          final float newError = nextError.get(outputIndex, n) + error.get((int) indexMatrix.get(outputIndex, n), n);
-          error.put((int) indexMatrix.get(outputIndex, n), n, newError);
+          final int maxIndex = (int) indexMatrix.get(outputIndex, n);
+          final float newError = nextError.get(outputIndex, n) + error.get(maxIndex, n);
+          error.put(maxIndex, n, newError);
         }
       }
     }
