@@ -83,8 +83,8 @@ parameter_provider {
 * Layer type: `Pooling`
 * Parameters (`PoolingLayerConfiguration pooling_param`)
     * `pooling_type`[default="MAX"]: the type of pooling for this layer. Available types are MAX and AVERAGE.
-    * `stride_height`[default=1]: the height of stride that controls how new rows are allocated to compute.
-    * `stride_width`[default=1]: the width of stride that controls how new columns are allocated to compute.
+    * `stride_height`[default=1]: the interval at which pooling layers apply filter to inputs.
+    * `stride_width`[default=1]: the interval at which pooling layers apply filter to inputs.
     * `kernel_height`: the height of kernel for this layer.
     * `kernel_width`: the width of kernel for this layer.
 
