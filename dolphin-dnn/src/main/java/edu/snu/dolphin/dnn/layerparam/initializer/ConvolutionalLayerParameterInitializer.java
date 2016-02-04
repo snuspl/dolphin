@@ -104,8 +104,8 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
-   * row' = (row − kernelHeight + 2 * paddingHeight) / stride + 1
-   * col' = (col − kernelWidth + 2 * paddingWidth) / stride + 1
+   * row' = ceil((row − kernelHeight + 2 * paddingHeight) / stride) + 1
+   * col' = ceil((col − kernelWidth + 2 * paddingWidth) / stride) + 1
    * @return shape of output
    */
   private int[] computeOutputShape() {
