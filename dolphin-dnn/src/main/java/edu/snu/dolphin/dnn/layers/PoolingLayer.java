@@ -15,7 +15,6 @@
  */
 package edu.snu.dolphin.dnn.layers;
 
-import edu.snu.dolphin.dnn.NeuralNetwork;
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
@@ -101,11 +100,11 @@ public final class PoolingLayer extends LayerBase {
           final int wstart = strideWidth * ow;
           final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
           final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
-          int maxIndex = wstart + hstart * inputShape[1];
+          int maxIndex = hstart * inputShape[1] + wstart;
           float max = input.get(maxIndex, n);
           for (int kh = hstart; kh < hend; ++kh) {
             for (int kw = wstart; kw < wend; ++kw) {
-              final int newIndex = kw + kh * inputShape[1];
+              final int newIndex = kh * inputShape[1] + kw;
               final float newValue = input.get(newIndex, n);
               if (newValue > max) {
                 max = newValue;
@@ -130,17 +129,16 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix feedForwardAveragePooling(final Matrix input) {
     final int[] inputShape = getInputShape();
-    final int kernelSize = kernelHeight * kernelWidth;
     final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
-          //Find sum of values within kernel range and put the average value in the output matrix.
+          //Compute sum of values within kernel range and put the average value in the output matrix.
           final int hstart = strideHeight * oh;
           final int wstart = strideWidth * ow;
           final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
           final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
-
+          final int kernelSize = (hend - hstart) * (wend - wstart);
           float sum = 0;
           for (int kh = hstart; kh < hend; ++kh) {
             for (int kw = wstart; kw < wend; ++kw) {
@@ -200,7 +198,6 @@ public final class PoolingLayer extends LayerBase {
    * @return errors for this layer with the specified input value.
    */
   private Matrix backPropagateAveragePooling(final Matrix input, final Matrix nextError) {
-    final float kernelSize = kernelHeight * kernelWidth;
     final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
     final int[] inputShape = getInputShape();
     for (int n = 0; n < input.getColumns(); ++n) {
@@ -210,6 +207,7 @@ public final class PoolingLayer extends LayerBase {
           final int wstart = strideWidth * ow;
           final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
           final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          final int kernelSize = (hend - hstart) * (wend - wstart);
           final int outputIndex = oh * outputShape[1] + ow;
 
           for (int kh = hstart; kh < hend; ++kh) {
