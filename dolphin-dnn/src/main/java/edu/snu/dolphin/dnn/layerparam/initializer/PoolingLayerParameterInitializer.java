@@ -83,8 +83,8 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
-   * row' = (row − kernelHeight + 2 * paddingHeight) / stride + 1
-   * col' = (col − kernelWidth - 2 * paddingHeight) / stride + 1
+   * row' = ceil((row − kernelHeight + 2 * paddingHeight) / stride) + 1
+   * col' = ceil((col − kernelWidth - 2 * paddingHeight) / stride) + 1
    * @return shape of output
    */
   private int[] computeOutputShape() {
@@ -100,6 +100,7 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
     }
     computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
     computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
+    //Pooling should start inside the input images.
     //If the last pooling starts outside the input image, clip that output.
     if ((computedShape[0] - 1) * strideHeight >= inputShape[0] + paddingHeight) {
       --computedShape[0];
