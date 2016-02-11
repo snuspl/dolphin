@@ -44,15 +44,15 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
 
   @Inject
   private PoolingLayerParameterInitializer(
-      final MatrixFactory matrixFactory,
-      @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
-      @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape,
-      @Parameter(LayerConfigurationParameters.PaddingHeight.class) final int paddingHeight,
-      @Parameter(LayerConfigurationParameters.PaddingWidth.class) final int paddingWidth,
-      @Parameter(LayerConfigurationParameters.StrideHeight.class) final int strideHeight,
-      @Parameter(LayerConfigurationParameters.StrideWidth.class) final int strideWidth,
-      @Parameter(LayerConfigurationParameters.KernelHeight.class) final int kernelHeight,
-      @Parameter(LayerConfigurationParameters.KernelWidth.class) final int kernelWidth) {
+          final MatrixFactory matrixFactory,
+          @Parameter(LayerConfigurationParameters.LayerIndex.class) final int index,
+          @Parameter(LayerConfigurationParameters.LayerInputShape.class) final String inputShape,
+          @Parameter(LayerConfigurationParameters.PaddingHeight.class) final int paddingHeight,
+          @Parameter(LayerConfigurationParameters.PaddingWidth.class) final int paddingWidth,
+          @Parameter(LayerConfigurationParameters.StrideHeight.class) final int strideHeight,
+          @Parameter(LayerConfigurationParameters.StrideWidth.class) final int strideWidth,
+          @Parameter(LayerConfigurationParameters.KernelHeight.class) final int kernelHeight,
+          @Parameter(LayerConfigurationParameters.KernelWidth.class) final int kernelWidth) {
     this.index = index;
     this.inputShape = shapeFromString(inputShape);
     this.paddingHeight = paddingHeight;
@@ -83,8 +83,8 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * This function computes output shape.
    * input shape: row * col
    * output shape: row' * col'
-   * row' = ceil((row − kernelHeight + 2 * paddingHeight) / stride) + 1
-   * col' = ceil((col − kernelWidth - 2 * paddingHeight) / stride) + 1
+   * row' = ceil((row − kernelHeight + 2 * paddingHeight) / strideHeight) + 1
+   * col' = ceil((col − kernelWidth - 2 * paddingWidth) / strideWidth) + 1
    * @return shape of output
    */
   private int[] computeOutputShape() {
@@ -104,9 +104,15 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
     //If the last pooling starts outside the input image, clip that output.
     if ((computedShape[0] - 1) * strideHeight >= inputShape[0] + paddingHeight) {
       --computedShape[0];
+      if ((computedShape[0] - 1) * strideHeight >= inputShape[0] + paddingHeight) {
+        throw new IllegalArgumentException("Stride height is too large for the input image.");
+      }
     }
     if ((computedShape[1] - 1) * strideWidth >= inputShape[1] + paddingWidth) {
       --computedShape[1];
+      if ((computedShape[1] - 1) * strideWidth >= inputShape[1] + paddingWidth) {
+        throw new IllegalArgumentException("Stride width is too large for the input image.");
+      }
     }
     return computedShape;
   }
