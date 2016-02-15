@@ -37,6 +37,8 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   }
 
   private String poolingType = "MAX";
+  private int paddingHeight = 0;
+  private int paddingWidth = 0;
   private int strideHeight = 1;
   private int strideWidth = 1;
   private int kernelHeight;
@@ -44,6 +46,16 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
 
   public synchronized PoolingLayerConfigurationBuilder setPoolingType(final String poolingType) {
     this.poolingType = poolingType;
+    return this;
+  }
+
+  public synchronized PoolingLayerConfigurationBuilder setPaddingHeight(final int paddingHeight) {
+    this.paddingHeight = paddingHeight;
+    return this;
+  }
+
+  public synchronized PoolingLayerConfigurationBuilder setPaddingWidth(final int paddingWidth) {
+    this.paddingWidth = paddingWidth;
     return this;
   }
 
@@ -70,6 +82,8 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   public synchronized PoolingLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
     poolingType = protoConf.getPoolingParam().getPoolingType();
+    paddingHeight = protoConf.getPoolingParam().getPaddingHeight();
+    paddingWidth = protoConf.getPoolingParam().getPaddingWidth();
     strideHeight = protoConf.getPoolingParam().getStrideHeight();
     strideWidth = protoConf.getPoolingParam().getStrideWidth();
     kernelHeight = protoConf.getPoolingParam().getKernelHeight();
@@ -81,6 +95,8 @@ public final class PoolingLayerConfigurationBuilder implements Builder<Configura
   public synchronized Configuration build() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerConfigurationParameters.PoolingType.class, poolingType)
+        .bindNamedParameter(LayerConfigurationParameters.PaddingHeight.class, String.valueOf(paddingHeight))
+        .bindNamedParameter(LayerConfigurationParameters.PaddingWidth.class, String.valueOf(paddingWidth))
         .bindNamedParameter(LayerConfigurationParameters.StrideHeight.class, String.valueOf(strideHeight))
         .bindNamedParameter(LayerConfigurationParameters.StrideWidth.class, String.valueOf(strideWidth))
         .bindNamedParameter(LayerConfigurationParameters.KernelHeight.class, String.valueOf(kernelHeight))

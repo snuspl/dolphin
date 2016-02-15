@@ -44,6 +44,8 @@ public final class PoolingLayer extends LayerBase {
   }
   private final int[] outputShape;
   private final PoolType poolingType;
+  private final int paddingHeight;
+  private final int paddingWidth;
   private final int strideHeight;
   private final int strideWidth;
   private final int kernelHeight;
@@ -55,6 +57,8 @@ public final class PoolingLayer extends LayerBase {
   private PoolingLayer(@Parameter(LayerIndex.class) final int index,
                        @Parameter(LayerInputShape.class) final String inputShape,
                        @Parameter(PoolingType.class) final String poolingType,
+                       @Parameter(PaddingHeight.class) final int paddingHeight,
+                       @Parameter(PaddingWidth.class) final int paddingWidth,
                        @Parameter(StrideHeight.class) final int strideHeight,
                        @Parameter(StrideWidth.class) final int strideWidth,
                        @Parameter(KernelHeight.class) final int kernelHeight,
@@ -62,6 +66,8 @@ public final class PoolingLayer extends LayerBase {
                        final LayerParameterInitializer layerParameterInitializer,
                        final MatrixFactory matrixFactory) {
     super(index, inputShape);
+    this.paddingHeight = paddingHeight;
+    this.paddingWidth = paddingWidth;
     this.strideHeight = strideHeight;
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
@@ -96,10 +102,12 @@ public final class PoolingLayer extends LayerBase {
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
           //Find the maximum value within kernel range and put it in the output matrix.
-          final int hstart = strideHeight * oh;
-          final int wstart = strideWidth * ow;
+          int hstart = strideHeight * oh - paddingHeight;
+          int wstart = strideWidth * ow - paddingWidth;
           final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
           final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          hstart = Math.max(hstart, 0);
+          wstart = Math.max(wstart, 0);
           int maxIndex = hstart * inputShape[1] + wstart;
           float max = input.get(maxIndex, n);
           for (int kh = hstart; kh < hend; ++kh) {
@@ -134,11 +142,15 @@ public final class PoolingLayer extends LayerBase {
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
           //Compute sum of values within kernel range and put the average value in the output matrix.
-          final int hstart = strideHeight * oh;
-          final int wstart = strideWidth * ow;
-          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
-          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          int hstart = strideHeight * oh - paddingHeight;
+          int wstart = strideWidth * ow - paddingWidth;
+          int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
+          int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
           final int kernelSize = (hend - hstart) * (wend - wstart);
+          hstart = Math.max(hstart, 0);
+          wstart = Math.max(wstart, 0);
+          hend = Math.min(hend, inputShape[0]);
+          wend = Math.min(wend, inputShape[1]);
           float sum = 0;
           for (int kh = hstart; kh < hend; ++kh) {
             for (int kw = wstart; kw < wend; ++kw) {
@@ -204,11 +216,15 @@ public final class PoolingLayer extends LayerBase {
     for (int n = 0; n < input.getColumns(); ++n) {
       for (int oh = 0; oh < outputShape[0]; ++oh) {
         for (int ow = 0; ow < outputShape[1]; ++ow) {
-          final int hstart = strideHeight * oh;
-          final int wstart = strideWidth * ow;
-          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
-          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+          int hstart = strideHeight * oh - paddingHeight;
+          int wstart = strideWidth * ow - paddingWidth;
+          int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
+          int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
           final int kernelSize = (hend - hstart) * (wend - wstart);
+          hstart = Math.max(hstart, 0);
+          wstart = Math.max(wstart, 0);
+          hend = Math.min(hend, inputShape[0]);
+          wend = Math.min(wend, inputShape[1]);
           final int outputIndex = oh * outputShape[1] + ow;
 
           for (int kh = hstart; kh < hend; ++kh) {
