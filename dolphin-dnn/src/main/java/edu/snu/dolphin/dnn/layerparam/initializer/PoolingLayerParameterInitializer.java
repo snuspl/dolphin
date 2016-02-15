@@ -105,13 +105,15 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
     if ((computedShape[0] - 1) * strideHeight >= inputShape[0] + paddingHeight) {
       --computedShape[0];
       if ((computedShape[0] - 1) * strideHeight >= inputShape[0] + paddingHeight) {
-        throw new IllegalArgumentException("The second last as well as the last pooling starts out of the image.");
+        throw new IllegalArgumentException("The second last pooling still starts outside of the image " +
+            "even though we clip the last.");
       }
     }
     if ((computedShape[1] - 1) * strideWidth >= inputShape[1] + paddingWidth) {
       --computedShape[1];
       if ((computedShape[1] - 1) * strideWidth >= inputShape[1] + paddingWidth) {
-        throw new IllegalArgumentException("The second last as well as the last pooling starts out of the image.");
+        throw new IllegalArgumentException("The second last pooling still starts outside of the image " +
+            "even though we clip the last.");
       }
     }
     return computedShape;
