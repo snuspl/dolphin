@@ -23,18 +23,16 @@ import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
-import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for convolutional layer.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ConvolutionalLayerTest {
+
   private static MatrixFactory matrixFactory;
   private static final float TOLERANCE = 1e-4f;
 

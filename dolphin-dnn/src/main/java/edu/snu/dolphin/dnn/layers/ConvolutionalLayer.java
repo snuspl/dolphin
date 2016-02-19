@@ -90,7 +90,7 @@ public final class ConvolutionalLayer extends LayerBase {
   private Matrix im2col(final int imageIndex, final Matrix input) {
     final int[] inputShape = getInputShape();
     final Matrix col =
-        matrixFactory.zeros(NeuralNetworkUtils.getShapeLength(outputShape), kernelHeight * kernelWidth);
+        matrixFactory.zeros(kernelHeight * kernelWidth, NeuralNetworkUtils.getShapeLength(outputShape));
     for (int kh = 0; kh < kernelHeight; ++kh) {
       for (int kw = 0; kw < kernelWidth; ++kw) {
         int ih = kh - paddingHeight;
@@ -99,8 +99,8 @@ public final class ConvolutionalLayer extends LayerBase {
             int iw = kw - paddingWidth;
             for (int ow = 0; ow < outputShape[1]; ++ow) {
               if (iw >= 0 && iw < inputShape[1]) {
-                col.put(oh * outputShape[1] + ow,
-                    kh * kernelHeight + kw, input.get(ih * inputShape[1] + iw, imageIndex));
+                col.put(kh * kernelWidth + kw, oh * outputShape[1] + ow,
+                    input.get(ih * inputShape[1] + iw, imageIndex));
               }
               iw += strideWidth;
             }
@@ -135,8 +135,8 @@ public final class ConvolutionalLayer extends LayerBase {
                 final int colh = colIndex / kernelSize;
                 final int colw = colIndex - colh * kernelSize;
                 final int inputIndex = ih * inputShape[1] + iw;
-                final float newValue = col.get(colh, colw) + im.get(inputIndex, 0);
-                im.put(inputIndex, 0, newValue);
+                final float newValue = col.get(colh, colw) + im.get(inputIndex);
+                im.put(inputIndex, newValue);
               }
               colIndex++;
               iw += strideWidth;
@@ -159,7 +159,7 @@ public final class ConvolutionalLayer extends LayerBase {
     final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
       final Matrix col = im2col(n, input);
-      output.putColumn(n, col.mmul(getLayerParameter().getWeightParam()));
+      output.putColumn(n, getLayerParameter().getWeightParam().transpose().mmul(col));
     }
     output.addiColumnVector(getLayerParameter().getBiasParam());
     return output;
@@ -185,13 +185,13 @@ public final class ConvolutionalLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    final Matrix weightDiff = matrixFactory.create(kernelHeight * kernelWidth, 1);
+    final Matrix weightGradient = matrixFactory.create(kernelHeight * kernelWidth, 1);
     for (int n = 0; n < input.getColumns(); ++n) {
       final Matrix col = im2col(n, input);
-      weightDiff.addiColumnVector(col.transpose().mmul(error.getColumn(n)));
+      weightGradient.addiColumnVector(col.mmul(error.getColumn(n)));
     }
     return LayerParameter.newBuilder()
-        .setWeightParam(weightDiff)
+        .setWeightParam(weightGradient)
         .setBiasParam(error.rowSums())
         .build();
   }
