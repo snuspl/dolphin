@@ -125,17 +125,17 @@ public class ConvolutionalLayerTest {
   private final LayerParameter expectedConvolutionalLayerParams =
       LayerParameter.newBuilder()
       .setWeightParam(matrixFactory.create(new float[]
-          {15.8f, 12.29999f, 13.9f, 9.8f}))
+          {15.8f, 12.29999f, 13.9f, 9.8f}).transpose())
       .setBiasParam(matrixFactory.create(new float[]
-          {0.1f, 0.6f, 1, 0.5f}))
+          {0.1f, 0.6f, 1, 0.5f}).transpose())
       .build();
 
   private final LayerParameter expectedConvolutionalLayerWithPaddingParams =
       LayerParameter.newBuilder()
       .setWeightParam(matrixFactory.create(new float[]
-          {58.7f, 41.699997f, 58.6f, 52.300003f}))
+          {58.7f, 41.699997f, 58.6f, 52.300003f}).transpose())
       .setBiasParam(matrixFactory.create(new float[]
-          {0.2f, 0.5f, 1.6f, 0.9f, 0.2f, 0.3f, 1.7f, 1.5f, 1.4f, 0.6f, 0.1f, 0.4f, 0.7f, 0.1f, 0.9f, 0.8f}))
+          {0.2f, 0.5f, 1.6f, 0.9f, 0.2f, 0.3f, 1.7f, 1.5f, 1.4f, 0.6f, 0.1f, 0.4f, 0.7f, 0.1f, 0.9f, 0.8f}).transpose())
       .build();
 
   private LayerBase convolutionalLayer;

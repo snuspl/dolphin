@@ -82,8 +82,8 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    * @return the initial parameter of the layer.
    */
   public LayerParameter generateInitialParameter() {
-    final Matrix weight = matrixFactory.randn(kernelHeight * kernelWidth, 1, randomSeed);
-    final Matrix bias = matrixFactory.create(outputShape[0] * outputShape[1], 1).fill(initBias);
+    final Matrix weight = matrixFactory.randn(1, kernelHeight * kernelWidth, randomSeed);
+    final Matrix bias = matrixFactory.create(1, outputShape[0] * outputShape[1]).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
 
