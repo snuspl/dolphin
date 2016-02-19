@@ -119,29 +119,30 @@ public final class ConvolutionalLayer extends LayerBase {
    */
   private Matrix col2im(final Matrix col) {
     final int[] inputShape = getInputShape();
-    final int kernelSize = kernelHeight * kernelWidth;
-    final Matrix im = matrixFactory.zeros(NeuralNetworkUtils.getShapeLength(inputShape), 1);
-    int colIndex = 0;
+    final Matrix im = matrixFactory.zeros(NeuralNetworkUtils.getShapeLength(inputShape));
+    int colh = 0;
     for (int kh = 0; kh < kernelHeight; ++kh) {
       for (int kw = 0; kw < kernelWidth; ++kw) {
+        int colw = 0;
         int ih = kh - paddingHeight;
         for (int oh = 0; oh < outputShape[0]; ++oh) {
           if (ih < 0 || ih >= inputShape[0]) {
-            colIndex += outputShape[1];
+            colw += outputShape[1];
           } else {
             int iw = kw - paddingWidth;
             for (int ow = 0; ow < outputShape[1]; ++ow) {
               if (iw >= 0 && iw < inputShape[1]) {
                 final int inputIndex = ih * inputShape[1] + iw;
-                final float newValue = col.get(colIndex) + im.get(inputIndex);
+                final float newValue = col.get(colh, colw) + im.get(inputIndex);
                 im.put(inputIndex, newValue);
               }
-              colIndex++;
+              colw++;
               iw += strideWidth;
             }
           }
           ih += strideHeight;
         }
+        colh++;
       }
     }
     return im;

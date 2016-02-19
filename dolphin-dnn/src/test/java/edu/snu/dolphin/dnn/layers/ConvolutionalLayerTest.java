@@ -112,15 +112,15 @@ public class ConvolutionalLayerTest {
       {0.1750358f, 0.1057307f},
       {0.0991548f, 0.0247887f}});
   private final Matrix expectedConvolutionalWithPaddingError = matrixFactory.create(new float[][]{
-      {-0.1263244f, -0.2559239f},
-      {0.0400003f, -0.0109717f},
-      {0.2362501f, 0.3004940f},
-      {-0.1479633f, -0.4230698f},
-      {-0.0150771f, -0.0128971f},
-      {0.156823f, 0.5068944f},
-      {-0.3567494f, -0.2191962f},
-      {-0.0816712f, -0.0827613f},
-      {0.2903719f, 0.1153361f}});
+      {0.0369707f, -0.0337006f},
+      {-0.0289132f, -0.110726f},
+      {-0.0266129f, 0.0193425f},
+      {-0.0471544f, -0.137827f},
+      {0.0167122f, 0.0918946f},
+      {0.105183f, 0.325266f},
+      {0.165702f, 0.133655f},
+      {-0.124812f, 0.0905167f},
+      {-0.153994f, -0.0412462f}});
 
   private final LayerParameter expectedConvolutionalLayerParams =
       LayerParameter.newBuilder()
