@@ -132,10 +132,8 @@ public final class ConvolutionalLayer extends LayerBase {
             int iw = kw - paddingWidth;
             for (int ow = 0; ow < outputShape[1]; ++ow) {
               if (iw >= 0 && iw < inputShape[1]) {
-                final int colh = colIndex / kernelSize;
-                final int colw = colIndex % kernelSize;
                 final int inputIndex = ih * inputShape[1] + iw;
-                final float newValue = col.get(colh, colw) + im.get(inputIndex);
+                final float newValue = col.get(colIndex) + im.get(inputIndex);
                 im.put(inputIndex, newValue);
               }
               colIndex++;
@@ -176,7 +174,9 @@ public final class ConvolutionalLayer extends LayerBase {
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
     final Matrix error = matrixFactory.create(input.getRows(), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix im = col2im(nextError.getColumn(n).mmul(getLayerParameter().getWeightParam()));
+      final Matrix colVec = nextError.getColumn(n);
+      final Matrix col = getLayerParameter().getWeightParam().transpose().mmul(colVec.reshape(1, colVec.getLength()));
+      final Matrix im = col2im(col);
       error.putColumn(n, im);
     }
     return error;
