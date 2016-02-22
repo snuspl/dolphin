@@ -16,8 +16,10 @@
 package edu.snu.dolphin.dnn.layers;
 
 import edu.snu.dolphin.dnn.blas.Matrix;
+import edu.snu.dolphin.dnn.blas.MatrixFactory;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 import edu.snu.dolphin.dnn.layerparam.initializer.LayerParameterInitializer;
+import edu.snu.dolphin.dnn.util.NeuralNetworkUtils;
 import org.apache.reef.tang.annotations.Parameter;
 
 import javax.inject.Inject;
@@ -43,6 +45,7 @@ public final class ConvolutionalLayer extends LayerBase {
   private final int strideWidth;
   private final int kernelHeight;
   private final int kernelWidth;
+  private final MatrixFactory matrixFactory;
 
   @Inject
   private ConvolutionalLayer(@Parameter(LayerIndex.class) final int index,
@@ -53,7 +56,8 @@ public final class ConvolutionalLayer extends LayerBase {
                              @Parameter(StrideWidth.class) final int strideWidth,
                              @Parameter(KernelHeight.class) final int kernelHeight,
                              @Parameter(KernelWidth.class) final int kernelWidth,
-                             final LayerParameterInitializer layerParameterInitializer) {
+                             final LayerParameterInitializer layerParameterInitializer,
+                             final MatrixFactory matrixFactory) {
     super(index, inputShape);
     this.paddingHeight = paddingHeight;
     this.paddingWidth = paddingWidth;
@@ -63,6 +67,7 @@ public final class ConvolutionalLayer extends LayerBase {
     this.kernelWidth = kernelWidth;
     this.outputShape = layerParameterInitializer.getOutputShape();
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
+    this.matrixFactory = matrixFactory;
   }
 
   @Override
@@ -77,13 +82,86 @@ public final class ConvolutionalLayer extends LayerBase {
   }
 
   /**
+   * Transform the given image to column form to facilitate matrix multiplication.
+   * @param imageIndex the index of the image in the input matrix.
+   * @param input input values for this layer.
+   * @return the converted column.
+   */
+  private Matrix im2col(final int imageIndex, final Matrix input) {
+    final int[] inputShape = getInputShape();
+    final Matrix col =
+        matrixFactory.zeros(kernelHeight * kernelWidth, NeuralNetworkUtils.getShapeLength(outputShape));
+    for (int kh = 0; kh < kernelHeight; ++kh) {
+      for (int kw = 0; kw < kernelWidth; ++kw) {
+        int ih = kh - paddingHeight;
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          if (ih >= 0 && ih < inputShape[0]) {
+            int iw = kw - paddingWidth;
+            for (int ow = 0; ow < outputShape[1]; ++ow) {
+              if (iw >= 0 && iw < inputShape[1]) {
+                col.put(kh * kernelWidth + kw, oh * outputShape[1] + ow,
+                    input.get(ih * inputShape[1] + iw, imageIndex));
+              }
+              iw += strideWidth;
+            }
+          }
+          ih += strideHeight;
+        }
+      }
+    }
+    return col;
+  }
+
+  /**
+   * Transform the given column form to the image to facilitate matrix multiplication.
+   * @param col the given column.
+   * @return the converted image.
+   */
+  private Matrix col2im(final Matrix col) {
+    final int[] inputShape = getInputShape();
+    final Matrix im = matrixFactory.zeros(NeuralNetworkUtils.getShapeLength(inputShape));
+    int colh = 0;
+    for (int kh = 0; kh < kernelHeight; ++kh) {
+      for (int kw = 0; kw < kernelWidth; ++kw) {
+        int colw = 0;
+        int ih = kh - paddingHeight;
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          if (ih < 0 || ih >= inputShape[0]) {
+            colw += outputShape[1];
+          } else {
+            int iw = kw - paddingWidth;
+            for (int ow = 0; ow < outputShape[1]; ++ow) {
+              if (iw >= 0 && iw < inputShape[1]) {
+                final int inputIndex = ih * inputShape[1] + iw;
+                final float newValue = col.get(colh, colw) + im.get(inputIndex);
+                im.put(inputIndex, newValue);
+              }
+              colw++;
+              iw += strideWidth;
+            }
+          }
+          ih += strideHeight;
+        }
+        colh++;
+      }
+    }
+    return im;
+  }
+
+  /**
    * Computes output values for this convolutional layer.
    * @param input input values for this layer.
    * @return output values for this layer.
    */
   @Override
   public Matrix feedForward(final Matrix input) {
-    throw new RuntimeException("Not Implemented");
+    final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
+    for (int n = 0; n < input.getColumns(); ++n) {
+      final Matrix col = im2col(n, input);
+      output.putColumn(n, getLayerParameter().getWeightParam().mmul(col));
+    }
+    output.addiColumnVector(getLayerParameter().getBiasParam());
+    return output;
   }
 
   /**
@@ -95,12 +173,29 @@ public final class ConvolutionalLayer extends LayerBase {
    */
   @Override
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
-    throw new RuntimeException("Not Implemented");
+    final Matrix error = matrixFactory.create(input.getRows(), input.getColumns());
+    for (int n = 0; n < input.getColumns(); ++n) {
+      final Matrix colVec = nextError.getColumn(n);
+      final Matrix col = getLayerParameter().getWeightParam().transpose().mmul(colVec.reshape(1, colVec.getLength()));
+      final Matrix im = col2im(col);
+      error.putColumn(n, im);
+    }
+    return error;
   }
 
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    throw new RuntimeException("Not Implemented");
+    final Matrix weightGradient = matrixFactory.create(1, kernelHeight * kernelWidth);
+    for (int n = 0; n < input.getColumns(); ++n) {
+      final Matrix col = im2col(n, input);
+      weightGradient.addiRowVector(col.mmul(error.getColumn(n)));
+    }
+    final Matrix biasGradient = error.rowSums();
+    biasGradient.reshape(1, biasGradient.getLength());
+    return LayerParameter.newBuilder()
+        .setWeightParam(weightGradient)
+        .setBiasParam(biasGradient)
+        .build();
   }
 }

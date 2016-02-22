@@ -76,7 +76,7 @@ parameter_provider {
 * Parameters (`FullyConnectedLayerConfiguration fully_connected_param`)
 	* `init_weight`: the standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
 	* `init_bias`: constant value with which the biases of this layer are initialized.
-	* `random_seed`: the seed for generating random inital parameters.
+	* `random_seed`: the seed for generating random initial parameters.
 	* `num_output`: the number of outputs for this layer.
 
 ##### Pooling Layer
@@ -90,7 +90,18 @@ parameter_provider {
     * `kernel_height`: the height of kernel for this layer.
     * `kernel_width`: the width of kernel for this layer.
 
-**More types of layers such as convolutional layer will be supported.**
+##### Convolutional Layer
+* Layer type: `Convolutional`
+* Parameters (`ConvolutionalLayerConfiguration convolutional_param`)
+    * `kernel_height`: the height of kernel for this layer.
+    * `kernel_width`: the width of kernel for this layer.
+    * `padding_height`[default = 0]: the space on the border of the input volume.
+    * `padding_width`[default = 0]: the space on the border of the input volume.
+    * `stride_height`[default = 1]: the interval at which convolutional layers apply filters to inputs.
+    * `stride_width`[default = 1]: the interval at which convolutional layers apply filters to inputs.
+    * `init_weight`: the standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
+    * `init_bias`: constant value with which the biases of this layer are initialized.
+    * `random_seed`: the seed for generating random initial parameters.
 
 ##### Activation Layer
 * Layer type: `Activation`
