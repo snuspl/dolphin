@@ -33,6 +33,7 @@ import org.apache.reef.tang.exceptions.InjectionException;
 import org.junit.Before;
 import org.junit.Test;
 
+import static edu.snu.dolphin.dnn.layers.LayerParameterUtils.compare;
 import static org.junit.Assert.*;
 
 /**
@@ -164,29 +165,6 @@ public final class NeuralNetworkTest {
 
     final Matrix[] gradients = neuralNetwork.backPropagate(ArrayUtils.add(activations, 0, input), label);
     assertTrue(MatrixUtils.compare(expectedErrors, gradients, TOLERANCE));
-  }
-
-  /**
-   * Returns true if each element of weight and bias of a layer parameter is equal to another within tolerance.
-   *
-   * @param a one layer parameter array to be tested for equality.
-   * @param b another layer parameter array to be tested for equality.
-   * @param tolerance the maximum difference for which both numbers are still considered equal.
-   * @return true if two layer parameter arrays are equal.
-   */
-  private static boolean compare(final LayerParameter[] a, final LayerParameter[] b, final float tolerance) {
-    if (a.length != b.length) {
-      return false;
-    }
-    for (int i = 0; i < a.length; ++i) {
-      final LayerParameter param = a[i];
-      final LayerParameter other = b[i];
-      if (!param.getBiasParam().compare(other.getBiasParam(), tolerance)
-          || !param.getWeightParam().compare(other.getWeightParam(), tolerance)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**

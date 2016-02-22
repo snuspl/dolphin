@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import edu.snu.dolphin.dnn.conf.LayerConfigurationParameters.*;
 
+import static edu.snu.dolphin.dnn.layers.LayerParameterUtils.compare;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -200,27 +201,21 @@ public class ConvolutionalLayerTest {
 
   @Test
   public void testConvolutionalWithPaddingBackPropagate() {
-    final Matrix error = convolutionalWithPaddingLayer
-        .backPropagate(input, expectedConvolutionalWithPaddingActivation, nextErrorWithPadding);
+    final Matrix error = convolutionalWithPaddingLayer.backPropagate(
+        input, expectedConvolutionalWithPaddingActivation, nextErrorWithPadding);
     assertTrue(expectedConvolutionalWithPaddingError.compare(error, TOLERANCE));
   }
 
   @Test
   public void testConvolutionalGradient() {
     final LayerParameter convolutionalLayerParams = convolutionalLayer.generateParameterGradient(input, nextError);
-    assertTrue(expectedConvolutionalLayerParams
-        .getBiasParam().compare(convolutionalLayerParams.getBiasParam(), TOLERANCE));
-    assertTrue(expectedConvolutionalLayerParams
-        .getWeightParam().compare(convolutionalLayerParams.getWeightParam(), TOLERANCE));
+    assertTrue(compare(expectedConvolutionalLayerParams, convolutionalLayerParams, TOLERANCE));
   }
 
   @Test
   public void testConvolutionalWithPaddingGradient() {
     final LayerParameter convolutionalLayerParams =
         convolutionalWithPaddingLayer.generateParameterGradient(input, nextErrorWithPadding);
-    assertTrue(expectedConvolutionalLayerWithPaddingParams
-        .getBiasParam().compare(convolutionalLayerParams.getBiasParam(), TOLERANCE));
-    assertTrue(expectedConvolutionalLayerWithPaddingParams
-        .getWeightParam().compare(convolutionalLayerParams.getWeightParam(), TOLERANCE));
+    assertTrue(compare(expectedConvolutionalLayerWithPaddingParams, convolutionalLayerParams, TOLERANCE));
   }
 }
