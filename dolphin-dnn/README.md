@@ -102,6 +102,7 @@ parameter_provider {
     * `init_weight`: the standard deviation that is used to initialize the weights in this layer from a Gaussian distribution with mean 0.
     * `init_bias`: constant value with which the biases of this layer are initialized.
     * `random_seed`: the seed for generating random initial parameters.
+    * `num_output`[default = 1]: the number of outputs for this layer.
 
 ##### Activation Layer
 * Layer type: `Activation`

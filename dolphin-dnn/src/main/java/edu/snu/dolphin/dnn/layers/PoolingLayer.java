@@ -29,7 +29,7 @@ import javax.inject.Inject;
  *
  * This layer is not learnable.
  * This layer resizes input matrix spatially, using max pooling or average pooling.
- * This layer works for only 2D inputs.
+ * This layer works for 2D and 3D inputs.
  * In a forward pass,
  * max pooling picks the maximum value in certain range (kernelHeight * kernelWidth) and these values make up output.
  * Average pooling gets the average of values in certain range (kernelHeight * kernelWidth)
@@ -95,35 +95,39 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix feedForwardMaxPooling(final Matrix input) {
     final int[] inputShape = getInputShape();
+    final int inputSize = inputShape[0] * inputShape[1];
+    final int outputSize = outputShape[0] * outputShape[1];
     final int outputLength = NeuralNetworkUtils.getShapeLength(outputShape);
     final Matrix output = matrixFactory.create(outputLength, input.getColumns());
     indexMatrix = matrixFactory.create(outputLength, input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      for (int oh = 0; oh < outputShape[0]; ++oh) {
-        for (int ow = 0; ow < outputShape[1]; ++ow) {
-          //Find the maximum value within kernel range and put it in the output matrix.
-          int hstart = strideHeight * oh - paddingHeight;
-          int wstart = strideWidth * ow - paddingWidth;
-          final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
-          final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
-          hstart = Math.max(hstart, 0);
-          wstart = Math.max(wstart, 0);
-          int maxIndex = hstart * inputShape[1] + wstart;
-          float max = input.get(maxIndex, n);
-          for (int kh = hstart; kh < hend; ++kh) {
-            for (int kw = wstart; kw < wend; ++kw) {
-              final int newIndex = kh * inputShape[1] + kw;
-              final float newValue = input.get(newIndex, n);
-              if (newValue > max) {
-                max = newValue;
-                maxIndex = newIndex;
+      for (int c = 0; c < outputShape[2]; ++c) {
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          for (int ow = 0; ow < outputShape[1]; ++ow) {
+            //Find the maximum value within kernel range and put it in the output matrix.
+            int hstart = strideHeight * oh - paddingHeight;
+            int wstart = strideWidth * ow - paddingWidth;
+            final int hend = Math.min(kernelHeight + hstart, inputShape[0]);
+            final int wend = Math.min(kernelWidth + wstart, inputShape[1]);
+            hstart = Math.max(hstart, 0);
+            wstart = Math.max(wstart, 0);
+            int maxIndex = hstart * inputShape[1] + wstart + c * inputSize;
+            float max = input.get(maxIndex, n);
+            for (int kh = hstart; kh < hend; ++kh) {
+              for (int kw = wstart; kw < wend; ++kw) {
+                final int newIndex = kh * inputShape[1] + kw + c * inputSize;
+                final float newValue = input.get(newIndex, n);
+                if (newValue > max) {
+                  max = newValue;
+                  maxIndex = newIndex;
+                }
               }
             }
+            final int outputIndex = oh * outputShape[1] + ow + c * outputSize;
+            output.put(outputIndex, n, max);
+            //Save the index of max value.
+            indexMatrix.put(outputIndex, n, maxIndex);
           }
-          final int outputIndex = oh * outputShape[1] + ow;
-          output.put(outputIndex, n, max);
-          //Save the index of max value.
-          indexMatrix.put(outputIndex, n, maxIndex);
         }
       }
     }
@@ -137,27 +141,31 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix feedForwardAveragePooling(final Matrix input) {
     final int[] inputShape = getInputShape();
+    final int inputSize = inputShape[0] * inputShape[1];
+    final int outputSize = outputShape[0] * outputShape[1];
     final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      for (int oh = 0; oh < outputShape[0]; ++oh) {
-        for (int ow = 0; ow < outputShape[1]; ++ow) {
-          //Compute sum of values within kernel range and put the average value in the output matrix.
-          int hstart = strideHeight * oh - paddingHeight;
-          int wstart = strideWidth * ow - paddingWidth;
-          int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
-          int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
-          final int kernelSize = (hend - hstart) * (wend - wstart);
-          hstart = Math.max(hstart, 0);
-          wstart = Math.max(wstart, 0);
-          hend = Math.min(hend, inputShape[0]);
-          wend = Math.min(wend, inputShape[1]);
-          float sum = 0;
-          for (int kh = hstart; kh < hend; ++kh) {
-            for (int kw = wstart; kw < wend; ++kw) {
-              sum += input.get(kh * inputShape[1] + kw, n);
+      for (int c = 0; c < outputShape[2]; ++c) {
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          for (int ow = 0; ow < outputShape[1]; ++ow) {
+            //Compute sum of values within kernel range and put the average value in the output matrix.
+            int hstart = strideHeight * oh - paddingHeight;
+            int wstart = strideWidth * ow - paddingWidth;
+            int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
+            int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
+            final int kernelSize = (hend - hstart) * (wend - wstart);
+            hstart = Math.max(hstart, 0);
+            wstart = Math.max(wstart, 0);
+            hend = Math.min(hend, inputShape[0]);
+            wend = Math.min(wend, inputShape[1]);
+            float sum = 0;
+            for (int kh = hstart; kh < hend; ++kh) {
+              for (int kw = wstart; kw < wend; ++kw) {
+                sum += input.get(kh * inputShape[1] + kw + c * inputSize, n);
+              }
             }
+            output.put(oh * outputShape[1] + ow + c * outputSize, n, sum / kernelSize);
           }
-          output.put(oh * outputShape[1] + ow, n, sum / kernelSize);
         }
       }
     }
@@ -190,14 +198,18 @@ public final class PoolingLayer extends LayerBase {
    */
   private Matrix backPropagateMaxPooling(final Matrix input, final Matrix nextError) {
     final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
+    final int[] inputShape = getInputShape();
+    final int outputSize = outputShape[0] * outputShape[1];
     for (int n = 0; n < input.getColumns(); ++n) {
-      for (int oh = 0; oh < outputShape[0]; ++oh) {
-        for (int ow = 0; ow < outputShape[1]; ++ow) {
-          //Add error to saved index.
-          final int outputIndex = oh * outputShape[1] + ow;
-          final int maxIndex = (int) indexMatrix.get(outputIndex, n);
-          final float newError = nextError.get(outputIndex, n) + error.get(maxIndex, n);
-          error.put(maxIndex, n, newError);
+      for (int c = 0; c < outputShape[2]; ++c) {
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          for (int ow = 0; ow < outputShape[1]; ++ow) {
+            //Add error to saved index.
+            final int outputIndex = oh * outputShape[1] + ow + c * outputSize;
+            final int maxIndex = (int) indexMatrix.get(outputIndex, n);
+            final float newError = nextError.get(outputIndex, n) + error.get(maxIndex, n);
+            error.put(maxIndex, n, newError);
+          }
         }
       }
     }
@@ -213,26 +225,30 @@ public final class PoolingLayer extends LayerBase {
   private Matrix backPropagateAveragePooling(final Matrix input, final Matrix nextError) {
     final Matrix error = matrixFactory.zeros(input.getRows(), input.getColumns());
     final int[] inputShape = getInputShape();
+    final int inputSize = inputShape[0] * inputShape[1];
+    final int outputSize = outputShape[0] * outputShape[1];
     for (int n = 0; n < input.getColumns(); ++n) {
-      for (int oh = 0; oh < outputShape[0]; ++oh) {
-        for (int ow = 0; ow < outputShape[1]; ++ow) {
-          int hstart = strideHeight * oh - paddingHeight;
-          int wstart = strideWidth * ow - paddingWidth;
-          int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
-          int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
-          final int kernelSize = (hend - hstart) * (wend - wstart);
-          hstart = Math.max(hstart, 0);
-          wstart = Math.max(wstart, 0);
-          hend = Math.min(hend, inputShape[0]);
-          wend = Math.min(wend, inputShape[1]);
-          final int outputIndex = oh * outputShape[1] + ow;
+      for (int c = 0; c < outputShape[2]; ++c) {
+        for (int oh = 0; oh < outputShape[0]; ++oh) {
+          for (int ow = 0; ow < outputShape[1]; ++ow) {
+            int hstart = strideHeight * oh - paddingHeight;
+            int wstart = strideWidth * ow - paddingWidth;
+            int hend = Math.min(kernelHeight + hstart, inputShape[0] + paddingHeight);
+            int wend = Math.min(kernelWidth + wstart, inputShape[1] + paddingWidth);
+            final int kernelSize = (hend - hstart) * (wend - wstart);
+            hstart = Math.max(hstart, 0);
+            wstart = Math.max(wstart, 0);
+            hend = Math.min(hend, inputShape[0]);
+            wend = Math.min(wend, inputShape[1]);
+            final int outputIndex = oh * outputShape[1] + ow + c * outputSize;
 
-          for (int kh = hstart; kh < hend; ++kh) {
-            for (int kw = wstart; kw < wend; ++kw) {
-              //Add error divided by kernel size for all pixels within the range.
-              final int inputIndex = kh * inputShape[1] + kw;
-              final float newError = nextError.get(outputIndex, n) / kernelSize + error.get(inputIndex, n);
-              error.put(inputIndex, n, newError);
+            for (int kh = hstart; kh < hend; ++kh) {
+              for (int kw = wstart; kw < wend; ++kw) {
+                //Add error divided by kernel size for all pixels within the range.
+                final int inputIndex = kh * inputShape[1] + kw + c * inputSize;
+                final float newError = nextError.get(outputIndex, n) / kernelSize + error.get(inputIndex, n);
+                error.put(inputIndex, n, newError);
+              }
             }
           }
         }

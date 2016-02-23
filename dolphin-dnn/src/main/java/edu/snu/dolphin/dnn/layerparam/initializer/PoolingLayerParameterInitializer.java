@@ -88,8 +88,8 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
    * @return shape of output
    */
   private int[] computeOutputShape() {
-    final int[] computedShape = new int[2];
-    if (inputShape.length != 2) {
+    final int[] computedShape = new int[3];
+    if (inputShape.length != 2 && inputShape.length != 3) {
       throw new IllegalArgumentException("Unsupported input dimensions: " + inputShape.length);
     }
     if (paddingHeight >= kernelHeight) {
@@ -115,6 +115,11 @@ public final class PoolingLayerParameterInitializer implements LayerParameterIni
         throw new IllegalArgumentException("The second last pooling still starts outside of the image " +
             "even though we clip the last.");
       }
+    }
+    if (inputShape.length == 3) {
+      computedShape[2] = inputShape[2];
+    } else {
+      computedShape[2] = 1;
     }
     return computedShape;
   }

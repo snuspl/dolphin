@@ -46,6 +46,7 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
   private long randomSeed = System.currentTimeMillis();
   private float initWeight;
   private float initBias;
+  private int numOutput = 1;
 
   public synchronized ConvolutionalLayerConfigurationBuilder setPaddingHeight(final int paddingHeight) {
     this.paddingHeight = paddingHeight;
@@ -92,6 +93,11 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
     return this;
   }
 
+  public synchronized ConvolutionalLayerConfigurationBuilder setNumOutput(final int numOutput) {
+    this.numOutput = numOutput;
+    return this;
+  }
+
 
   public synchronized ConvolutionalLayerConfigurationBuilder fromProtoConfiguration(
       final NeuralNetworkProtos.LayerConfiguration protoConf) {
@@ -106,6 +112,7 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
     }
     initWeight = protoConf.getConvolutionalParam().getInitWeight();
     initBias = protoConf.getConvolutionalParam().getInitBias();
+    numOutput = protoConf.getConvolutionalParam().getNumOutput();
     return this;
   }
 
@@ -121,6 +128,7 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
         .bindNamedParameter(LayerConfigurationParameters.RandomSeed.class, String.valueOf(randomSeed))
         .bindNamedParameter(LayerConfigurationParameters.InitialWeight.class, String.valueOf(initWeight))
         .bindNamedParameter(LayerConfigurationParameters.InitialBias.class, String.valueOf(initBias))
+        .bindNamedParameter(LayerConfigurationParameters.NumberOfOutput.class, String.valueOf(numOutput))
         .bindImplementation(LayerBase.class, ConvolutionalLayer.class)
         .bindImplementation(LayerParameterInitializer.class, ConvolutionalLayerParameterInitializer.class)
         .build();

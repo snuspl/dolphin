@@ -48,6 +48,7 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
   private final float initWeight;
   private final float initBias;
   private final long randomSeed;
+  private final int numOutput;
 
   @Inject
   private ConvolutionalLayerParameterInitializer(
@@ -62,7 +63,8 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
       @Parameter(LayerConfigurationParameters.KernelWidth.class) final int kernelWidth,
       @Parameter(LayerConfigurationParameters.RandomSeed.class) final long randomSeed,
       @Parameter(LayerConfigurationParameters.InitialWeight.class) final float initWeight,
-      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias) {
+      @Parameter(LayerConfigurationParameters.InitialBias.class) final float initBias,
+      @Parameter(LayerConfigurationParameters.NumberOfOutput.class) final int numOutput) {
     this.matrixFactory = matrixFactory;
     this.index = index;
     this.inputShape = shapeFromString(inputShape);
@@ -72,6 +74,7 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
     this.strideWidth = strideWidth;
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
+    this.numOutput = numOutput;
     this.outputShape = computeOutputShape();
     this.randomSeed = randomSeed;
     this.initWeight = initWeight;
@@ -82,8 +85,14 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    * @return the initial parameter of the layer.
    */
   public LayerParameter generateInitialParameter() {
-    final Matrix weight = matrixFactory.randn(1, kernelHeight * kernelWidth, randomSeed);
-    final Matrix bias = matrixFactory.create(1, outputShape[0] * outputShape[1]).fill(initBias);
+    int numChannel;
+    if (inputShape.length == 2) {
+      numChannel = 1;
+    } else {
+      numChannel = inputShape[0];
+    }
+    final Matrix weight = matrixFactory.randn(kernelHeight * kernelWidth * numChannel, numOutput, randomSeed);
+    final Matrix bias = matrixFactory.create(outputShape[0] * outputShape[1] * numOutput, 1).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
 
@@ -109,12 +118,21 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
    * @return shape of output
    */
   private int[] computeOutputShape() {
-    final int[] computedShape = new int[2];
-    if (inputShape.length != 2) {
+    final int[] computedShape = new int[3];
+    if (inputShape.length != 2 && inputShape.length != 3) {
       throw new IllegalArgumentException("Unsupported input dimensions: " + inputShape.length);
     }
-    computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
-    computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
+    if (inputShape.length == 2) {
+      computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
+      computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
+    } else {
+      computedShape[0] = (int) Math.ceil((float) (inputShape[1] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
+      computedShape[1] = (int) Math.ceil((float) (inputShape[2] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
+    }
+    computedShape[2] = numOutput;
+    if (computedShape[0] < 0 || computedShape[1] < 0 || computedShape[2] < 0) {
+      throw new IllegalArgumentException("Negative output size");
+    }
     return computedShape;
   }
 
