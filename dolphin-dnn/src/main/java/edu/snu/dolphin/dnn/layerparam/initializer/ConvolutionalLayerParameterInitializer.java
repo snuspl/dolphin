@@ -49,6 +49,9 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
   private final float initBias;
   private final long randomSeed;
   private final int numOutput;
+  private final int inputHeight;
+  private final int inputWidth;
+  private final int inputChannel;
 
   @Inject
   private ConvolutionalLayerParameterInitializer(
@@ -75,24 +78,28 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
     this.kernelHeight = kernelHeight;
     this.kernelWidth = kernelWidth;
     this.numOutput = numOutput;
-    this.outputShape = computeOutputShape();
     this.randomSeed = randomSeed;
     this.initWeight = initWeight;
     this.initBias = initBias;
+
+    if (this.inputShape.length == 2) {
+      this.inputChannel = 1;
+      this.inputHeight = this.inputShape[0];
+      this.inputWidth = this.inputShape[1];
+    } else {
+      this.inputChannel = this.inputShape[0];
+      this.inputHeight = this.inputShape[1];
+      this.inputWidth = this.inputShape[2];
+    }
+    this.outputShape = computeOutputShape();
   }
 
   /**
    * @return the initial parameter of the layer.
    */
   public LayerParameter generateInitialParameter() {
-    int numChannel;
-    if (inputShape.length == 2) {
-      numChannel = 1;
-    } else {
-      numChannel = inputShape[0];
-    }
-    final Matrix weight = matrixFactory.randn(kernelHeight * kernelWidth * numChannel, numOutput, randomSeed);
-    final Matrix bias = matrixFactory.create(outputShape[0] * outputShape[1] * numOutput, 1).fill(initBias);
+    final Matrix weight = matrixFactory.randn(kernelHeight * kernelWidth * inputChannel, numOutput, randomSeed);
+    final Matrix bias = matrixFactory.create(outputShape[1] * outputShape[2] * numOutput, 1).fill(initBias);
 
     weight.muli(initWeight); // multiply by standard deviation.
 
@@ -122,14 +129,9 @@ public final class ConvolutionalLayerParameterInitializer implements LayerParame
     if (inputShape.length != 2 && inputShape.length != 3) {
       throw new IllegalArgumentException("Unsupported input dimensions: " + inputShape.length);
     }
-    if (inputShape.length == 2) {
-      computedShape[0] = (int) Math.ceil((float) (inputShape[0] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
-      computedShape[1] = (int) Math.ceil((float) (inputShape[1] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
-    } else {
-      computedShape[0] = (int) Math.ceil((float) (inputShape[1] - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
-      computedShape[1] = (int) Math.ceil((float) (inputShape[2] - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
-    }
-    computedShape[2] = numOutput;
+    computedShape[0] = numOutput;
+    computedShape[1] = (int) Math.ceil((float) (inputHeight - kernelHeight + 2 * paddingHeight) / strideHeight) + 1;
+    computedShape[2] = (int) Math.ceil((float) (inputWidth - kernelWidth + 2 * paddingWidth) / strideWidth) + 1;
     if (computedShape[0] < 0 || computedShape[1] < 0 || computedShape[2] < 0) {
       throw new IllegalArgumentException("Negative output size");
     }

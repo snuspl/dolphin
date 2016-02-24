@@ -46,7 +46,7 @@ public final class ConvolutionalLayerConfigurationBuilder implements Builder<Con
   private long randomSeed = System.currentTimeMillis();
   private float initWeight;
   private float initBias;
-  private int numOutput = 1;
+  private int numOutput;
 
   public synchronized ConvolutionalLayerConfigurationBuilder setPaddingHeight(final int paddingHeight) {
     this.paddingHeight = paddingHeight;

@@ -33,7 +33,7 @@ message ConvolutionalLayerConfiguration {
   required float init_bias = 7;
   required float init_weight = 8;
   optional uint32 random_seed = 9;
-  optional uint32 num_output = 10 [default = 1];
+  required uint32 num_output = 10;
 }
 
 message PoolingLayerConfiguration {

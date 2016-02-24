@@ -185,7 +185,8 @@ public class ConvolutionalLayerTest {
         .setKernelHeight(2)
         .setKernelWidth(2)
         .setStrideHeight(1)
-        .setStrideWidth(1);
+        .setStrideWidth(1)
+        .setNumOutput(1);
 
     final ConvolutionalLayerConfigurationBuilder builderWithPadding = ConvolutionalLayerConfigurationBuilder
         .newConfigurationBuilder()
@@ -197,7 +198,8 @@ public class ConvolutionalLayerTest {
         .setKernelHeight(2)
         .setKernelWidth(2)
         .setStrideHeight(1)
-        .setStrideWidth(1);
+        .setStrideWidth(1)
+        .setNumOutput(1);
 
     final ConvolutionalLayerConfigurationBuilder builder3D = ConvolutionalLayerConfigurationBuilder
         .newConfigurationBuilder()
