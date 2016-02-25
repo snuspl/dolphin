@@ -196,6 +196,48 @@ public final class PoolingLayerTest {
       {10, 6},
       {4, 9},
       {4, 7}});
+  private final Matrix input3D = matrixFactory.create(new float[][]{
+      {0, 1, 2, 3, 4, 5, 6, 7, 8,
+       9, 8, 7, 6, 5, 4, 3, 2, 1,
+       1, 2, 3, 4, 5, 6, 7, 8, 9},
+      {0, 1, 3, 2, 1, 0, 4, 0, 3,
+       5, 2, 1, 4, 6, 2, 8, 1, 4,
+       7, 1, 3, 4, 2, 0, 9, 0, 2}}).transpose();
+  private final Matrix nextError3D = matrixFactory.create(new float[][]{
+      {0, 4, 8, 0, 4, 12, 8, 4, 4, 8, 0, 4, 0, 4, 4, 0,
+       4, 12, 0, 4, 8, 0, 0, 8, 4, 0, 4, 8, 4, 0, 8, 0,
+       12, 0, 0, 8, 12, 4, 8, 0, 0, 4, 8, 12, 4, 4, 4, 0},
+      {0, 4, 12, 0, 0, 8, 8, 12, 0, 8, 12, 0, 4, 4, 4, 4,
+       8, 8, 0, 4, 12, 0, 0, 4, 4, 0, 8, 0, 0, 4, 4, 0,
+       0, 0, 12, 8, 4, 4, 8, 0, 8, 4, 0, 0, 12, 16, 8, 4}}).transpose();
+  private final Matrix expectedMaxPooling3DActivation = matrixFactory.create(new float[][]{
+      {0, 1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 6, 7, 8, 8,
+       9, 9, 8, 7, 9, 9, 8, 7, 6, 6, 5, 4, 3, 3, 2, 1,
+       1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 7, 8, 9, 9},
+      {0, 1, 3, 3, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4, 3, 3,
+       5, 5, 2, 1, 5, 6, 6, 2, 8, 8, 6, 4, 8, 8, 4, 4,
+       7, 7, 3, 3, 7, 7, 3, 3, 9, 9, 2, 2, 9, 9, 2, 2}}).transpose();
+  private final Matrix expectedAveragePooling3DActivation = matrixFactory.create(new float[][]{
+      {0, 0.25f, 0.75f, 0.5f, 0.75f, 2, 3, 1.75f, 2.25f, 5, 6, 3.25f, 1.5f, 3.25f, 3.75f, 2,
+       2.25f, 4.25f, 3.75f, 1.75f, 3.75f, 7, 6, 2.75f, 2.25f, 4, 3, 1.25f, 0.75f, 1.25f, 0.75f, 0.25f,
+       0.25f, 0.75f, 1.25f, 0.75f, 1.25f, 3, 4, 2.25f, 2.75f, 6, 7, 3.75f, 1.75f, 3.75f, 4.25f, 2.25f},
+      {0, 0.25f, 1, 0.75f, 0.5f, 1, 1.25f, 0.75f, 1.5f, 1.75f, 1, 0.75f, 1, 1, 0.75f, 0.75f,
+       1.25f, 1.75f, 0.75f, 0.25f, 2.25f, 4.25f, 2.75f, 0.75f, 3, 4.75f, 3.25f, 1.5f, 2, 2.25f, 1.25f, 1,
+       1.75f, 2, 1, 0.75f, 2.75f, 3.5f, 1.5f, 0.75f, 3.25f, 3.75f, 1, 0.5f, 2.25f, 2.25f, 0.5f, 0.5f}}).transpose();
+  private final Matrix expectedMaxPooling3DError = matrixFactory.create(new float[][]{
+      {0, 4, 8, 4, 12, 12, 4, 12, 8,
+       24, 0, 12, 4, 4, 8, 4, 8, 0,
+       12, 0, 8, 12, 4, 8, 4, 8, 24},
+      {0, 4, 32, 8, 0, 0, 16, 0, 20,
+       28, 0, 4, 0, 8, 4, 8, 0, 4,
+       8, 0, 28, 0, 0, 0, 40, 0, 12}}).transpose();
+  private final Matrix expectedAveragePooling3DError = matrixFactory.create(new float[][]{
+      {5, 8, 5, 7, 7, 4, 4, 4, 2,
+       6, 3, 3, 3, 1, 5, 2, 3, 5,
+       7, 3, 4, 5, 6, 7, 3, 5, 6},
+      {3, 8, 8, 4, 9, 8, 4, 7, 5,
+       7, 2, 2, 4, 2, 3, 2, 4, 3,
+       2, 6, 7, 5, 4, 2, 10, 7, 3}}).transpose();
 
   private LayerBase maxPoolingLayer;
   private LayerBase averagePoolingLayer;
@@ -203,12 +245,20 @@ public final class PoolingLayerTest {
   private LayerBase remainderExistingAveragePoolingLayer;
   private LayerBase maxPoolingWithPaddingLayer;
   private LayerBase averagePoolingWithPaddingLayer;
+  private LayerBase maxPooling3DLayer;
+  private LayerBase averagePooling3DLayer;
 
   @Before
   public void setup() throws InjectionException {
     final Configuration layerConf = Tang.Factory.getTang().newConfigurationBuilder()
         .bindNamedParameter(LayerIndex.class, String.valueOf(0))
         .bindNamedParameter(LayerInputShape.class, "3,3")
+        .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
+        .build();
+
+    final Configuration layerConf3D = Tang.Factory.getTang().newConfigurationBuilder()
+        .bindNamedParameter(LayerIndex.class, String.valueOf(0))
+        .bindNamedParameter(LayerInputShape.class, "3,3,3")
         .bindImplementation(MatrixFactory.class, MatrixJBLASFactory.class)
         .build();
 
@@ -262,6 +312,26 @@ public final class PoolingLayerTest {
         .setStrideHeight(1)
         .setStrideWidth(1);
 
+    final PoolingLayerConfigurationBuilder max3DBuilder =
+        PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+        .setPoolingType("MAX")
+        .setPaddingHeight(1)
+        .setPaddingWidth(1)
+        .setKernelHeight(2)
+        .setKernelWidth(2)
+        .setStrideHeight(1)
+        .setStrideWidth(1);
+
+    final PoolingLayerConfigurationBuilder average3DBuilder =
+        PoolingLayerConfigurationBuilder.newConfigurationBuilder()
+        .setPoolingType("AVERAGE")
+        .setPaddingHeight(1)
+        .setPaddingWidth(1)
+        .setKernelHeight(2)
+        .setKernelWidth(2)
+        .setStrideHeight(1)
+        .setStrideWidth(1);
+
     this.maxPoolingLayer =
         Tang.Factory.getTang().newInjector(layerConf, maxBuilder.build())
         .getInstance(LayerBase.class);
@@ -285,6 +355,14 @@ public final class PoolingLayerTest {
     this.averagePoolingWithPaddingLayer =
         Tang.Factory.getTang().newInjector(layerConf, averageWithPaddingBuilder.build())
         .getInstance(LayerBase.class);
+
+    this.maxPooling3DLayer =
+        Tang.Factory.getTang().newInjector(layerConf3D, max3DBuilder.build())
+            .getInstance(LayerBase.class);
+
+    this.averagePooling3DLayer =
+        Tang.Factory.getTang().newInjector(layerConf3D, average3DBuilder.build())
+            .getInstance(LayerBase.class);
   }
 
   @Test
@@ -364,5 +442,24 @@ public final class PoolingLayerTest {
     final Matrix error = averagePoolingWithPaddingLayer
         .backPropagate(input, expectedAveragePoolingWithPaddingActivation, nextErrorWithPadding);
     assertTrue(expectedAveragePoolingWithPaddingError.compare(error, TOLERANCE));
+  }
+
+  @Test
+  public void test3DActivation() {
+    final Matrix poolingMaxActivation = maxPooling3DLayer.feedForward(input3D);
+    final Matrix poolingAverageActivation = averagePooling3DLayer.feedForward(input3D);
+    assertTrue(expectedMaxPooling3DActivation.compare(poolingMaxActivation, TOLERANCE));
+    assertTrue(expectedAveragePooling3DActivation.compare(poolingAverageActivation, TOLERANCE));
+  }
+
+  @Test
+  public void test3DBackPropagate() {
+    maxPooling3DLayer.feedForward(input3D);
+    final Matrix maxError = maxPooling3DLayer
+        .backPropagate(input3D, expectedAveragePooling3DActivation, nextError3D);
+    final Matrix averageError = averagePooling3DLayer
+        .backPropagate(input3D, expectedAveragePooling3DActivation, nextError3D);
+    assertTrue(expectedMaxPooling3DError.compare(maxError, TOLERANCE));
+    assertTrue(expectedAveragePooling3DError.compare(averageError, TOLERANCE));
   }
 }

@@ -28,7 +28,7 @@ import javax.inject.Inject;
  * Convolutional layer.
  *
  * This layer is learnable having the updatable parameter (weight and bias).
- * This layer works for only 2D inputs.
+ * This layer works for 2D and 3D inputs.
  * In a forward pass,
  * feedForward function computes the product between weight and the input within kernel range
  * and produce activation matrix.
@@ -45,6 +45,9 @@ public final class ConvolutionalLayer extends LayerBase {
   private final int strideWidth;
   private final int kernelHeight;
   private final int kernelWidth;
+  private final int inputHeight;
+  private final int inputWidth;
+  private final int inputChannel;
   private final MatrixFactory matrixFactory;
 
   @Inject
@@ -68,6 +71,16 @@ public final class ConvolutionalLayer extends LayerBase {
     this.outputShape = layerParameterInitializer.getOutputShape();
     setLayerParameter(layerParameterInitializer.generateInitialParameter());
     this.matrixFactory = matrixFactory;
+
+    if (getInputShape().length == 2) {
+      this.inputChannel = 1;
+      this.inputHeight = getInputShape()[0];
+      this.inputWidth = getInputShape()[1];
+    } else {
+      this.inputChannel = getInputShape()[0];
+      this.inputHeight = getInputShape()[1];
+      this.inputWidth = getInputShape()[2];
+    }
   }
 
   @Override
@@ -82,67 +95,71 @@ public final class ConvolutionalLayer extends LayerBase {
   }
 
   /**
-   * Transform the given image to column form to facilitate matrix multiplication.
+   * Transform the given image to rows to facilitate matrix multiplication.
    * @param imageIndex the index of the image in the input matrix.
    * @param input input values for this layer.
-   * @return the converted column.
+   * @return the converted rows.
    */
-  private Matrix im2col(final int imageIndex, final Matrix input) {
-    final int[] inputShape = getInputShape();
-    final Matrix col =
-        matrixFactory.zeros(kernelHeight * kernelWidth, NeuralNetworkUtils.getShapeLength(outputShape));
-    for (int kh = 0; kh < kernelHeight; ++kh) {
-      for (int kw = 0; kw < kernelWidth; ++kw) {
-        int ih = kh - paddingHeight;
-        for (int oh = 0; oh < outputShape[0]; ++oh) {
-          if (ih >= 0 && ih < inputShape[0]) {
-            int iw = kw - paddingWidth;
-            for (int ow = 0; ow < outputShape[1]; ++ow) {
-              if (iw >= 0 && iw < inputShape[1]) {
-                col.put(kh * kernelWidth + kw, oh * outputShape[1] + ow,
-                    input.get(ih * inputShape[1] + iw, imageIndex));
+  private Matrix im2row(final int imageIndex, final Matrix input) {
+    final int inputSize = inputHeight * inputWidth;
+    final int outputSize = outputShape[1] * outputShape[2];
+    final Matrix row =
+        matrixFactory.zeros(outputSize, kernelHeight * kernelWidth * inputChannel);
+    for (int c = 0; c < inputChannel; ++c) {
+      for (int kh = 0; kh < kernelHeight; ++kh) {
+        for (int kw = 0; kw < kernelWidth; ++kw) {
+          int ih = kh - paddingHeight;
+          for (int oh = 0; oh < outputShape[1]; ++oh) {
+            if (ih >= 0 && ih < inputHeight) {
+              int iw = kw - paddingWidth;
+              for (int ow = 0; ow < outputShape[2]; ++ow) {
+                if (iw >= 0 && iw < inputWidth) {
+                  row.put(oh * outputShape[2] + ow, c * kernelHeight * kernelWidth + kh * kernelWidth + kw,
+                      input.get(c * inputSize + ih * inputWidth + iw, imageIndex));
+                }
+                iw += strideWidth;
               }
-              iw += strideWidth;
             }
+            ih += strideHeight;
           }
-          ih += strideHeight;
         }
       }
     }
-    return col;
+    return row;
   }
 
   /**
-   * Transform the given column form to the image to facilitate matrix multiplication.
-   * @param col the given column.
+   * Transform the given rows to the image to facilitate matrix multiplication.
+   * @param row the given rows.
    * @return the converted image.
    */
-  private Matrix col2im(final Matrix col) {
+  private Matrix row2im(final Matrix row) {
     final int[] inputShape = getInputShape();
+    final int inputSize = inputHeight * inputWidth;
     final Matrix im = matrixFactory.zeros(NeuralNetworkUtils.getShapeLength(inputShape));
-    int colh = 0;
-    for (int kh = 0; kh < kernelHeight; ++kh) {
-      for (int kw = 0; kw < kernelWidth; ++kw) {
-        int colw = 0;
-        int ih = kh - paddingHeight;
-        for (int oh = 0; oh < outputShape[0]; ++oh) {
-          if (ih < 0 || ih >= inputShape[0]) {
-            colw += outputShape[1];
-          } else {
-            int iw = kw - paddingWidth;
-            for (int ow = 0; ow < outputShape[1]; ++ow) {
-              if (iw >= 0 && iw < inputShape[1]) {
-                final int inputIndex = ih * inputShape[1] + iw;
-                final float newValue = col.get(colh, colw) + im.get(inputIndex);
-                im.put(inputIndex, newValue);
+    int rowIndex = 0;
+    for (int c = 0; c < inputChannel; ++c) {
+      for (int kh = 0; kh < kernelHeight; ++kh) {
+        for (int kw = 0; kw < kernelWidth; ++kw) {
+          int ih = kh - paddingHeight;
+          for (int oh = 0; oh < outputShape[1]; ++oh) {
+            if (ih < 0 || ih >= inputHeight) {
+              rowIndex += outputShape[2];
+            } else {
+              int iw = kw - paddingWidth;
+              for (int ow = 0; ow < outputShape[2]; ++ow) {
+                if (iw >= 0 && iw < inputWidth) {
+                  final int inputIndex = c * inputSize + ih * inputWidth + iw;
+                  final float newValue = row.get(rowIndex) + im.get(inputIndex);
+                  im.put(inputIndex, newValue);
+                }
+                rowIndex++;
+                iw += strideWidth;
               }
-              colw++;
-              iw += strideWidth;
             }
+            ih += strideHeight;
           }
-          ih += strideHeight;
         }
-        colh++;
       }
     }
     return im;
@@ -157,8 +174,8 @@ public final class ConvolutionalLayer extends LayerBase {
   public Matrix feedForward(final Matrix input) {
     final Matrix output = matrixFactory.create(NeuralNetworkUtils.getShapeLength(outputShape), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix col = im2col(n, input);
-      output.putColumn(n, getLayerParameter().getWeightParam().mmul(col));
+      final Matrix newValue = im2row(n, input).mmul(getLayerParameter().getWeightParam());
+      output.putColumn(n, newValue.reshape(NeuralNetworkUtils.getShapeLength(outputShape), 1));
     }
     output.addiColumnVector(getLayerParameter().getBiasParam());
     return output;
@@ -175,9 +192,9 @@ public final class ConvolutionalLayer extends LayerBase {
   public Matrix backPropagate(final Matrix input, final Matrix activation, final Matrix nextError) {
     final Matrix error = matrixFactory.create(input.getRows(), input.getColumns());
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix colVec = nextError.getColumn(n);
-      final Matrix col = getLayerParameter().getWeightParam().transpose().mmul(colVec.reshape(1, colVec.getLength()));
-      final Matrix im = col2im(col);
+      final Matrix singleNextError = nextError.getColumn(n).reshape(outputShape[1] * outputShape[2], outputShape[0]);
+      final Matrix row = singleNextError.mmul(getLayerParameter().getWeightParam().transpose());
+      final Matrix im = row2im(row);
       error.putColumn(n, im);
     }
     return error;
@@ -186,13 +203,13 @@ public final class ConvolutionalLayer extends LayerBase {
   /** {@inheritDoc} */
   @Override
   public LayerParameter generateParameterGradient(final Matrix input, final Matrix error) {
-    final Matrix weightGradient = matrixFactory.create(1, kernelHeight * kernelWidth);
+    final Matrix weightGradient = matrixFactory.create(kernelHeight * kernelWidth * inputChannel, outputShape[0]);
     for (int n = 0; n < input.getColumns(); ++n) {
-      final Matrix col = im2col(n, input);
-      weightGradient.addiRowVector(col.mmul(error.getColumn(n)));
+      final Matrix row = im2row(n, input);
+      weightGradient.addi(row.transpose().mmul(error.getColumn(n)
+          .reshape(outputShape[1] * outputShape[2], outputShape[0])));
     }
     final Matrix biasGradient = error.rowSums();
-    biasGradient.reshape(1, biasGradient.getLength());
     return LayerParameter.newBuilder()
         .setWeightParam(weightGradient)
         .setBiasParam(biasGradient)
