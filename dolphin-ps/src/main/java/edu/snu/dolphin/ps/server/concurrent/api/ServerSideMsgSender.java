@@ -13,32 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.worker;
+package edu.snu.dolphin.ps.server.concurrent.api;
 
+import edu.snu.dolphin.ps.server.concurrent.impl.ServerSideMsgSenderImpl;
+import edu.snu.dolphin.ps.server.concurrent.impl.ValueEntry;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.tang.annotations.DefaultImplementation;
 
 /**
- * Worker-side Parameter Server message sender.
+ * Server-side Parameter Server message sender.
  */
 @EvaluatorSide
-@DefaultImplementation(WorkerSideMsgSenderImpl.class)
-public interface WorkerSideMsgSender<K, P> {
+@DefaultImplementation(ServerSideMsgSenderImpl.class)
+public interface ServerSideMsgSender<K, V> {
 
   /**
-   * Send a key-value pair to another evaluator.
+   * Send a reply to another evaluator that requested a certain value.
+   * This message is a reply to a {@link edu.snu.dolphin.ps.avro.PullMsg}.
    * @param destId Network Connection Service identifier of the destination evaluator
-   * @param key key object representing what is being sent
-   * @param preValue value to be sent to the destination
+   * @param key key object associated with the expected value
+   * @param valueEntry {@link ValueEntry} object containing the requested value
    */
-  void sendPushMsg(final String destId, final K key, final P preValue);
-
-  /**
-   * Send a request to another evaluator for fetching a certain value.
-   * After this message, a {@link edu.snu.dolphin.ps.avro.ReplyMsg} containing the requested value
-   * should be sent from the destination as a reply.
-   * @param destId Network Connection Service identifier of the destination evaluator
-   * @param key key object representing the expected value
-   */
-  void sendPullMsg(final String destId, final K key);
+  void sendReplyMsg(final String destId, final K key, final ValueEntry<V> valueEntry);
 }

@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.concurrent.impl;
 
 import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.PreValueCodecName;
 import edu.snu.dolphin.ps.avro.AvroParameterServerMsg;
 import edu.snu.dolphin.ps.avro.PullMsg;
 import edu.snu.dolphin.ps.avro.PushMsg;
+import edu.snu.dolphin.ps.server.concurrent.api.ParameterServer;
+import edu.snu.dolphin.ps.server.concurrent.api.ServerSideMsgSender;
 import edu.snu.dolphin.util.SingleMessageExtractor;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.io.network.Message;

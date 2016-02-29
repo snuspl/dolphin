@@ -17,9 +17,9 @@ package edu.snu.dolphin.ps.driver;
 
 import edu.snu.dolphin.ps.ParameterServerParameters.SerializedCodecConfiguration;
 import edu.snu.dolphin.ps.ParameterServerParameters.SerializedUpdaterConfiguration;
+import edu.snu.dolphin.ps.driver.api.ParameterServerManager;
 import edu.snu.dolphin.ps.ns.NetworkContextRegister;
 import edu.snu.dolphin.ps.ns.PSMessageHandler;
-import edu.snu.dolphin.ps.server.ServerSideMsgHandler;
 import edu.snu.dolphin.ps.worker.WorkerSideMsgHandler;
 import org.apache.reef.annotations.audience.DriverSide;
 import org.apache.reef.evaluator.context.parameters.ContextStartHandlers;
@@ -58,7 +58,7 @@ public final class ParameterServerDriver {
   private final Configuration codecConfiguration;
 
   /**
-   * Configuration that specifies the {@link edu.snu.dolphin.ps.server.ParameterUpdater} class to use.
+   * Configuration that specifies the {@link edu.snu.dolphin.ps.server.api.ParameterUpdater} class to use.
    */
   private final Configuration updaterConfiguration;
 
@@ -146,7 +146,6 @@ public final class ParameterServerDriver {
             updaterConfiguration,
             getNameResolverServiceConfiguration())
         .bindImplementation(IdentifierFactory.class, StringIdentifierFactory.class)
-        .bindNamedParameter(PSMessageHandler.class, ServerSideMsgHandler.class)
         .build();
   }
 }

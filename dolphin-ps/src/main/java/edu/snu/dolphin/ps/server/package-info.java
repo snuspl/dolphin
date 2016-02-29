@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 /**
- * Classes that are instantiated at an evaluator that acts as a Parameter Server.
+ * Server-side Parameter Server classes.
  */
 package edu.snu.dolphin.ps.server;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.worker;
+package edu.snu.dolphin.ps.worker.impl;
 
 import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.PreValueCodecName;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 /**
- * Parameter Server classes that are instantiated at the driver.
+ * Concurrent implementation of Parameter Server worker (client).
+ * For use with server in {@link edu.snu.dolphin.ps.server.concurrent}.
  */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.worker.impl;

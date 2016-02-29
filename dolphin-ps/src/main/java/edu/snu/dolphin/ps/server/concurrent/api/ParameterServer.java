@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.concurrent.api;
 
+import edu.snu.dolphin.ps.server.concurrent.impl.ValueEntry;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 
 /**
  * A Parameter Server server that interacts with workers (clients) and stores parameters in the form of a k-v store.
- * Works as a set with {@link edu.snu.dolphin.ps.worker.ParameterWorker}.
+ * Works as a set with {@link edu.snu.dolphin.ps.worker.api.ParameterWorker}.
  * @param <K> class type of parameter keys
  * @param <P> class type of parameter values before they are processed at the server
  * @param <V> class type of parameter values after they are processed at the server

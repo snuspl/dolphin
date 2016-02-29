@@ -16,16 +16,19 @@
 package edu.snu.dolphin.ps;
 
 import edu.snu.dolphin.ps.ParameterServerParameters.*;
-import edu.snu.dolphin.ps.driver.ParameterServerManager;
-import edu.snu.dolphin.ps.server.ParameterUpdater;
+import edu.snu.dolphin.ps.driver.api.ParameterServerManager;
+import edu.snu.dolphin.ps.server.api.ParameterUpdater;
 import org.apache.reef.io.serialization.Codec;
 import org.apache.reef.io.serialization.SerializableCodec;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
 import org.apache.reef.tang.formats.AvroConfigurationSerializer;
+import org.apache.reef.tang.formats.ConfigurationSerializer;
 import org.apache.reef.util.Builder;
 
 public final class ParameterServerConfigurationBuilder implements Builder<Configuration> {
+
+  private static final ConfigurationSerializer CONFIGURATION_SERIALIZER = new AvroConfigurationSerializer();
 
   private Class<? extends ParameterServerManager> managerClass;
   private Class<? extends ParameterUpdater> updaterClass;
@@ -75,12 +78,12 @@ public final class ParameterServerConfigurationBuilder implements Builder<Config
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindImplementation(ParameterServerManager.class, managerClass)
         .bindNamedParameter(SerializedUpdaterConfiguration.class,
-            new AvroConfigurationSerializer().toString(
+            CONFIGURATION_SERIALIZER.toString(
                 Tang.Factory.getTang().newConfigurationBuilder()
                     .bindImplementation(ParameterUpdater.class, updaterClass)
                     .build()))
         .bindNamedParameter(SerializedCodecConfiguration.class,
-            new AvroConfigurationSerializer().toString(
+            CONFIGURATION_SERIALIZER.toString(
                 Tang.Factory.getTang().newConfigurationBuilder()
                     .bindNamedParameter(KeyCodecName.class, keyCodecClass)
                     .bindNamedParameter(PreValueCodecName.class, preValueCodecClass)

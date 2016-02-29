@@ -19,6 +19,7 @@ import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.ValueCodecName;
 import edu.snu.dolphin.ps.avro.AvroParameterServerMsg;
 import edu.snu.dolphin.ps.avro.ReplyMsg;
+import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 import edu.snu.dolphin.util.SingleMessageExtractor;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.io.network.Message;
