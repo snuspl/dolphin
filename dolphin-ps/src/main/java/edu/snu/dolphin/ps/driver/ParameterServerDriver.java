@@ -87,28 +87,13 @@ public final class ParameterServerDriver {
   }
 
   /**
-   * @return context configuration that both worker and server Evaluators use
+   * @return context configuration for an Evaluator that uses {@code ParameterWorker} or {@code ParameterServer}
    */
-  private Configuration getCommonContextConfiguration() {
+  public Configuration getContextConfiguration() {
     return Tang.Factory.getTang().newConfigurationBuilder()
         .bindSetEntry(ContextStartHandlers.class, NetworkContextRegister.RegisterContextHandler.class)
         .bindSetEntry(ContextStopHandlers.class, NetworkContextRegister.UnregisterContextHandler.class)
         .build();
-  }
-
-  /**
-   * @return context configuration for an Evaluator that uses a {@code ParameterWorker}
-   */
-  public Configuration getWorkerContextConfiguration() {
-    return getCommonContextConfiguration();
-
-  }
-
-  /**
-   * @return context configuration for an Evaluator that uses a {@code ParameterServer}
-   */
-  public Configuration getServerContextConfiguration() {
-    return getCommonContextConfiguration();
   }
 
   /**
