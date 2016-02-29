@@ -13,11 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.examples.add.parameters;
+package edu.snu.dolphin.ps.server.partitioned;
 
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
-
-@NamedParameter(doc = "Total number of updates", default_value = "100", short_name = "numUpdates")
-public final class NumUpdates implements Name<Integer> {
+/**
+ * Sender for PartitionedParameterServer.
+ */
+public interface PartitionedServerSideReplySender<K, V> {
+  /**
+   * Implementing classes must serialize K, V immediately within the calling thread,
+   * to ensure atomicity of updates.
+   * @param destId the destination's network address
+   * @param key key, to be serialized immediately
+   * @param value value, to be serialized immediately
+   */
+  void sendReplyMsg(String destId, K key, V value);
 }

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.examples.add.parameters;
+package edu.snu.dolphin.ps.server.partitioned.parameters;
 
 import org.apache.reef.tang.annotations.Name;
 import org.apache.reef.tang.annotations.NamedParameter;
 
-@NamedParameter(doc = "Total number of updates", default_value = "100", short_name = "numUpdates")
-public final class NumUpdates implements Name<Integer> {
+@NamedParameter(doc = "Number of partitions", default_value = "2", short_name = "numPartitions")
+public final class NumPartitions implements Name<Integer> {
 }

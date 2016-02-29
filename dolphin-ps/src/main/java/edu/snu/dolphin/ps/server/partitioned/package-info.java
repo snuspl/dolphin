@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.examples.add.parameters;
-
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
-
-@NamedParameter(doc = "Total number of updates", default_value = "100", short_name = "numUpdates")
-public final class NumUpdates implements Name<Integer> {
-}
+/**
+ * A Partitioned Parameter Server, that supports atomic, in-order processing of push and pull operations.
+ * Partitions are based on the hash of the key.
+ * Each partition consists of a queue, kvStore, and thread.
+ * Operations are immediately added to the queue, so the message processing threads will not block,
+ * except when the queue is full.
+ */
+package edu.snu.dolphin.ps.server.partitioned;
