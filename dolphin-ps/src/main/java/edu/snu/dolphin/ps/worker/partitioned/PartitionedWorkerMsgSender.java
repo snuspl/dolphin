@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.worker.impl;
+package edu.snu.dolphin.ps.worker.partitioned;
 
-import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.PreValueCodecName;
 import edu.snu.dolphin.ps.avro.AvroParameterServerMsg;
-import edu.snu.dolphin.ps.avro.PushMsg;
 import edu.snu.dolphin.ps.avro.PullMsg;
+import edu.snu.dolphin.ps.avro.PushMsg;
 import edu.snu.dolphin.ps.avro.Type;
 import edu.snu.dolphin.ps.ns.PSNetworkSetup;
 import org.apache.reef.annotations.audience.EvaluatorSide;
@@ -33,10 +32,10 @@ import javax.inject.Inject;
 import java.nio.ByteBuffer;
 
 /**
- * Default implementation of {@link WorkerSideMsgSender}.
+ * A Msg Sender for PartitionedWorker.
  */
 @EvaluatorSide
-public final class WorkerSideMsgSenderImpl<K, P> implements WorkerSideMsgSender<K, P> {
+public final class PartitionedWorkerMsgSender<K, P> {
 
   /**
    * Network Connection Service related setup required for a Parameter Server application.
@@ -49,23 +48,16 @@ public final class WorkerSideMsgSenderImpl<K, P> implements WorkerSideMsgSender<
   private final IdentifierFactory identifierFactory;
 
   /**
-   * Codec for encoding PS keys.
-   */
-  private final Codec<K> keyCodec;
-
-  /**
    * Codec for encoding PS preValues.
    */
   private final Codec<P> preValueCodec;
 
   @Inject
-  private WorkerSideMsgSenderImpl(final PSNetworkSetup psNetworkSetup,
-                                  final IdentifierFactory identifierFactory,
-                                  @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
-                                  @Parameter(PreValueCodecName.class) final Codec<P> preValueCodec) {
+  private PartitionedWorkerMsgSender(final PSNetworkSetup psNetworkSetup,
+                                     final IdentifierFactory identifierFactory,
+                                     @Parameter(PreValueCodecName.class) final Codec<P> preValueCodec) {
     this.psNetworkSetup = psNetworkSetup;
-    this.identifierFactory = identifierFactory;    
-    this.keyCodec = keyCodec;
+    this.identifierFactory = identifierFactory;
     this.preValueCodec = preValueCodec;
   }
 
@@ -80,10 +72,9 @@ public final class WorkerSideMsgSenderImpl<K, P> implements WorkerSideMsgSender<
     }
   }
 
-  @Override
-  public void sendPushMsg(final String destId, final K key, final P preValue) {
+  public void sendPushMsg(final String destId, final EncodedKey<K> key, final P preValue) {
     final PushMsg pushMsg = PushMsg.newBuilder()
-        .setKey(ByteBuffer.wrap(keyCodec.encode(key)))
+        .setKey(ByteBuffer.wrap(key.getEncoded()))
         .setPreValue(ByteBuffer.wrap(preValueCodec.encode(preValue)))
         .build();
 
@@ -94,10 +85,9 @@ public final class WorkerSideMsgSenderImpl<K, P> implements WorkerSideMsgSender<
             .build());
   }
 
-  @Override
-  public void sendPullMsg(final String destId, final K key) {
+  public void sendPullMsg(final String destId, final EncodedKey<K> key) {
     final PullMsg pullMsg = PullMsg.newBuilder()
-        .setKey(ByteBuffer.wrap(keyCodec.encode(key)))
+        .setKey(ByteBuffer.wrap(key.getEncoded()))
         .setSrcId(psNetworkSetup.getMyId().toString())
         .build();
 

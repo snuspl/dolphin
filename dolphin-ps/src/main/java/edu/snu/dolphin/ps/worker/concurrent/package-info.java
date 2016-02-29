@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server.partitioned.parameters;
-
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
-
-@NamedParameter(doc = "Max number of items that can be queued for each partition", default_value = "1000",
-    short_name = "queueSize")
-public final class QueueSize implements Name<Integer> {
-}
+/**
+ * Concurrent implementation of Parameter Server worker (client).
+ * For use with server in {@link edu.snu.dolphin.ps.server.concurrent}.
+ */
+package edu.snu.dolphin.ps.worker.concurrent;
