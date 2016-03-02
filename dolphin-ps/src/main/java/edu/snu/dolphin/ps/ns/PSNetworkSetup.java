@@ -28,7 +28,7 @@ import org.apache.reef.wake.IdentifierFactory;
 import javax.inject.Inject;
 
 /**
- * Register and unregister an evaluator to Network Connection Service, and open connections to other evaluators.
+ * Register and unregister an evaluator to/from Network Connection Service, and open connections to other evaluators.
  */
 public final class PSNetworkSetup {
   private static final String PARAMETER_SERVER_IDENTIFIER = "PS";

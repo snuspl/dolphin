@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.worker;
+package edu.snu.dolphin.ps.worker.impl;
 
-import edu.snu.dolphin.ps.driver.SingleNodeParameterServerManager;
+import edu.snu.dolphin.ps.driver.impl.ServerId;
+import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.tang.InjectionFuture;
 import org.apache.reef.tang.annotations.Parameter;
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
 @EvaluatorSide
 public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker<K, P, V> {
   private static final Logger LOG = Logger.getLogger(SingleNodeParameterWorker.class.getName());
-  private static final long TIMEOUT = 10000; // milliseconds
+  private static final long TIMEOUT = 40000; // milliseconds
 
   /**
    * Network Connection Service identifier of the server.
@@ -54,7 +55,7 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
   private final ConcurrentMap<K, ValueWrapper> keyToValueWrapper;
 
   @Inject
-  private SingleNodeParameterWorker(@Parameter(SingleNodeParameterServerManager.ServerId.class) final String serverId,
+  private SingleNodeParameterWorker(@Parameter(ServerId.class) final String serverId,
                                     final InjectionFuture<WorkerSideMsgSender<K, P>> sender) {
     this.serverId = serverId;
     this.sender = sender;
@@ -72,7 +73,7 @@ public final class SingleNodeParameterWorker<K, P, V> implements ParameterWorker
   /**
    * Try to fetch a {@code value} from the server, waiting for a certain {@code TIMEOUT} period.
    * If a value associated with {@code key} doesn't exist, then the server will create an initial value
-   * using {@link edu.snu.dolphin.ps.server.ParameterUpdater} and return that value.
+   * using {@link edu.snu.dolphin.ps.server.api.ParameterUpdater} and return that value.
    * @param key key object representing the expected value
    * @return value specified by the {@code key}, or null if wait time exceeds {@code TIMEOUT}
    */

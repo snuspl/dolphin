@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.concurrent.impl;
 
+import edu.snu.dolphin.ps.server.concurrent.api.ParameterServer;
+import edu.snu.dolphin.ps.server.api.ParameterUpdater;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 
 import javax.inject.Inject;
@@ -27,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
  * This class is thread-safe if and only if {@link ParameterUpdater} is thread-safe.
  */
 @EvaluatorSide
-public final class SingleNodeParameterServer<K, P, V> implements ParameterServer<K, P, V> {
+public final class ConcurrentParameterServer<K, P, V> implements ParameterServer<K, P, V> {
 
   /**
    * A map holding keys and values sent from workers.
@@ -40,7 +42,7 @@ public final class SingleNodeParameterServer<K, P, V> implements ParameterServer
   private final ParameterUpdater<K, P, V> parameterUpdater;
 
   @Inject
-  private SingleNodeParameterServer(final ParameterUpdater<K, P, V> parameterUpdater) {
+  private ConcurrentParameterServer(final ParameterUpdater<K, P, V> parameterUpdater) {
     this.kvStore = new ConcurrentHashMap<>();
     this.parameterUpdater = parameterUpdater;
   }

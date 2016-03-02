@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.driver.api;
 
 import org.apache.reef.annotations.audience.DriverSide;
 import org.apache.reef.tang.Configuration;

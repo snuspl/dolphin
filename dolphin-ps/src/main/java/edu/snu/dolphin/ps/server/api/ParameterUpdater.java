@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.api;
 
 /**
  * A Parameter Server updater that handles preValues sent from workers before they are stored at the server.

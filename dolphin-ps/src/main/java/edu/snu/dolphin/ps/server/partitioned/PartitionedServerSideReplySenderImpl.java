@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.partitioned;
 
-import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
-import edu.snu.dolphin.ps.ParameterServerParameters.ValueCodecName;
+import edu.snu.dolphin.ps.ParameterServerParameters;
 import edu.snu.dolphin.ps.avro.AvroParameterServerMsg;
 import edu.snu.dolphin.ps.avro.ReplyMsg;
 import edu.snu.dolphin.ps.avro.Type;
@@ -25,6 +24,7 @@ import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.exception.evaluator.NetworkException;
 import org.apache.reef.io.network.Connection;
 import org.apache.reef.io.serialization.Codec;
+import org.apache.reef.tang.InjectionFuture;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.wake.IdentifierFactory;
 
@@ -32,15 +32,15 @@ import javax.inject.Inject;
 import java.nio.ByteBuffer;
 
 /**
- * Default implementation of {@link ServerSideMsgSender}.
+ * Sender implementation that uses Network Connection Service.
  */
 @EvaluatorSide
-public final class ServerSideMsgSenderImpl<K, V> implements ServerSideMsgSender<K, V> {
+public final class PartitionedServerSideReplySenderImpl<K, V> implements PartitionedServerSideReplySender<K, V> {
 
   /**
    * Network Connection Service related setup required for a Parameter Server application.
    */
-  private final PSNetworkSetup psNetworkSetup;
+  private final InjectionFuture<PSNetworkSetup> psNetworkSetup;
 
   /**
    * Required for using Network Connection Service API.
@@ -57,12 +57,13 @@ public final class ServerSideMsgSenderImpl<K, V> implements ServerSideMsgSender<
    */
   private final Codec<V> valueCodec;
 
-
   @Inject
-  private ServerSideMsgSenderImpl(final PSNetworkSetup psNetworkSetup,
-                                  final IdentifierFactory identifierFactory,
-                                  @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
-                                  @Parameter(ValueCodecName.class) final Codec<V> valueCodec) {
+  private PartitionedServerSideReplySenderImpl(
+      final InjectionFuture<PSNetworkSetup> psNetworkSetup,
+      final IdentifierFactory identifierFactory,
+      @Parameter(ParameterServerParameters.KeyCodecName.class) final Codec<K> keyCodec,
+      @Parameter(ParameterServerParameters.ValueCodecName.class) final Codec<V> valueCodec) {
+
     this.psNetworkSetup = psNetworkSetup;
     this.identifierFactory = identifierFactory;
     this.keyCodec = keyCodec;
@@ -70,7 +71,7 @@ public final class ServerSideMsgSenderImpl<K, V> implements ServerSideMsgSender<
   }
 
   private void send(final String destId, final AvroParameterServerMsg msg) {
-    final Connection<AvroParameterServerMsg> conn = psNetworkSetup.getConnectionFactory()
+    final Connection<AvroParameterServerMsg> conn = psNetworkSetup.get().getConnectionFactory()
         .newConnection(identifierFactory.getNewInstance(destId));
     try {
       conn.open();
@@ -80,21 +81,14 @@ public final class ServerSideMsgSenderImpl<K, V> implements ServerSideMsgSender<
     }
   }
 
+  /**
+   * Send an Avro message via NetworkConnectionService.
+   */
   @Override
-  public void sendReplyMsg(final String destId, final K key, final ValueEntry<V> valueEntry) {
-    final ByteBuffer valueByteArray;
-
-    // The updater may be writing a new value right now, so we acquire a read lock before proceeding
-    valueEntry.getReadWriteLock().readLock().lock();
-    try {
-      valueByteArray = ByteBuffer.wrap(valueCodec.encode(valueEntry.getValue()));
-    } finally {
-      valueEntry.getReadWriteLock().readLock().unlock();
-    }
-
+  public void sendReplyMsg(final String destId, final K key, final V value) {
     final ReplyMsg replyMsg = ReplyMsg.newBuilder()
         .setKey(ByteBuffer.wrap(keyCodec.encode(key)))
-        .setValue(valueByteArray)
+        .setValue(ByteBuffer.wrap(valueCodec.encode(value)))
         .build();
 
     send(destId,

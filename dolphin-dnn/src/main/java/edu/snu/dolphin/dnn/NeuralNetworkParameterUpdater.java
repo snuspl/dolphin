@@ -19,7 +19,7 @@ import edu.snu.dolphin.dnn.conf.NeuralNetworkConfigurationParameters.*;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
 import edu.snu.dolphin.dnn.util.ValidationStats;
-import edu.snu.dolphin.ps.server.ParameterUpdater;
+import edu.snu.dolphin.ps.server.api.ParameterUpdater;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;

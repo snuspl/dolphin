@@ -16,7 +16,9 @@
 package edu.snu.dolphin.ps.worker;
 
 import edu.snu.dolphin.ps.TestUtils;
-import edu.snu.dolphin.ps.driver.SingleNodeParameterServerManager;
+import edu.snu.dolphin.ps.driver.impl.ServerId;
+import edu.snu.dolphin.ps.worker.impl.SingleNodeParameterWorker;
+import edu.snu.dolphin.ps.worker.impl.WorkerSideMsgSender;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -45,7 +47,7 @@ public final class SingleNodeParameterWorkerTest {
   @Before
   public void setup() throws InjectionException {
     final Configuration configuration = Tang.Factory.getTang().newConfigurationBuilder()
-        .bindNamedParameter(SingleNodeParameterServerManager.ServerId.class, "ServerId")
+        .bindNamedParameter(ServerId.class, "ServerId")
         .build();
     final Injector injector = Tang.Factory.getTang().newInjector(configuration);
     final WorkerSideMsgSender<Integer, Integer> mockSender = mock(WorkerSideMsgSender.class);

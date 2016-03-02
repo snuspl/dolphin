@@ -93,7 +93,7 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
             ContextConfiguration.CONF
                 .set(ContextConfiguration.IDENTIFIER, "ParameterServerContext")
                 .build(),
-            psDriver.getServerContextConfiguration());
+            psDriver.getContextConfiguration());
 
         // Add the configuration for Neural Network and
         // the server-side parameter server configuration.
@@ -113,7 +113,7 @@ public final class NeuralNetworkSingleNodeParameterServerDriver {
         final String nnCtxtId = NNCONTEXT_PREFIX + neuralNetworkContextIds.getAndIncrement();
         final Configuration contextConf = Configurations.merge(
             ContextConfiguration.CONF.set(ContextConfiguration.IDENTIFIER, nnCtxtId).build(),
-            psDriver.getWorkerContextConfiguration());
+            psDriver.getContextConfiguration());
 
         // Add Data Parse Service and Neural Network configurations,
         // as well as the worker-side parameter server configuration.

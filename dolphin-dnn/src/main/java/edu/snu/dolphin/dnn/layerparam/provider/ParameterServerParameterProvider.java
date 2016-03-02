@@ -18,7 +18,7 @@ package edu.snu.dolphin.dnn.layerparam.provider;
 import edu.snu.dolphin.dnn.NeuralNetworkParameterUpdater;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.layers.LayerParameter;
-import edu.snu.dolphin.ps.worker.ParameterWorker;
+import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;

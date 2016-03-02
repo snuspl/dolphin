@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.driver.impl;
 
+import edu.snu.dolphin.ps.driver.api.ParameterServerManager;
 import edu.snu.dolphin.ps.ns.EndpointId;
-import edu.snu.dolphin.ps.server.ParameterServer;
-import edu.snu.dolphin.ps.server.SingleNodeParameterServer;
-import edu.snu.dolphin.ps.worker.ParameterWorker;
-import edu.snu.dolphin.ps.worker.SingleNodeParameterWorker;
+import edu.snu.dolphin.ps.ns.PSMessageHandler;
+import edu.snu.dolphin.ps.server.concurrent.api.ParameterServer;
+import edu.snu.dolphin.ps.server.concurrent.impl.ConcurrentParameterServer;
+import edu.snu.dolphin.ps.server.concurrent.impl.ServerSideMsgHandler;
+import edu.snu.dolphin.ps.worker.api.ParameterWorker;
+import edu.snu.dolphin.ps.worker.impl.SingleNodeParameterWorker;
 import org.apache.reef.annotations.audience.DriverSide;
 import org.apache.reef.driver.context.ServiceConfiguration;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Tang;
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
 
 import javax.inject.Inject;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,13 +36,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This manager does NOT handle server or worker faults.
  */
 @DriverSide
-public final class SingleNodeParameterServerManager implements ParameterServerManager {
+public final class ConcurrentParameterServerManager implements ParameterServerManager {
   private static final String SERVER_ID = "SINGLE_NODE_SERVER_ID";
   private static final String WORKER_ID_PREFIX = "SINGLE_NODE_WORKER_ID_";
   private final AtomicInteger numWorkers;
 
   @Inject
-  private SingleNodeParameterServerManager() {
+  private ConcurrentParameterServerManager() {
     this.numWorkers = new AtomicInteger(0);
   }
 
@@ -65,20 +66,18 @@ public final class SingleNodeParameterServerManager implements ParameterServerMa
 
   /**
    * Returns server-side service configuration.
-   * Sets {@link SingleNodeParameterServer} as the {@link ParameterServer} class.
+   * Sets {@link ConcurrentParameterServer} as the {@link ParameterServer} class.
    */
   @Override
   public Configuration getServerServiceConfiguration() {
     return Tang.Factory.getTang()
         .newConfigurationBuilder(ServiceConfiguration.CONF
-            .set(ServiceConfiguration.SERVICES, SingleNodeParameterServer.class)
+            .set(ServiceConfiguration.SERVICES, ConcurrentParameterServer.class)
             .build())
-        .bindImplementation(ParameterServer.class, SingleNodeParameterServer.class)
+        .bindNamedParameter(PSMessageHandler.class, ServerSideMsgHandler.class)
+        .bindImplementation(ParameterServer.class, ConcurrentParameterServer.class)
         .bindNamedParameter(EndpointId.class, SERVER_ID)
         .build();
   }
 
-  @NamedParameter(doc = "server identifier for Network Connection Service")
-  public final class ServerId implements Name<String> {
-  }
 }

@@ -20,7 +20,7 @@ import edu.snu.dolphin.bsp.examples.ml.parameters.MaxIterations;
 import edu.snu.dolphin.dnn.blas.Matrix;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerData;
 import edu.snu.dolphin.dnn.util.Validator;
-import edu.snu.dolphin.ps.worker.ParameterWorker;
+import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 import org.apache.reef.annotations.audience.TaskSide;
 import org.apache.reef.io.network.util.Pair;
 import org.apache.reef.tang.annotations.Parameter;

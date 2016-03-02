@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Parameter Server classes that are instantiated at the driver.
- */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.server.partitioned.parameters;
+
+import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
+
+@NamedParameter(doc = "Number of partitions", default_value = "2", short_name = "numPartitions")
+public final class NumPartitions implements Name<Integer> {
+}

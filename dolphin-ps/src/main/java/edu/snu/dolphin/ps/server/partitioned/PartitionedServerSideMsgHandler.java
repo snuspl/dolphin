@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server;
+package edu.snu.dolphin.ps.server.partitioned;
 
 import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.PreValueCodecName;
@@ -24,7 +24,6 @@ import edu.snu.dolphin.util.SingleMessageExtractor;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.io.network.Message;
 import org.apache.reef.io.serialization.Codec;
-import org.apache.reef.tang.InjectionFuture;
 import org.apache.reef.tang.annotations.Parameter;
 import org.apache.reef.wake.EventHandler;
 
@@ -33,15 +32,16 @@ import java.util.logging.Logger;
 
 /**
  * Server-side Parameter Server message handler.
+ * Decode messages and call the appropriate {@link PartitionedParameterServer} method.
  */
 @EvaluatorSide
-public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message<AvroParameterServerMsg>> {
-  private static final Logger LOG = Logger.getLogger(ServerSideMsgHandler.class.getName());
+public final class PartitionedServerSideMsgHandler<K, P, V> implements EventHandler<Message<AvroParameterServerMsg>> {
+  private static final Logger LOG = Logger.getLogger(PartitionedServerSideMsgHandler.class.getName());
 
   /**
-   * This evaluator's server that contains the k-v store.
+   * The Partitioned Parameter Server.
    */
-  private final ParameterServer<K, P, V> parameterServer;
+  private final PartitionedParameterServer<K, P, V> parameterServer;
 
   /**
    * Codec for decoding PS keys.
@@ -53,31 +53,22 @@ public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message
    */
   private final Codec<P> preValueCodec;
 
-  /**
-   * Send messages to workers using this field.
-   * Without {@link InjectionFuture}, this class creates an injection loop with
-   * classes related to Network Connection Service and makes the job crash (detected by Tang).
-   */
-  private final InjectionFuture<ServerSideMsgSender<K, V>> sender;
-
   @Inject
-  private ServerSideMsgHandler(final ParameterServer<K, P, V> parameterServer,
-                               @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
-                               @Parameter(PreValueCodecName.class) final Codec<P> preValueCodec,
-                               final InjectionFuture<ServerSideMsgSender<K, V>> sender) {
+  private PartitionedServerSideMsgHandler(final PartitionedParameterServer<K, P, V> parameterServer,
+                                          @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
+                                          @Parameter(PreValueCodecName.class) final Codec<P> preValueCodec) {
     this.parameterServer = parameterServer;
     this.keyCodec = keyCodec;
     this.preValueCodec = preValueCodec;
-    this.sender = sender;
   }
 
   /**
-   * Hand over values given from workers to {@link ParameterServer}.
+   * Hand over values given from workers to {@link PartitionedParameterServer}.
    * Throws an exception if messages of an unexpected type arrive.
    */
   @Override
   public void onNext(final Message<AvroParameterServerMsg> msg) {
-    LOG.entering(ServerSideMsgHandler.class.getSimpleName(), "onNext");
+    LOG.entering(PartitionedServerSideMsgHandler.class.getSimpleName(), "onNext");
 
     final AvroParameterServerMsg innerMsg = SingleMessageExtractor.extract(msg);
     switch (innerMsg.getType()) {
@@ -93,7 +84,7 @@ public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message
       throw new RuntimeException("Unexpected message type: " + innerMsg.getType().toString());
     }
 
-    LOG.exiting(ServerSideMsgHandler.class.getSimpleName(), "onNext");
+    LOG.exiting(PartitionedServerSideMsgHandler.class.getSimpleName(), "onNext");
   }
 
   private void onPushMsg(final PushMsg pushMsg) {
@@ -105,7 +96,6 @@ public final class ServerSideMsgHandler<K, P, V> implements EventHandler<Message
   private void onPullMsg(final PullMsg pullMsg) {
     final String srcId = pullMsg.getSrcId().toString();
     final K key = keyCodec.decode(pullMsg.getKey().array());
-    final ValueEntry<V> value = parameterServer.pull(key);
-    sender.get().sendReplyMsg(srcId, key, value);
+    parameterServer.pull(key, srcId);
   }
 }

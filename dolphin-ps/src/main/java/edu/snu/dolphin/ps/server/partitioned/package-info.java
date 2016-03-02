@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 /**
- * Parameter Server classes that are instantiated at the driver.
+ * A Partitioned Parameter Server, that supports atomic, in-order processing of push and pull operations.
+ * Partitions are based on the hash of the key.
+ * Each partition consists of a queue, kvStore, and thread.
+ * Operations are immediately added to the queue, so the message processing threads will not block,
+ * except when the queue is full.
  */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.server.partitioned;

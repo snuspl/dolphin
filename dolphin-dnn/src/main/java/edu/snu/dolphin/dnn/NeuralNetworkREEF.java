@@ -18,7 +18,7 @@ package edu.snu.dolphin.dnn;
 import edu.snu.dolphin.bsp.parameters.*;
 import edu.snu.dolphin.dnn.data.NeuralNetParamServerDataCodec;
 import edu.snu.dolphin.ps.ParameterServerConfigurationBuilder;
-import edu.snu.dolphin.ps.driver.SingleNodeParameterServerManager;
+import edu.snu.dolphin.ps.driver.impl.ConcurrentParameterServerManager;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.reef.client.DriverConfiguration;
 import org.apache.reef.client.DriverLauncher;
@@ -207,7 +207,7 @@ public final class NeuralNetworkREEF {
         .build();
 
     final Configuration parameterServerConfiguration = new ParameterServerConfigurationBuilder()
-        .setManagerClass(SingleNodeParameterServerManager.class)
+        .setManagerClass(ConcurrentParameterServerManager.class)
         .setUpdaterClass(NeuralNetworkParameterUpdater.class)
         .setPreValueCodecClass(NeuralNetParamServerDataCodec.class)
         .setValueCodecClass(NeuralNetParamServerDataCodec.class)

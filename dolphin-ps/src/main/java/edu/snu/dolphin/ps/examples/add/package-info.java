@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Seoul National University
+ * Copyright (C) 2016 Seoul National University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 /**
- * Parameter Server classes that are instantiated at the driver.
+ * A simple example that uses the Parameter Server and AddUpdater.
+ * It pushes updates from multiple workers by running UpdaterTask,
+ * then pulls and validates the resulting values by running ValidatorTask.
+ *
+ * The example has two main purposes:
+ *   1. It shows how a PS implementation can be configured.
+ *   2. It can also work as a simple load generator to test PS implementations.
  */
-package edu.snu.dolphin.ps.driver;
+package edu.snu.dolphin.ps.examples.add;
