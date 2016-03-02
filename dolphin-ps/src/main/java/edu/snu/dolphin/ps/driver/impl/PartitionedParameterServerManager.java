@@ -24,9 +24,11 @@ import edu.snu.dolphin.ps.server.partitioned.PartitionedServerSideReplySender;
 import edu.snu.dolphin.ps.server.partitioned.PartitionedServerSideReplySenderImpl;
 import edu.snu.dolphin.ps.server.partitioned.parameters.ServerNumPartitions;
 import edu.snu.dolphin.ps.server.partitioned.parameters.ServerQueueSize;
+import edu.snu.dolphin.ps.worker.AsyncWorkerHandler;
 import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 import edu.snu.dolphin.ps.worker.partitioned.ContextStopHandler;
 import edu.snu.dolphin.ps.worker.partitioned.PartitionedParameterWorker;
+import edu.snu.dolphin.ps.worker.partitioned.PartitionedWorkerHandler;
 import org.apache.reef.annotations.audience.DriverSide;
 import org.apache.reef.driver.context.ServiceConfiguration;
 import org.apache.reef.tang.Configuration;
@@ -75,6 +77,7 @@ public final class PartitionedParameterServerManager implements ParameterServerM
             .set(ServiceConfiguration.ON_CONTEXT_STOP, ContextStopHandler.class)
             .build())
         .bindImplementation(ParameterWorker.class, PartitionedParameterWorker.class)
+        .bindImplementation(AsyncWorkerHandler.class, PartitionedWorkerHandler.class)
         .bindNamedParameter(ServerId.class, SERVER_ID)
         .bindNamedParameter(EndpointId.class, WORKER_ID_PREFIX + workerIndex)
         .build();
