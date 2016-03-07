@@ -21,7 +21,7 @@ import edu.snu.dolphin.ps.examples.add.IntegerCodec;
 import edu.snu.dolphin.ps.server.api.ParameterUpdater;
 import edu.snu.dolphin.ps.server.partitioned.PartitionedParameterServer;
 import edu.snu.dolphin.ps.server.partitioned.PartitionedServerSideReplySender;
-import edu.snu.dolphin.ps.server.partitioned.parameters.NumPartitions;
+import edu.snu.dolphin.ps.server.partitioned.parameters.ServerNumPartitions;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -54,7 +54,7 @@ public final class PartitionedParameterServerTest {
         .bindNamedParameter(ParameterServerParameters.KeyCodecName.class, IntegerCodec.class)
         .bindNamedParameter(ParameterServerParameters.ValueCodecName.class, IntegerCodec.class)
         .bindNamedParameter(ParameterServerParameters.PreValueCodecName.class, IntegerCodec.class)
-        .bindNamedParameter(NumPartitions.class, "4")
+        .bindNamedParameter(ServerNumPartitions.class, "4")
         .build();
     final Injector injector = Tang.Factory.getTang().newInjector(conf);
     injector.bindVolatileInstance(ParameterUpdater.class, new ParameterUpdater<Integer, Integer, Integer>() {
@@ -65,7 +65,7 @@ public final class PartitionedParameterServerTest {
 
       @Override
       public Integer update(final Integer oldValue, final Integer deltaValue) {
-        // simply add the processed value to the original value
+        // simply add the processed value to the original value 
         return oldValue + deltaValue;
       }
 
@@ -98,7 +98,8 @@ public final class PartitionedParameterServerTest {
         public void run() {
           for (int index = 0; index < numPushes; index++) {
             // each thread increments the server's value by 1 per push
-            server.push(KEY + threadId, 1);
+            final int key = KEY + threadId;
+            server.push(key, 1, key); // Just use key as hash for this test.
           }
           countDownLatch.countDown();
         }
@@ -111,7 +112,8 @@ public final class PartitionedParameterServerTest {
         @Override
         public void run() {
           for (int index = 0; index < numPulls; index++) {
-            server.pull(KEY + threadId, "");
+            final int key = KEY + threadId;
+            server.pull(key, "", key); // Just use key as hash for this test.
           }
           countDownLatch.countDown();
         }
@@ -127,7 +129,8 @@ public final class PartitionedParameterServerTest {
 
     assertTrue(MSG_THREADS_NOT_FINISHED, allThreadsFinished);
     for (int threadIndex = 0; threadIndex < numPushThreads; threadIndex++) {
-      server.pull(KEY + threadIndex, "");
+      final int key = KEY + threadIndex;
+      server.pull(key, "", key); // Just use key as hash for this test.
       waitForOps();
       assertEquals(MSG_RESULT_ASSERTION, numPushes, mockSender.getLatest());
     }

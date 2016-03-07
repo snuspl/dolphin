@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.worker.impl;
+package edu.snu.dolphin.ps.worker.concurrent;
 
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.tang.annotations.DefaultImplementation;

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.snu.dolphin.ps.server.partitioned.parameters;
-
-import org.apache.reef.tang.annotations.Name;
-import org.apache.reef.tang.annotations.NamedParameter;
-
-@NamedParameter(doc = "Number of partitions", default_value = "2", short_name = "numPartitions")
-public final class NumPartitions implements Name<Integer> {
-}
+/**
+ * Partitioned implementation of Parameter Server worker (client).
+ * For use with server in {@link edu.snu.dolphin.ps.server.partitioned}.
+ */
+package edu.snu.dolphin.ps.worker.partitioned;

@@ -16,8 +16,8 @@
 package edu.snu.dolphin.ps.server.partitioned;
 
 import edu.snu.dolphin.ps.server.api.ParameterUpdater;
-import edu.snu.dolphin.ps.server.partitioned.parameters.NumPartitions;
-import edu.snu.dolphin.ps.server.partitioned.parameters.QueueSize;
+import edu.snu.dolphin.ps.server.partitioned.parameters.ServerNumPartitions;
+import edu.snu.dolphin.ps.server.partitioned.parameters.ServerQueueSize;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.tang.annotations.Parameter;
 
@@ -77,8 +77,8 @@ public final class PartitionedParameterServer<K, P, V> {
   private final PartitionedServerSideReplySender sender;
 
   @Inject
-  private PartitionedParameterServer(@Parameter(NumPartitions.class) final int numPartitions,
-                                     @Parameter(QueueSize.class) final int queueSize,
+  private PartitionedParameterServer(@Parameter(ServerNumPartitions.class) final int numPartitions,
+                                     @Parameter(ServerQueueSize.class) final int queueSize,
                                      final ParameterUpdater<K, P, V> parameterUpdater,
                                      final PartitionedServerSideReplySender sender) {
     this.numPartitions = numPartitions;
@@ -112,9 +112,10 @@ public final class PartitionedParameterServer<K, P, V> {
    *
    * @param key key object that {@code preValue} is associated with
    * @param preValue preValue sent from the worker
+   * @param keyHash hash of the key, a positive integer used to map to the correct partition
    */
-  public void push(final K key, final P preValue) {
-    partitions[getPartitionIndex(key)].enqueue(new PushOp(key, preValue));
+  public void push(final K key, final P preValue, final int keyHash) {
+    partitions[getPartitionIndex(keyHash)].enqueue(new PushOp(key, preValue));
   }
 
   /**
@@ -125,13 +126,14 @@ public final class PartitionedParameterServer<K, P, V> {
    *
    * @param key key object that the requested {@code value} is associated with
    * @param srcId network Id of the requester
+   * @param keyHash hash of the key, a positive integer used to map to the correct partition
    */
-  public void pull(final K key, final String srcId) {
-    partitions[getPartitionIndex(key)].enqueue(new PullOp(key, srcId));
+  public void pull(final K key, final String srcId, final int keyHash) {
+    partitions[getPartitionIndex(keyHash)].enqueue(new PullOp(key, srcId));
   }
 
-  private int getPartitionIndex(final K key) {
-    return key.hashCode() % numPartitions;
+  private int getPartitionIndex(final int keyHash) {
+    return keyHash % numPartitions;
   }
 
   /**
@@ -274,7 +276,7 @@ public final class PartitionedParameterServer<K, P, V> {
 
     /**
      * Loop that dequeues operations and applies them.
-     * Dequeues is only performed through this thread.
+     * Dequeues are only performed through this thread.
      */
     @Override
     public void run() {

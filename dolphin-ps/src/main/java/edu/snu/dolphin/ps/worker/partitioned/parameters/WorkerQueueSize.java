@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Concurrent implementation of Parameter Server worker (client).
- * For use with server in {@link edu.snu.dolphin.ps.server.concurrent}.
- */
-package edu.snu.dolphin.ps.worker.impl;
+package edu.snu.dolphin.ps.worker.partitioned.parameters;
+
+import org.apache.reef.tang.annotations.Name;
+import org.apache.reef.tang.annotations.NamedParameter;
+
+@NamedParameter(doc = "Max number of items that can be queued for each partition", default_value = "100",
+    short_name = "workerQueueSize")
+public final class WorkerQueueSize implements Name<Integer> {
+}
