@@ -19,7 +19,6 @@ import edu.snu.dolphin.ps.ParameterServerParameters.KeyCodecName;
 import edu.snu.dolphin.ps.ParameterServerParameters.ValueCodecName;
 import edu.snu.dolphin.ps.avro.AvroParameterServerMsg;
 import edu.snu.dolphin.ps.avro.ReplyMsg;
-import edu.snu.dolphin.ps.worker.api.ParameterWorker;
 import edu.snu.dolphin.util.SingleMessageExtractor;
 import org.apache.reef.annotations.audience.EvaluatorSide;
 import org.apache.reef.io.network.Message;
@@ -38,9 +37,9 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
   private static final Logger LOG = Logger.getLogger(WorkerSideMsgHandler.class.getName());
 
   /**
-   * This evaluator's worker that is expecting Parameter Server messages.
+   * This evaluator's asynchronous handler that is expecting Parameter Server pull message results.
    */
-  private final ParameterWorker<K, P, V> parameterWorker;
+  private final AsyncWorkerHandler<K, V> asyncWorkerHandler;
 
   /**
    * Codec for decoding PS keys.
@@ -53,19 +52,19 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
   private final Codec<V> valueCodec;
 
   @Inject
-  private WorkerSideMsgHandler(final ParameterWorker<K, P, V> parameterWorker,
+  private WorkerSideMsgHandler(final AsyncWorkerHandler<K, V> asyncWorkerHandler,
                                @Parameter(KeyCodecName.class) final Codec<K> keyCodec,
                                @Parameter(ValueCodecName.class) final Codec<V> valueCodec) {
-    this.parameterWorker = parameterWorker;
+    this.asyncWorkerHandler = asyncWorkerHandler;
     this.keyCodec = keyCodec;
     this.valueCodec = valueCodec;
   }
 
   /**
-   * Hand over values given from the server to {@link ParameterWorker}.
+   * Hand over values given from the server to {@link AsyncWorkerHandler}.
    * Throws an exception if messages of an unexpected type arrive.
    */
-  @Override 
+  @Override
   public void onNext(final Message<AvroParameterServerMsg> msg) {
     LOG.entering(WorkerSideMsgHandler.class.getSimpleName(), "onNext");
 
@@ -85,6 +84,6 @@ public final class WorkerSideMsgHandler<K, P, V> implements EventHandler<Message
   private void onReplyMsg(final ReplyMsg replyMsg) {
     final K key = keyCodec.decode(replyMsg.getKey().array());
     final V value = valueCodec.decode(replyMsg.getValue().array());
-    parameterWorker.processReply(key, value);
+    asyncWorkerHandler.processReply(key, value);
   }
 }

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 @EvaluatorSide
 public final class ConcurrentParameterWorker<K, P, V> implements ParameterWorker<K, P, V> {
   private static final Logger LOG = Logger.getLogger(ConcurrentParameterWorker.class.getName());
-  private static final long TIMEOUT = 40000; // milliseconds
+  private static final long TIMEOUT = 400000; // milliseconds
 
   /**
    * Network Connection Service identifier of the server.
@@ -84,17 +84,17 @@ public final class ConcurrentParameterWorker<K, P, V> implements ParameterWorker
 
       final ValueWrapper valueWrapper = keyToValueWrapper.get(key);
       synchronized (valueWrapper) {
-        // the reply arrived right before I acquired the lock
-        // try again from start
         if (!keyToValueWrapper.containsKey(key)) {
+          // the reply arrived right before I acquired the lock
+          // try again from start
           continue;
         }
 
         valueWrapper.startWaiting();
 
-        // the first one to wait will send the fetch message
-        // others don't have to send the same message again
         if (isFirstToWait) {
+          // the first one to wait will send the fetch message
+          // others don't have to send the same message again
           sender.get().sendPullMsg(serverId, key);
         }
 
@@ -118,9 +118,9 @@ public final class ConcurrentParameterWorker<K, P, V> implements ParameterWorker
   }
 
   /**
-   * {@inheritDoc}
+   * Process a pull reply message received from the server.
+   * Called by {@link ConcurrentWorkerHandler#processReply}.
    */
-  @Override
   public void processReply(final K key, final V value) {
     final ValueWrapper valueWrapper = keyToValueWrapper.remove(key);
     if (valueWrapper != null) {

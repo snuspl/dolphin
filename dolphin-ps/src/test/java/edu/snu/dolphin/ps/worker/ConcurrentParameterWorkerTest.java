@@ -17,8 +17,9 @@ package edu.snu.dolphin.ps.worker;
 
 import edu.snu.dolphin.ps.TestUtils;
 import edu.snu.dolphin.ps.driver.impl.ServerId;
-import edu.snu.dolphin.ps.worker.concurrent.ConcurrentParameterWorker;
+import edu.snu.dolphin.ps.worker.concurrent.ConcurrentWorkerHandler;
 import edu.snu.dolphin.ps.worker.concurrent.WorkerSideMsgSender;
+import edu.snu.dolphin.ps.worker.concurrent.ConcurrentParameterWorker;
 import org.apache.reef.tang.Configuration;
 import org.apache.reef.tang.Injector;
 import org.apache.reef.tang.Tang;
@@ -32,7 +33,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,6 +45,7 @@ public final class ConcurrentParameterWorkerTest {
   private static final String MSG_THREADS_NOT_FINISHED = "threads not finished (possible deadlock or infinite loop)";
   private static final String MSG_RESULT_ASSERTION = "threads received null";
   private ConcurrentParameterWorker<Integer, Integer, Integer> worker;
+  private ConcurrentWorkerHandler<Integer, Integer> handler;
 
   @Before
   public void setup() throws InjectionException {
@@ -60,7 +63,7 @@ public final class ConcurrentParameterWorkerTest {
             try {
               // simulate slow network by purposely sleeping for 5 seconds
               Thread.sleep(5000);
-              worker.processReply(KEY, 1);
+              handler.processReply(KEY, 1);
             } catch (final InterruptedException e) {
               throw new RuntimeException(e);
             }
@@ -74,6 +77,7 @@ public final class ConcurrentParameterWorkerTest {
 
     injector.bindVolatileInstance(WorkerSideMsgSender.class, mockSender);
     worker = injector.getInstance(ConcurrentParameterWorker.class);
+    handler = injector.getInstance(ConcurrentWorkerHandler.class);
   }
 
   /**
