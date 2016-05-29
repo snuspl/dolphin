@@ -158,7 +158,7 @@ public final class PartitionedParameterServerTest {
     private volatile int latest = -1;
 
     @Inject
-    public MockPartitionedServerSideReplySender() {
+    MockPartitionedServerSideReplySender() {
     }
 
     @Override

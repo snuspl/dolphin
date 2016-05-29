@@ -139,7 +139,7 @@ public final class NeuralNetworkDataParser implements DataParser<List<Pair<Pair<
     private final List<Matrix> matrixList;
     private final List<Integer> labelList;
 
-    public BatchGenerator(final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList,
+    BatchGenerator(final List<Pair<Pair<Matrix, int[]>, Boolean>> dataList,
                           final boolean isValidation) {
       this.dataList = dataList;
       this.isValidation = isValidation;
