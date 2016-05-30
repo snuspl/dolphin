@@ -400,10 +400,10 @@ public final class PartitionedParameterWorker<K, P, V> implements ParameterWorke
     private volatile boolean shutdown = false;
 
     Partition(final ConcurrentMap<K, PullFuture<V>> pendingPulls,
-                     final ServerResolver serverResolver,
-                     final InjectionFuture<PartitionedWorkerMsgSender<K, P>> sender,
-                     final int queueSize,
-                     final long expireTimeout) {
+              final ServerResolver serverResolver,
+              final InjectionFuture<PartitionedWorkerMsgSender<K, P>> sender,
+              final int queueSize,
+              final long expireTimeout) {
       kvCache = CacheBuilder.newBuilder()
           .concurrencyLevel(1)
           .expireAfterWrite(expireTimeout, TimeUnit.MILLISECONDS)
