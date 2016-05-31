@@ -171,7 +171,7 @@ public final class PartitionedParameterServer<K, P, V> {
     private final K key;
     private final P preValue;
 
-    public PushOp(final K key, final P preValue) {
+    PushOp(final K key, final P preValue) {
       this.key = key;
       this.preValue = preValue;
     }
@@ -202,7 +202,7 @@ public final class PartitionedParameterServer<K, P, V> {
     private final K key;
     private final String srcId;
 
-    public PullOp(final K key, final String srcId) {
+    PullOp(final K key, final String srcId) {
       this.key = key;
       this.srcId = srcId;
     }
@@ -246,7 +246,7 @@ public final class PartitionedParameterServer<K, P, V> {
 
     private volatile boolean shutdown = false;
 
-    public Partition(final int queueSize) {
+    Partition(final int queueSize) {
       this.kvStore = new HashMap<>();
       this.queue = new ArrayBlockingQueue<>(queueSize);
       this.drainSize = queueSize / 10;

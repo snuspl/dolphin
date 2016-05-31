@@ -275,7 +275,7 @@ public final class PartitionedParameterWorker<K, P, V> implements ParameterWorke
   private static class Wrapped<V> {
     private V value;
 
-    public Wrapped(final V value) {
+    Wrapped(final V value) {
       this.value = value;
     }
 
@@ -295,7 +295,7 @@ public final class PartitionedParameterWorker<K, P, V> implements ParameterWorke
     private final EncodedKey<K> encodedKey;
     private final P preValue;
 
-    public PushOp(final EncodedKey<K> encodedKey, final P preValue) {
+    PushOp(final EncodedKey<K> encodedKey, final P preValue) {
       this.encodedKey = encodedKey;
       this.preValue = preValue;
     }
@@ -333,7 +333,7 @@ public final class PartitionedParameterWorker<K, P, V> implements ParameterWorke
     private final EncodedKey<K> encodedKey;
     private V value;
 
-    public PullOp(final EncodedKey<K> encodedKey) {
+    PullOp(final EncodedKey<K> encodedKey) {
       this.encodedKey = encodedKey;
     }
 
@@ -399,11 +399,11 @@ public final class PartitionedParameterWorker<K, P, V> implements ParameterWorke
     private volatile boolean close = false;
     private volatile boolean shutdown = false;
 
-    public Partition(final ConcurrentMap<K, PullFuture<V>> pendingPulls,
-                     final ServerResolver serverResolver,
-                     final InjectionFuture<PartitionedWorkerMsgSender<K, P>> sender,
-                     final int queueSize,
-                     final long expireTimeout) {
+    Partition(final ConcurrentMap<K, PullFuture<V>> pendingPulls,
+              final ServerResolver serverResolver,
+              final InjectionFuture<PartitionedWorkerMsgSender<K, P>> sender,
+              final int queueSize,
+              final long expireTimeout) {
       kvCache = CacheBuilder.newBuilder()
           .concurrencyLevel(1)
           .expireAfterWrite(expireTimeout, TimeUnit.MILLISECONDS)
