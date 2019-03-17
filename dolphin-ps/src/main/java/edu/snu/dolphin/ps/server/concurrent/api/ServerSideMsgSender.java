@@ -34,5 +34,5 @@ public interface ServerSideMsgSender<K, V> {
    * @param key key object associated with the expected value
    * @param valueEntry {@link ValueEntry} object containing the requested value
    */
-  void sendReplyMsg(final String destId, final K key, final ValueEntry<V> valueEntry);
+  void sendReplyMsg(String destId, K key, ValueEntry<V> valueEntry);
 }
