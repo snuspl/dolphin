@@ -136,7 +136,6 @@
         <!-- Modifier Checks                                    -->
         <!-- See http://checkstyle.sf.net/config_modifier.html -->
         <module name="ModifierOrder"/>
-        <module name="RedundantModifier"/>
 
 
         <!-- Checks for blocks. You know, those {}'s         -->
