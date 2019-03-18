@@ -37,7 +37,7 @@
     <hadoop.version>2.4.0</hadoop.version>
     <mahout.version>0.9</mahout.version>
     <rat.version>0.11</rat.version>
-    <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
+    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
     <checkstyle.version>8.18</checkstyle.version>
     <protobuf.version>2.5.0</protobuf.version>
     <avro.version>1.7.7</avro.version>

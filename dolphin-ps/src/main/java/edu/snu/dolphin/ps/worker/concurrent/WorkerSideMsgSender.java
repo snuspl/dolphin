@@ -31,7 +31,7 @@ public interface WorkerSideMsgSender<K, P> {
    * @param key key object representing what is being sent
    * @param preValue value to be sent to the destination
    */
-  void sendPushMsg(final String destId, final K key, final P preValue);
+  void sendPushMsg(String destId, K key, P preValue);
 
   /**
    * Send a request to another evaluator for fetching a certain value.
@@ -40,5 +40,5 @@ public interface WorkerSideMsgSender<K, P> {
    * @param destId Network Connection Service identifier of the destination evaluator
    * @param key key object representing the expected value
    */
-  void sendPullMsg(final String destId, final K key);
+  void sendPullMsg(String destId, K key);
 }
